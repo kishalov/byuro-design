@@ -42,7 +42,7 @@ npm run build && npm start   # продакшен
 
 | Переменная | Зачем |
 |---|---|
-| `NEXT_PUBLIC_SITE_URL` | Домен сайта. Пока его нет, сайт закрыт от индексации (robots: noindex) и canonical не ставится. |
+| `NEXT_PUBLIC_SITE_URL` | Свой домен. На Vercel можно не задавать — берётся продакшн-адрес проекта; превью-деплои закрыты от индексации. |
 | `TELEGRAM_BOT_TOKEN` | Бот, через который приходят заявки (создать в @BotFather). |
 | `TELEGRAM_CHAT_ID` | Чат или группа, куда бот пишет заявки. |
 
@@ -69,6 +69,20 @@ npm run build && npm start   # продакшен
 ### Отзывы
 
 Сейчас все отзывы — сгенерированные примеры, на сайте помечены «Пример отзыва» (бейдж в `Testimonials.tsx`). Перед публикацией замените тексты в `reviews.items` реальными (с согласия авторов) и уберите бейдж.
+
+## SEO, иконки и превью для соцсетей
+
+- **Адрес сайта** — `NEXT_PUBLIC_SITE_URL`. На Vercel можно не задавать: берётся продакшн-адрес проекта. Индексация включена только на продакшне; превью-деплои закрыты `noindex`.
+- **Мета** — `src/lib/seo.ts`: canonical, hreflang (+ x-default), Open Graph и Twitter для каждой страницы, JSON-LD (Organization, у кейсов — CreativeWork и BreadcrumbList).
+- **Иконки** — `src/app/favicon.ico` (16/32/48), `icon0.svg` (векторная, из глифа Unbounded), `icon1.png`, `apple-icon.png`; для PWA — `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png` и `src/app/manifest.ts`. Пересобрать SVG: `scripts/og/icon_svg.py`.
+- **OG-картинки** — `public/og/home-<язык>.png` (9 языков) и `public/og/case-<кейс>.jpg`. После нового кейса или смены заголовка:
+  ```bash
+  npm run build && npx next start -p 3100 &
+  npx tsx scripts/og/dump-texts.ts > /tmp/og-texts.json
+  python3 scripts/og/generate.py http://localhost:3100 /tmp/og-texts.json public/og            # все
+  python3 scripts/og/generate.py http://localhost:3100 /tmp/og-texts.json public/og case-nibble # одну
+  ```
+- Проверить превью после деплоя: [opengraph.xyz](https://www.opengraph.xyz/), в Telegram — через @WebpageBot (сбрасывает кэш ссылки).
 
 ## Дизайн-токены
 

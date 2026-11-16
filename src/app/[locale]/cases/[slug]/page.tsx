@@ -15,7 +15,7 @@ import { localeCodes, type Locale } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getDict } from "@/i18n/get";
 import { anchors, lp } from "@/i18n/paths";
-import { alternates, hasDomain } from "@/lib/seo";
+import { alternates, caseJsonLd, hasDomain, ogImage, social } from "@/lib/seo";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -28,12 +28,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const c = getCase(slug);
   if (!c) return {};
-  const t = (await getDict(locale as Locale)).cases.items[c.slug];
+  const d = await getDict(locale as Locale);
+  const t = d.cases.items[c.slug];
+  const category = d.cases.categories[c.category];
   return {
     title: t.title,
     description: t.summary,
+    keywords: [category, t.client, ...c.tags.map((k) => d.cases.tags[k])],
     ...(hasDomain ? { alternates: alternates(locale as Locale, `/cases/${c.slug}/`) } : {}),
-    openGraph: { title: t.title, description: t.summary, type: "article" },
+    ...social({
+      locale: locale as Locale,
+      title: `${t.title} — ${t.client}`,
+      description: t.summary,
+      path: `/cases/${c.slug}/`,
+      image: ogImage.case(c.slug),
+      imageAlt: `${category}: ${t.title}`,
+      type: "article",
+    }),
   };
 }
 
@@ -57,6 +68,10 @@ export default async function CasePage({ params }: Props) {
 
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(caseJsonLd(c, locale, text, { home: locale === "ru" ? "Бюро" : "Byuro", cases: d.nav.cases })) }}
+      />
       <header className="wrap pt-8 pb-12 sm:pt-12">
         <Link href={lp(locale, anchors.cases)} className="t-small inline-flex min-h-11 items-center gap-2 font-semibold text-ink/80 hover:text-ink">
           <Icon name="arrow-left" size={18} /> {t.page.back}

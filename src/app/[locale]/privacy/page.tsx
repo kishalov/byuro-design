@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/i18n/config";
 import { getDict } from "@/i18n/get";
-import { alternates, hasDomain } from "@/lib/seo";
+import { alternates, hasDomain, ogImage, social } from "@/lib/seo";
 
 type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = (await params).locale as Locale;
-  const t = (await getDict(locale)).privacy;
-  return { title: t.meta, robots: { index: false, follow: true }, ...(hasDomain ? { alternates: alternates(locale, "/privacy/") } : {}) };
+  const d = await getDict(locale);
+  const t = d.privacy;
+  return {
+    title: t.meta,
+    description: t.intro,
+    robots: { index: false, follow: true },
+    ...(hasDomain ? { alternates: alternates(locale, "/privacy/") } : {}),
+    ...social({ locale, title: t.meta, description: t.intro, path: "/privacy/", image: ogImage.home(locale), imageAlt: d.meta.ogAlt }),
+  };
 }
 
 /* ШАБЛОН. Перед публикацией — проверка юристом и реквизиты оператора ПД. */
