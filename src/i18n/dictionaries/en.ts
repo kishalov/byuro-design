@@ -327,12 +327,12 @@ const en = {
     partners: "Partners",
     demoBadge: "Sample testimonial",
     items: [
-      { id: "c1", audience: "client", name: "Marina S.", role: "Marketing Director, property development", highlight: "beautiful, fast and clear", text: "Thank you for the website! It turned out exactly as we wanted: beautiful, fast and clear." },
-      { id: "c2", audience: "client", name: "Andrey K.", role: "Co-founder of a Web3 project", highlight: "so easy to work with", text: "You are so easy to work with: at every stage I knew what was happening and never had to chase anything. Thank you!" },
-      { id: "c3", audience: "client", name: "Olga V.", role: "Head of Digital Services, healthcare", highlight: "recommending you to everyone", text: "Thank you so much for your work! I’ll be recommending you to everyone." },
-      { id: "p1", audience: "partner", name: "Dmitry L.", role: "Marketer, real estate", highlight: "the client is happy", text: "I referred a client and never regretted it: the client is happy, the agreements were kept and my fee arrived on time." },
-      { id: "p2", audience: "partner", name: "Ekaterina R.", role: "Founder of an SMM agency", highlight: "say “yes” to clients", text: "We can finally say “yes” to clients who ask for branding and websites. Thank you for making it so stress-free!" },
-      { id: "p3", audience: "partner", name: "Igor T.", role: "Paid ads specialist", highlight: "Everything is transparent, no surprises", text: "This isn’t our first project together. Everything is transparent, no surprises. Highly recommend!" },
+      { id: "c1", audience: "client", name: "Maria S.", role: "Marketing Director, property development", highlight: "exactly the way we wanted", text: "Thank you to the Byuro team for the website! It turned out exactly the way we wanted. Everything looks great, is easy to use and works fast. We’re very happy with the result!" },
+      { id: "c2", audience: "client", name: "Alexander M.", role: "Co-founder of a Web3 startup", highlight: "always available", text: "We really enjoyed working with the team. They were always available, kept us updated on the process and explained everything. No unnecessary questions and no stress. Thank you for the great work!" },
+      { id: "c3", audience: "client", name: "Anna K.", role: "Head of Digital, medical services", highlight: "will recommend you to our colleagues", text: "Thank you so much for your work! Everything was done to a high standard and our wishes were taken into account. We’re very pleased and will recommend you to our colleagues!" },
+      { id: "p1", audience: "partner", name: "Maxim D.", role: "Marketer, real estate market", highlight: "the client is happy and the agreements were kept", text: "I referred a client to the team and didn’t regret it for a second. Everything was done brilliantly, the client is happy and the agreements were kept. And my commission arrived on time. We’ll keep working together!" },
+      { id: "p2", audience: "partner", name: "Anastasia P.", role: "Founder of a digital agency", highlight: "don’t have to constantly oversee the process", text: "We can finally offer clients not just SMM but also websites and branding, with peace of mind. You’re a real lifesaver! It’s especially nice that we don’t have to constantly oversee the process." },
+      { id: "p3", audience: "partner", name: "Roman T.", role: "Paid social advertising specialist", highlight: "clear, transparent and free of unpleasant surprises", text: "This isn’t our first project with Byuro. Everything is clear, transparent and free of unpleasant surprises. A great team I’m not afraid to recommend to my clients!" },
     ],
   },
   faq: {

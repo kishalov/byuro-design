@@ -328,12 +328,12 @@ const sr = {
     partners: "Partneri",
     demoBadge: "Primer utiska",
     items: [
-      { id: "c1", audience: "client", name: "Marina S.", role: "Direktorka marketinga, gradnja", highlight: "lep, brz i jasan", text: "Hvala vam za sajt! Ispao je baš onakav kakav smo želeli: lep, brz i jasan." },
-      { id: "c2", audience: "client", name: "Andrej K.", role: "Suosnivač Web3 projekta", highlight: "baš prijatno raditi", text: "Sa vama je baš prijatno raditi: u svakoj fazi je jasno šta se dešava i ništa ne morate da jurite. Hvala!" },
-      { id: "c3", audience: "client", name: "Olga V.", role: "Rukovoditeljka digitalnih servisa, medicina", highlight: "Preporučiću vas svima", text: "Veliko hvala za rad! Preporučiću vas svima." },
-      { id: "p1", audience: "partner", name: "Dmitrij L.", role: "Marketar, nekretnine", highlight: "klijent je zadovoljan", text: "Preporučio sam klijenta i nijednom nisam zažalio: klijent je zadovoljan, dogovori su ispoštovani, provizija je stigla na vreme." },
-      { id: "p2", audience: "partner", name: "Jekaterina R.", role: "Osnivačica SMM agencije", highlight: "klijentima kažemo „da“", text: "Konačno klijentima kažemo „da“ za brending i sajtove. Hvala što je sa vama tako mirno!" },
-      { id: "p3", audience: "partner", name: "Igor T.", role: "Stručnjak za oglase", highlight: "Sve je transparentno i bez iznenađenja", text: "Ovo nam nije prvi zajednički projekat. Sve je transparentno i bez iznenađenja. Preporučujem!" },
+      { id: "c1", audience: "client", name: "Marija S.", role: "Direktorka marketinga, gradnja", highlight: "upravo ono što smo želeli", text: "Hvala timu Byuro za sajt! Dobili smo upravo ono što smo želeli. Sve je lepo, praktično i brzo radi. Veoma smo zadovoljni rezultatom!" },
+      { id: "c2", audience: "client", name: "Aleksandar M.", role: "Suosnivač Web3 startapa", highlight: "Uvek su bili dostupni", text: "Baš nam se dopalo da radimo sa ekipom. Uvek su bili dostupni, obaveštavali nas o toku rada i sve objašnjavali. Bez suvišnih pitanja i nerviranja. Hvala na odličnom poslu!" },
+      { id: "c3", audience: "client", name: "Ana K.", role: "Rukovoditeljka digitalnog sektora, medicinske usluge", highlight: "preporučićemo vas kolegama", text: "Veliko hvala za rad! Sve je urađeno kvalitetno, uvažene su naše želje. Veoma smo zadovoljni i preporučićemo vas kolegama!" },
+      { id: "p1", audience: "partner", name: "Maksim D.", role: "Marketar, tržište nekretnina", highlight: "klijent je zadovoljan, dogovori su ispoštovani", text: "Preporučio sam im klijenta i nimalo nisam zažalio. Sve je odlično urađeno, klijent je zadovoljan, dogovori su ispoštovani. I proviziju sam dobio na vreme. Nastavljamo saradnju!" },
+      { id: "p2", audience: "partner", name: "Anastasija P.", role: "Osnivačica digitalne agencije", highlight: "ne moramo stalno da kontrolišemo proces", text: "Konačno možemo mirno da nudimo klijentima ne samo SMM, već i sajtove i brending. Mnogo nam pomažete! Posebno je prijatno što ne moramo stalno da kontrolišemo proces." },
+      { id: "p3", audience: "partner", name: "Roman T.", role: "Stručnjak za targetirano oglašavanje", highlight: "jasno, transparentno i bez neprijatnih iznenađenja", text: "Sa Byuro radimo već na više projekata. Sve je jasno, transparentno i bez neprijatnih iznenađenja. Odličan tim koji bez straha preporučujem svojim klijentima!" },
     ],
   },
   faq: {

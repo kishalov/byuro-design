@@ -327,12 +327,12 @@ const zh = {
     partners: "合作伙伴",
     demoBadge: "示例评价",
     items: [
-      { id: "c1", audience: "client", name: "玛丽娜 S.", role: "地产开发公司市场总监", highlight: "好看、快速、清晰", text: "谢谢你们做的网站！完全是我们想要的样子：好看、快速、清晰。" },
-      { id: "c2", audience: "client", name: "安德烈 K.", role: "Web3 项目联合创始人", highlight: "合作非常舒心", text: "和你们合作非常舒心：每个阶段都清楚进展，什么都不用催。谢谢！" },
-      { id: "c3", audience: "client", name: "奥尔加 V.", role: "医疗行业数字服务负责人", highlight: "我会向所有人推荐你们", text: "非常感谢你们的工作！我会向所有人推荐你们。" },
-      { id: "p1", audience: "partner", name: "德米特里 L.", role: "房地产营销人", highlight: "客户很满意", text: "我推荐了一位客户，从没后悔过：客户很满意，约定都兑现了，佣金也按时到账。" },
-      { id: "p2", audience: "partner", name: "叶卡捷琳娜 R.", role: "SMM 机构创始人", highlight: "对想要品牌和网站的客户说“可以”", text: "我们终于能对想要品牌和网站的客户说“可以”了。谢谢你们让一切这么省心！" },
-      { id: "p3", audience: "partner", name: "伊戈尔 T.", role: "广告投放专家", highlight: "一切透明，没有意外", text: "这已经不是我们第一次合作了。一切透明，没有意外。强烈推荐！" },
+      { id: "c1", audience: "client", name: "玛丽亚 S.", role: "地产开发公司市场总监", highlight: "完全是我们想要的样子", text: "感谢 Byuro 团队为我们做的网站！完全是我们想要的样子。美观、好用、速度快。我们对结果非常满意！" },
+      { id: "c2", audience: "client", name: "亚历山大 M.", role: "Web3 初创公司联合创始人", highlight: "始终保持联系", text: "和团队合作非常愉快。他们始终保持联系，随时同步进度，把一切都解释清楚。没有多余的问题，也不让人操心。感谢出色的工作！" },
+      { id: "c3", audience: "client", name: "安娜 K.", role: "医疗服务机构数字化负责人", highlight: "会把你们推荐给同行", text: "非常感谢你们的工作！一切都做得很用心，也充分考虑了我们的需求。我们非常满意，会把你们推荐给同行！" },
+      { id: "p1", audience: "partner", name: "马克西姆 D.", role: "房地产市场营销人", highlight: "客户很满意，约定都兑现了", text: "我把客户介绍给了团队，一点也不后悔。一切都做得很好，客户很满意，约定都兑现了。佣金也按时到账。我们会继续合作！" },
+      { id: "p2", audience: "partner", name: "阿纳斯塔西娅 P.", role: "数字代理机构创始人", highlight: "不需要一直盯着进度", text: "终于可以放心地为客户提供的不只是 SMM，还有网站和品牌设计。真是帮了大忙！尤其省心的是，不需要一直盯着进度。" },
+      { id: "p3", audience: "partner", name: "罗曼 T.", role: "定向广告投放专家", highlight: "一切清晰透明，没有不愉快的意外", text: "这已经不是我们和 Byuro 的第一个项目了。一切清晰透明，没有不愉快的意外。一支我可以放心推荐给客户的优秀团队！" },
     ],
   },
   faq: {

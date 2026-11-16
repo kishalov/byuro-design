@@ -327,12 +327,12 @@ const es = {
     partners: "Partners",
     demoBadge: "Opinión de ejemplo",
     items: [
-      { id: "c1", audience: "client", name: "Marina S.", role: "Directora de marketing, promoción inmobiliaria", highlight: "bonita, rápida y clara", text: "¡Gracias por la web! Quedó justo como queríamos: bonita, rápida y clara." },
-      { id: "c2", audience: "client", name: "Andréi K.", role: "Cofundador de un proyecto Web3", highlight: "muy cómodo trabajar con vosotros", text: "Es muy cómodo trabajar con vosotros: en cada etapa sabía qué pasaba y no tuve que perseguir a nadie. ¡Gracias!" },
-      { id: "c3", audience: "client", name: "Olga V.", role: "Responsable de servicios digitales, salud", highlight: "Os voy a recomendar a todo el mundo", text: "¡Muchísimas gracias por el trabajo! Os voy a recomendar a todo el mundo." },
-      { id: "p1", audience: "partner", name: "Dmitri L.", role: "Marketer, sector inmobiliario", highlight: "el cliente está contento", text: "Os pasé un cliente y no me arrepiento: el cliente está contento, se cumplió lo acordado y la comisión llegó a tiempo." },
-      { id: "p2", audience: "partner", name: "Ekaterina R.", role: "Fundadora de una agencia de SMM", highlight: "decimos «sí» a los clientes", text: "Por fin decimos «sí» a los clientes que piden branding y webs. ¡Gracias por tanta tranquilidad!" },
-      { id: "p3", audience: "partner", name: "Ígor T.", role: "Especialista en anuncios", highlight: "Todo transparente y sin sorpresas", text: "No es nuestro primer proyecto juntos. Todo transparente y sin sorpresas. ¡Lo recomiendo!" },
+      { id: "c1", audience: "client", name: "María S.", role: "Directora de marketing, promoción inmobiliaria", highlight: "justo como queríamos", text: "¡Gracias al equipo de Byuro por la web! Quedó justo como queríamos. Todo es bonito, cómodo y rápido. ¡Estamos muy contentos con el resultado!" },
+      { id: "c2", audience: "client", name: "Alejandro M.", role: "Cofundador de una startup Web3", highlight: "Siempre estaban disponibles", text: "Nos encantó trabajar con el equipo. Siempre estaban disponibles, nos mantenían al tanto del proceso y lo explicaban todo. Sin preguntas innecesarias ni nervios. ¡Gracias por el gran trabajo!" },
+      { id: "c3", audience: "client", name: "Anna K.", role: "Responsable digital, servicios médicos", highlight: "os recomendaremos a nuestros colegas", text: "¡Muchas gracias por el trabajo! Todo se hizo con calidad y se tuvieron en cuenta nuestros deseos. Quedamos muy satisfechos y os recomendaremos a nuestros colegas." },
+      { id: "p1", audience: "partner", name: "Maxim D.", role: "Marketer, mercado inmobiliario", highlight: "el cliente está contento y se cumplió lo acordado", text: "Les pasé un cliente y no me arrepiento en absoluto. Todo salió genial, el cliente está contento y se cumplió lo acordado. Y la comisión me llegó a tiempo. ¡Seguiremos trabajando juntos!" },
+      { id: "p2", audience: "partner", name: "Anastasia P.", role: "Fundadora de una agencia digital", highlight: "no hace falta controlar el proceso todo el tiempo", text: "Por fin podemos ofrecer con tranquilidad a nuestros clientes no solo SMM, sino también webs y branding. ¡Nos salváis! Lo mejor es que no hace falta controlar el proceso todo el tiempo." },
+      { id: "p3", audience: "partner", name: "Román T.", role: "Especialista en publicidad segmentada", highlight: "Todo claro, transparente y sin sorpresas desagradables", text: "No es nuestro primer proyecto con Byuro. Todo claro, transparente y sin sorpresas desagradables. ¡Un gran equipo que recomiendo sin miedo a mis clientes!" },
     ],
   },
   faq: {
