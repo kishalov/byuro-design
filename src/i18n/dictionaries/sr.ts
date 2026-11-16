@@ -260,6 +260,27 @@ const sr = {
     ],
     terms: "Više mogućnosti za vaše klijente. Više prihoda za vas. Bez dodatnog opterećenja.",
     cta: "Razgovarajmo o partnerstvu",
+    calc: {
+      more: "Saznajte više",
+      less: "Prikaži manje",
+      equation: "Obračun",
+      note: "Primer obračuna. Cena projekta i uslovi saradnje dogovaraju se pojedinačno.",
+      referral: {
+        lead: "Dovodite klijenta u Byuro. Dogovaramo i realizujemo projekat, a vi dobijate proviziju od plaćene porudžbine prema unapred dogovorenim uslovima.",
+        project: "Vrednost projekta",
+        rate: "Vaša provizija",
+        earn: "Vaša zarada",
+        cta: "Postanite partner",
+      },
+      agency: {
+        lead: "Saopštavamo vam našu cenu za realizaciju projekta. Vi određujete svoju cenu za klijenta i zarađujete na razlici.",
+        fee: "Cena Byuro",
+        price: "Cena za vašeg klijenta",
+        earn: "Vaša zarada",
+        markup: "Vaša marža je {amount}, odnosno {percent} od cene Byuro.",
+        cta: "Razgovarajmo o saradnji",
+      },
+    },
   },
   process: {
     eyebrow: "Kako radimo",
@@ -302,7 +323,6 @@ const sr = {
   reviews: {
     eyebrow: "Utisci",
     title: "Šta nam pišu posle projekta",
-    lead: "Ovako izgledaju poruke klijenata i partnera. Za sada su ovo primeri — prave utiske objavićemo uz saglasnost autora.",
     tabsLabel: "Prikaži utiske",
     clients: "Klijenti",
     partners: "Partneri",

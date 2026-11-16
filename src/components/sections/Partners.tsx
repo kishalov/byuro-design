@@ -1,14 +1,16 @@
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
+import { partnerCalc } from "@/i18n/market";
 import { anchors, lp } from "@/i18n/paths";
 import { Mascot } from "../mm/Mascot";
 import { DashPath, Orb, Sticker } from "../mm/Kit";
+import { PartnerModels } from "./PartnerModels";
 import { ButtonLink } from "../ui/Button";
 import { Eyebrow } from "../ui/SectionHead";
 
 /* Партнёрская программа — тёмный «разворот».
    Сценарий: боли партнёров (сердитый маскот в окружении реплик) →
-   наш ответ → как это работает → модели → CTA. */
+   наш ответ → как это работает → модели (раскрываются, с примерами расчёта) → CTA. */
 export function Partners({ locale, t }: { locale: Locale; t: Dict["partners"] }) {
   const rot = [-2.5, 1.5, -1, 2.5, -2, 1];
   return (
@@ -107,20 +109,7 @@ export function Partners({ locale, t }: { locale: Locale; t: Dict["partners"] })
           </div>
         </div>
 
-        <div className="mt-24 grid gap-4 md:grid-cols-2" data-reveal>
-          {t.models.map((m, i) => (
-            <div key={m.title} className="relative overflow-hidden rounded-[var(--radius-card)] bg-graphite p-7 sm:p-10">
-              <p className="t-label text-paper/70">{t.modelLabel}</p>
-              <h3 className="t-h2 mt-3">{m.title}</h3>
-              <p className="t-body-l mt-4 text-paper/85">{m.text}</p>
-              <p className="t-small mt-6 flex items-center gap-2 text-paper/70">
-                <span aria-hidden="true" className="size-2 rounded-full bg-coral" />
-                {m.fits}
-              </p>
-              <Orb tone={i ? "paper" : "coral"} className="absolute -top-6 -right-6 size-20 opacity-90" />
-            </div>
-          ))}
-        </div>
+        <PartnerModels t={t} calc={partnerCalc(locale)} partnerHref={lp(locale, anchors.partner)} />
 
         <div className="mt-16 flex flex-col gap-6 md:flex-row md:items-center md:justify-between" data-reveal>
           <p className="t-h4 max-w-[36rem] text-paper/90">{t.terms}</p>

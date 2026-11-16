@@ -259,6 +259,27 @@ const zh = {
     ],
     terms: "为客户带来更多可能，为您带来更多收入，不增加负担。",
     cta: "洽谈合作",
+    calc: {
+      more: "了解详情",
+      less: "收起",
+      equation: "计算",
+      note: "示例计算。项目价格和合作条件均单独商定。",
+      referral: {
+        lead: "您把客户介绍给 Byuro。我们与客户确定并完成项目，您按事先约定的条件从已付款订单中获得佣金。",
+        project: "项目金额",
+        rate: "您的佣金比例",
+        earn: "您的收入",
+        cta: "成为合作伙伴",
+      },
+      agency: {
+        lead: "我们向您报出项目执行价格。您自行为客户定价，赚取其中的差价。",
+        fee: "Byuro 报价",
+        price: "您给客户的价格",
+        earn: "您的利润",
+        markup: "您的加价为 {amount}，即 Byuro 报价的 {percent}。",
+        cta: "洽谈合作",
+      },
+    },
   },
   process: {
     eyebrow: "工作方式",
@@ -301,7 +322,6 @@ const zh = {
   reviews: {
     eyebrow: "评价",
     title: "项目结束后，大家这样对我们说",
-    lead: "这是客户和合作伙伴留言的样子。目前展示的是示例，真实评价将在征得作者同意后发布。",
     tabsLabel: "查看评价",
     clients: "客户",
     partners: "合作伙伴",

@@ -259,6 +259,27 @@ const es = {
     ],
     terms: "Más posibilidades para tus clientes. Más ingresos para ti. Sin carga extra.",
     cta: "Hablar de colaborar",
+    calc: {
+      more: "Ver más",
+      less: "Ver menos",
+      equation: "Cálculo",
+      note: "Ejemplo ilustrativo. Los precios y las condiciones de colaboración se acuerdan de forma individual.",
+      referral: {
+        lead: "Nos presentas a un cliente. Acordamos y realizamos el proyecto, y tú recibes una comisión sobre el pedido pagado en condiciones pactadas de antemano.",
+        project: "Valor del proyecto",
+        rate: "Tu comisión",
+        earn: "Tú ganas",
+        cta: "Hazte partner",
+      },
+      agency: {
+        lead: "Te indicamos nuestro precio por realizar el proyecto. Tú fijas tu propio precio para el cliente y ganas la diferencia.",
+        fee: "Precio de Byuro",
+        price: "Precio para tu cliente",
+        earn: "Tu beneficio",
+        markup: "Tu margen es de {amount}, es decir, el {percent} del precio de Byuro.",
+        cta: "Hablar de colaboración",
+      },
+    },
   },
   process: {
     eyebrow: "Cómo trabajamos",
@@ -301,7 +322,6 @@ const es = {
   reviews: {
     eyebrow: "Opiniones",
     title: "Lo que nos escriben después de un proyecto",
-    lead: "Así son los mensajes de clientes y partners. Por ahora son ejemplos: publicaremos opiniones reales con el consentimiento de sus autores.",
     tabsLabel: "Mostrar opiniones de",
     clients: "Clientes",
     partners: "Partners",

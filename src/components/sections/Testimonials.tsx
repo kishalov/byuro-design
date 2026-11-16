@@ -1,25 +1,38 @@
 "use client";
 import { useState } from "react";
+import { reviewMeta } from "@/content/reviews";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import { cn } from "@/lib/cn";
 import { Mascot } from "../mm/Mascot";
-import { Badge } from "../ui/Badge";
 import { Eyebrow } from "../ui/SectionHead";
 import { TabList } from "../ui/Tabs";
 
 type Aud = "client" | "partner";
+type Item = Dict["reviews"]["items"][number];
 
-/* Отзывы в виде переписки: огромное слово-заголовок, поверх — «сообщения».
-   Тексты — ПРИМЕРЫ (помечены на сайте). Перед публикацией заменить реальными. */
+/* Отзывы — карточки «как в соцсетях»: аватар и подпись сверху, текст ниже.
+   Огромное слово-заголовок и вкладки «Клиенты / Партнёры» остались прежними.
+   Фото, компания и пометка примера — в src/content/reviews.ts. */
 
 const looks = [
-  { bubble: "bg-white text-ink", avatar: "bg-white text-ink", side: "left", r: -2.2 },
-  { bubble: "bg-coral text-ink", avatar: "bg-white text-coral", side: "right", r: 1.6 },
-  { bubble: "bg-sand text-ink", avatar: "bg-white text-ink", side: "left", r: -1.2 },
+  { card: "bg-paper text-ink", avatar: "bg-ink text-paper", quote: "text-coral", r: -1.2 },
+  { card: "bg-coral text-ink", avatar: "bg-ink text-coral", quote: "text-ink/25", r: 0.9 },
+  { card: "bg-white text-ink", avatar: "bg-coral text-ink", quote: "text-coral", r: -0.6 },
 ] as const;
 
+/** Инициалы: «Марина С.» → «МС», «玛丽娜 S.» → «玛S» */
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => Array.from(w)[0])
+    .join("")
+    .toUpperCase();
+}
+
 function Rich({ text, hl }: { text: string; hl: string }) {
-  const i = text.indexOf(hl);
+  const i = hl ? text.indexOf(hl) : -1;
   if (i < 0) return <>{text}</>;
   return (
     <>
@@ -30,7 +43,26 @@ function Rich({ text, hl }: { text: string; hl: string }) {
   );
 }
 
-export function Testimonials({ t, mascotAlt }: { t: Dict["reviews"]; mascotAlt?: string }) {
+function Avatar({ it, tone }: { it: Item; tone: string }) {
+  const photo = reviewMeta[it.id]?.photo;
+  return (
+    <span aria-hidden="true" className="relative shrink-0">
+      {/* фирменное пунктирное кольцо */}
+      <span className="absolute -inset-[5px] rounded-full border-2 border-dashed border-current opacity-30" />
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={photo} alt="" width={64} height={64} loading="lazy" decoding="async" className="relative size-14 rounded-full object-cover sm:size-16" />
+      ) : (
+        <span className={cn("relative grid size-14 place-items-center rounded-full font-display text-lg font-black tracking-tight sm:size-16 sm:text-xl", tone)}>
+          {initials(it.name)}
+        </span>
+      )}
+      <span className="absolute -right-0.5 -bottom-0.5 size-4 rounded-full border-[3px] border-current bg-coral" />
+    </span>
+  );
+}
+
+export function Testimonials({ t }: { t: Dict["reviews"] }) {
   const [aud, setAud] = useState<Aud>("client");
   const word = t.eyebrow;
   return (
@@ -78,48 +110,55 @@ export function Testimonials({ t, mascotAlt }: { t: Dict["reviews"]; mascotAlt?:
             aria-labelledby={`reviews-tab-${a}`}
             hidden={a !== aud}
             tabIndex={0}
-            className="relative -mt-[clamp(1rem,4vw,3.5rem)] focus-visible:outline-offset-8"
+            className="relative -mt-[clamp(0.5rem,2.6vw,2.25rem)] focus-visible:outline-offset-8"
           >
-            <ul className="mx-auto flex max-w-[54rem] flex-col gap-8 sm:gap-6">
+            <ul className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
               {t.items
                 .filter((it) => it.audience === a)
                 .map((it, i) => {
                   const l = looks[i % looks.length];
-                  const right = l.side === "right";
+                  const meta = reviewMeta[it.id];
+                  const sub = [it.role, meta?.company].filter(Boolean).join(" · ");
                   return (
-                    <li
-                      key={it.id}
-                      data-reveal
-                      className={cn("w-full sm:w-[88%]", right ? "self-start" : "self-end")}
-                    >
-                      <figure>
-                        <div className={cn("flex items-end gap-3 sm:gap-4", right && "flex-row-reverse")}>
-                          <span
-                            aria-hidden="true"
-                            className={cn("grid size-11 shrink-0 place-items-center rounded-full font-display text-lg font-black shadow-[0_10px_24px_-10px_rgb(0_0_0/0.6)] sm:size-16 sm:text-2xl", l.avatar)}
-                          >
-                            {it.name[0]}
+                    <li key={it.id} data-reveal className={cn(i === 1 && "lg:mt-12", i === 2 && "md:col-span-2 md:mx-auto md:w-1/2 lg:col-span-1 lg:mt-4 lg:w-auto")}>
+                      <figure
+                        className={cn(
+                          "relative flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] p-6 shadow-[0_28px_60px_-30px_rgb(0_0_0/0.85)] transition-transform duration-500 ease-spring motion-reduce:transition-none sm:p-8 md:rotate-[var(--r)] md:hover:rotate-0",
+                          l.card,
+                        )}
+                        style={{ ["--r" as string]: `${l.r}deg` }}
+                      >
+                        {/* Декоративная кавычка */}
+                        <span aria-hidden="true" className={cn("pointer-events-none absolute -top-3 right-5 font-display text-[7rem] leading-none font-black select-none", l.quote)}>
+                          “
+                        </span>
+
+                        <figcaption className="relative flex items-center gap-4 pr-12">
+                          <Avatar it={it} tone={l.avatar} />
+                          <span className="min-w-0">
+                            <span className="block font-display text-[1.05rem] leading-tight font-bold [overflow-wrap:anywhere] sm:text-[1.15rem]">{it.name}</span>
+                            {sub && <span className="mt-1 block text-[0.9rem] leading-snug opacity-75 [overflow-wrap:anywhere]">{sub}</span>}
                           </span>
-                          <div
-                            className={cn(
-                              "relative min-w-0 flex-1 rounded-[26px] px-5 py-4 shadow-[0_24px_50px_-24px_rgb(0_0_0/0.8)] transition-transform duration-500 ease-spring hover:!rotate-0 motion-reduce:transition-none sm:rounded-[36px] sm:px-9 sm:py-7",
-                              right ? "rounded-br-md" : "rounded-bl-md",
-                              l.bubble,
-                            )}
-                            style={{ rotate: `${l.r}deg` }}
-                          >
-                            <blockquote>
-                              <p className="t-body-l sm:!text-[1.35rem] sm:leading-snug">
-                                <Rich text={it.text} hl={it.highlight} />
-                              </p>
-                            </blockquote>
-                          </div>
-                        </div>
-                        <figcaption className={cn("mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5", right ? "justify-end pr-14 text-right sm:pr-20" : "pl-14 sm:pl-20")}>
-                          <span className="t-small font-semibold text-paper">{it.name}</span>
-                          <span className="t-small text-paper/65">{it.role}</span>
-                          <Badge tone="demo-dark">{t.demoBadge}</Badge>
                         </figcaption>
+
+                        <blockquote className="relative mt-6 flex-1">
+                          <p className="t-body-l">
+                            <Rich text={it.text} hl={it.highlight} />
+                          </p>
+                        </blockquote>
+
+                        <div className="relative mt-6 flex items-center justify-between gap-3 border-t border-current/15 pt-4">
+                          <span aria-hidden="true" className="flex gap-1.5">
+                            <span className="size-2 rounded-full bg-current opacity-80" />
+                            <span className="size-2 rounded-full bg-current opacity-40" />
+                            <span className="size-2 rounded-full bg-current opacity-20" />
+                          </span>
+                          {meta?.example && (
+                            <span className="rounded-pill border border-dashed border-current/50 px-2.5 py-1 font-mono text-[11px] leading-none">
+                              {t.demoBadge}
+                            </span>
+                          )}
+                        </div>
                       </figure>
                     </li>
                   );
@@ -127,15 +166,13 @@ export function Testimonials({ t, mascotAlt }: { t: Dict["reviews"]; mascotAlt?:
             </ul>
           </div>
         ))}
-
-        <p className="t-small mx-auto mt-10 max-w-[54rem] text-paper/60">{t.lead}</p>
       </div>
 
       <Mascot
         emotion="happy"
-        alt={mascotAlt ?? ""}
+        alt=""
         sizes="200px"
-        className="pointer-events-none absolute right-[3%] bottom-0 hidden w-[160px] translate-y-[18%] xl:block 2xl:w-[200px]"
+        className="pointer-events-none absolute right-[3%] bottom-0 hidden w-[150px] translate-y-[22%] xl:block 2xl:w-[190px]"
       />
     </section>
   );

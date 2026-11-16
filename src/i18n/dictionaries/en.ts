@@ -259,6 +259,27 @@ const en = {
     ],
     terms: "More options for your clients. More income for you. No extra workload.",
     cta: "Discuss a partnership",
+    calc: {
+      more: "Learn more",
+      less: "Show less",
+      equation: "Calculation",
+      note: "Illustrative example. Actual pricing and partnership terms are agreed individually.",
+      referral: {
+        lead: "You bring a client to Byuro. We agree on the scope and deliver the project, and you receive a commission on the paid order on pre-agreed terms.",
+        project: "Project value",
+        rate: "Your commission",
+        earn: "You earn",
+        cta: "Become a partner",
+      },
+      agency: {
+        lead: "We quote you our fee for delivering the project. You set your own price for the client and keep the difference.",
+        fee: "Our project fee",
+        price: "Your client price",
+        earn: "Your profit",
+        markup: "Your markup is {amount}, or {percent} of Byuro’s fee.",
+        cta: "Discuss a partnership",
+      },
+    },
   },
   process: {
     eyebrow: "How we work",
@@ -301,7 +322,6 @@ const en = {
   reviews: {
     eyebrow: "Reviews",
     title: "What people write to us after a project",
-    lead: "This is what messages from clients and partners look like. For now these are examples — we’ll publish real reviews with the authors’ consent.",
     tabsLabel: "Show testimonials from",
     clients: "Clients",
     partners: "Partners",

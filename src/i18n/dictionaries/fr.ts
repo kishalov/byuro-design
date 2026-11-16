@@ -259,6 +259,27 @@ const fr = {
     ],
     terms: "Plus de possibilités pour vos clients. Plus de revenus pour vous. Sans charge supplémentaire.",
     cta: "Parler du partenariat",
+    calc: {
+      more: "En savoir plus",
+      less: "Réduire",
+      equation: "Calcul",
+      note: "Exemple de calcul. Les prix et les conditions de partenariat sont convenus au cas par cas.",
+      referral: {
+        lead: "Vous nous présentez un client. Nous convenons du projet et le réalisons, et vous touchez une commission sur la commande payée, selon des conditions fixées à l’avance.",
+        project: "Montant du projet",
+        rate: "Votre commission",
+        earn: "Vous gagnez",
+        cta: "Devenir partenaire",
+      },
+      agency: {
+        lead: "Nous vous indiquons notre tarif de réalisation. Vous fixez votre propre prix pour le client et gagnez la différence.",
+        fee: "Tarif de Byuro",
+        price: "Prix pour votre client",
+        earn: "Votre marge",
+        markup: "Votre majoration est de {amount}, soit {percent} du tarif de Byuro.",
+        cta: "Parler du partenariat",
+      },
+    },
   },
   process: {
     eyebrow: "Méthode",
@@ -301,7 +322,6 @@ const fr = {
   reviews: {
     eyebrow: "Avis",
     title: "Ce qu’on nous écrit après un projet",
-    lead: "Voici à quoi ressemblent les messages de nos clients et partenaires. Pour l’instant ce sont des exemples — les vrais avis seront publiés avec l’accord de leurs auteurs.",
     tabsLabel: "Afficher les témoignages de",
     clients: "Clients",
     partners: "Partenaires",
