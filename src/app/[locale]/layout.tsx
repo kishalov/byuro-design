@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
+import { AnchorScroll } from "@/components/AnchorScroll";
 import { RevealObserver } from "@/components/ui/RevealObserver";
 import { isLocale, localeCodes, localeInfo } from "@/i18n/config";
 import { getDict } from "@/i18n/get";
@@ -74,6 +75,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <Footer locale={locale} t={t.footer} nav={t.nav} cta={t.cta} />
         <MobileCtaBar locale={locale} project={t.cta.project} partner={t.cta.partnerShort} />
         <RevealObserver />
+        <AnchorScroll />
       </body>
     </html>
   );

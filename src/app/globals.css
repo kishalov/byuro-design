@@ -112,6 +112,8 @@ h1, h2, h3, h4 { overflow-wrap: break-word; }
   /* Секции ниже первого экрана не раскладываются и не анимируются,
      пока не приблизятся к вьюпорту: меньше Style & Layout и TBT. */
   .cv { content-visibility: auto; contain-intrinsic-size: auto 1200px; }
+  /* перед переходом по якорю отрисовываем всё, чтобы прокрутка попала точно (AnchorScroll) */
+  .cv-off .cv { content-visibility: visible; }
 
   .marker {
     background: linear-gradient(transparent 58%, var(--color-coral-30) 58%, var(--color-coral-30) 92%, transparent 92%);
