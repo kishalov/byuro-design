@@ -8,7 +8,7 @@ import { Badge } from "../ui/Badge";
 import { Icon } from "../ui/Icon";
 import { CaseCover } from "./CaseCover";
 
-const tones = { ads: "coral", landing: "sand", branding: "paper", motion: "ink" } as const;
+const tones = { app: "paper", ads: "coral", landing: "sand", branding: "paper", motion: "ink" } as const;
 
 export function CaseCard({
   c,
@@ -29,6 +29,7 @@ export function CaseCard({
 }) {
   const H = headingLevel;
   const text = t.items[c.slug];
+  const soft = c.cover.kind === "image";
   return (
     <article className={cn("group/case group relative", className)} data-reveal>
       <div className="relative">
@@ -36,17 +37,17 @@ export function CaseCard({
           cover={c.cover}
           tone={tones[c.category]}
           label={text.title}
-          className={cn("rounded-[var(--radius-card)] shadow-[0_24px_50px_-28px_rgb(18_18_18/0.55)]", aspect ?? (size === "lg" ? "aspect-[4/3] sm:aspect-[16/9]" : "aspect-[4/3]"))}
+          className={cn("rounded-[var(--radius-card)]", soft ? "shadow-[0_30px_60px_-34px_rgb(18_18_18/0.35)]" : "shadow-[0_24px_50px_-28px_rgb(18_18_18/0.55)]", aspect ?? (size === "lg" ? "aspect-[4/3] sm:aspect-[16/9]" : "aspect-[4/3]"))}
         />
         <span aria-hidden="true" className="absolute right-4 bottom-4 z-10 grid size-14 place-items-center rounded-full border-[3px] border-white bg-coral text-ink shadow-lg transition-transform duration-500 ease-spring sm:right-6 sm:bottom-6 sm:size-16 md:scale-0 md:group-hover:scale-100 md:group-focus-within:scale-100 motion-reduce:transition-none">
           <Icon name="arrow-up-right" size={26} />
         </span>
         <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2 sm:top-6 sm:left-6">
-          <span className="sticker sticker-ink !px-3 !py-1.5 !text-[12px]" style={{ ["--r" as string]: "-3deg" }}>
+          <span className={cn("sticker !px-3 !py-1.5 !text-[12px]", soft ? "sticker-white shadow-[0_8px_20px_-10px_rgb(18_18_18/0.35)]" : "sticker-ink")} style={{ ["--r" as string]: "-3deg" }}>
             {t.categories[c.category]}
           </span>
           {c.industry && (
-            <span className="sticker sticker-white !px-3 !py-1.5 !text-[12px]" style={{ ["--r" as string]: "2deg" }}>
+            <span className={cn("sticker sticker-white !px-3 !py-1.5 !text-[12px]", soft && "shadow-[0_8px_20px_-10px_rgb(18_18_18/0.35)]")} style={{ ["--r" as string]: "2deg" }}>
               {t.industries[c.industry]}
             </span>
           )}

@@ -8,12 +8,12 @@ import { Chevrons, Sticker } from "../mm/Kit";
 import { ButtonLink } from "../ui/Button";
 import { SectionHead } from "../ui/SectionHead";
 
-/* Раскладка: баннеры для застройщиков — широкой витриной (японский сверху),
+/* Раскладка: Telegram Mini App — первым, широкой витриной; затем баннеры для застройщиков (японский сверху),
    дальше ломаный ритм 7/5, Nibble — широкой витриной брендинга, в конце моушн. */
 export function Cases({ locale, t, ctaProject }: { locale: Locale; t: Dict["cases"]; ctaProject: string }) {
   const by = (s: string) => cases.find((c) => c.slug === s)!;
   const order = cases.map((c) => c.category);
-  const counts = (["ads", "landing", "branding", "motion"] as const).map((k) => ({ k, n: order.filter((x) => x === k).length })).filter((x) => x.n);
+  const counts = (["app", "ads", "landing", "branding", "motion"] as const).map((k) => ({ k, n: order.filter((x) => x === k).length })).filter((x) => x.n);
   return (
     <section id="cases" aria-labelledby="cases-title" className="cv section relative bg-white">
       <div className="wrap">
@@ -36,6 +36,7 @@ export function Cases({ locale, t, ctaProject }: { locale: Locale; t: Dict["case
         </div>
 
         <div className="mt-14 grid gap-x-6 gap-y-16 md:mt-20 md:grid-cols-12 md:gap-y-24">
+          <CaseCard c={by("telegram-food-delivery")} t={t} locale={locale} size="lg" className="md:col-span-12" aspect="aspect-[4/3] sm:aspect-[16/8]" />
           <CaseCard c={by("realty-ads")} t={t} locale={locale} size="lg" className="md:col-span-12" aspect="aspect-[4/3] sm:aspect-[16/8]" />
           <CaseCard c={by("ads-legal")} t={t} locale={locale} className="md:col-span-7" />
           <CaseCard c={by("inout")} t={t} locale={locale} className="md:col-span-5 md:mt-32" />

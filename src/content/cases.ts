@@ -14,11 +14,15 @@ export type CaseBase = {
   industry?: Industry;
   format?: CooperationFormat;
   tags: TagKey[];
-  /** Только подтверждённые результаты; null — честная заглушка */
-  results: { value: string; labelKey: string }[] | null;
+  /** Только подтверждённые результаты (доли: 0.38 = +38 %); null — честная заглушка.
+      Подписи — в словаре: dict.cases.items[slug].metrics[key] */
+  results: { value: number; key: string }[] | null;
   cover: CaseCover;
   gallery: CaseMedia[];
-  layout: "grid" | "stack" | "slides" | "bento" | "duo" | "reel";
+  layout: "grid" | "stack" | "slides" | "bento" | "duo" | "reel" | "showcase";
+  /** Готовая презентация кейса (картинки в исходных пропорциях): обложка страницы,
+      визуализация результатов и финальный слайд перед CTA */
+  presentation?: { hero: Img; results?: Img; outro?: Img };
 };
 
 const img = (base: string, w: number, h: number, widths: number[]): Img => ({ base, w, h, widths });
@@ -32,10 +36,29 @@ const petal = [img("petal-1", 960, 1280, [600, 960]), img("petal-2", 1280, 853, 
 const realty = [1, 2, 3, 4].map((i) => img(`realty-${i}`, 1080, 1350, [540, 1080]));
 // Ролики: pepperpromo — первым и самым заметным
 const reel = [1, 2, 3, 4].map((i) => ({ src: `/cases/reel-${i}.mp4`, poster: img(`reel-${i}-poster`, 720, 1280, [360, 720]) }));
+// Telegram Mini App: готовые слайды 2250×1800 (оригиналы — assets/originals/telegram-food-delivery)
+const tg = [1, 2, 3, 4, 5].map((i): Img => ({ base: `tgfood-${i}`, w: 2250, h: 1800, widths: [750, 1125, 1500, 2250], avif: true }));
+const tgCover: Img = { base: "tgfood-cover", w: 2090, h: 1000, widths: [800, 1400, 2090], avif: true }; // кадр из слайда 02
 const full = (n: string, w: number, h: number) => img(`${n}-full`, w, h, [760, 1200]);
 const cover = (n: string, w: number, h: number) => img(`${n}-cover`, w, h, [640, 1200]);
 
 export const cases: CaseBase[] = [
+  {
+    slug: "telegram-food-delivery",
+    category: "app",
+    industry: "delivery",
+    tags: ["appdev", "uxui", "tma"],
+    results: [
+      { value: 0.38, key: "revenue" },
+      { value: 0.32, key: "conversion" },
+      { value: 0.24, key: "repeat" },
+      { value: -0.28, key: "abandon" },
+    ],
+    cover: { kind: "image", image: tgCover },
+    gallery: [tg[1], tg[2]].map((image) => ({ kind: "image", image })),
+    layout: "showcase",
+    presentation: { hero: tg[0], results: tg[3], outro: tg[4] },
+  },
   {
     slug: "realty-ads",
     category: "ads",

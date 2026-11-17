@@ -14,6 +14,7 @@ import { cases, getCase } from "@/content/cases";
 import { localeCodes, type Locale } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { getDict } from "@/i18n/get";
+import { markets } from "@/i18n/market";
 import { anchors, lp } from "@/i18n/paths";
 import { alternates, caseJsonLd, hasDomain, ogImage, social } from "@/lib/seo";
 
@@ -65,6 +66,17 @@ export default async function CasePage({ params }: Props) {
     ...(c.format ? [{ k: t.page.format, v: t.formats[c.format] }] : []),
   ];
   const caps: string[] = text.captions ?? [];
+  // Поля «презентационных» кейсов (есть не у всех)
+  const extra = text as Partial<{ heroAlt: string; resultsAlt: string; outroAlt: string; metrics: Record<string, string>; outcome: string; ctaTitle: string; ctaText: string; imagesNote: string }>;
+  const pres = c.presentation;
+  const pct = new Intl.NumberFormat(markets[locale].numberLocale, { style: "percent", maximumFractionDigits: 0, signDisplay: "exceptZero" });
+  // в русском — как на слайдах кейса: «+38%»; в остальных — по правилам локали
+  const metric = (v: number) => {
+    const out = pct.format(v).replace("-", "−");
+    return locale === "ru" ? out.replace(/[\s\u00a0\u202f]%/, "%") : out;
+  };
+  // мягкая «продуктовая» рамка для готовых слайдов
+  const slide = "overflow-hidden rounded-[22px] bg-[#F4F0EB] shadow-[0_40px_90px_-48px_rgb(18_18_18/0.45)] ring-1 ring-ink/5 sm:rounded-[32px]";
 
   return (
     <article>
@@ -85,7 +97,13 @@ export default async function CasePage({ params }: Props) {
       </header>
 
       <div className="wrap">
+        {pres ? (
+          <figure className={slide}>
+            <Pic image={pres.hero} alt={extra.heroAlt ?? text.title} sizes="(min-width: 1280px) 1200px, 100vw" priority />
+          </figure>
+        ) : (
         <CaseCover cover={c.cover} tone={c.category === "ads" ? "coral" : c.category === "motion" ? "ink" : "sand"} label={text.title} priority className="aspect-[4/3] rounded-[var(--radius-card)] sm:aspect-[16/8]" />
+        )}
       </div>
 
       <div className="wrap section grid gap-14 lg:grid-cols-12 lg:gap-8">
@@ -123,16 +141,19 @@ export default async function CasePage({ params }: Props) {
               ))}
             </ul>
           </section>
-          <section aria-labelledby="result">
-            <h2 id="result" className="t-h2">{t.page.result}</h2>
-            <p className="t-body-l mt-5 rounded-2xl border-2 border-dashed border-stone-ink p-6 text-stone-ink">{t.page.resultEmpty}</p>
-          </section>
+          {!c.results && (
+            <section aria-labelledby="result">
+              <h2 id="result" className="t-h2">{t.page.result}</h2>
+              <p className="t-body-l mt-5 rounded-2xl border-2 border-dashed border-stone-ink p-6 text-stone-ink">{t.page.resultEmpty}</p>
+            </section>
+          )}
         </div>
       </div>
 
       {/* Работа целиком */}
       <section aria-labelledby="gallery" className="wrap">
-        <h2 id="gallery" className="t-h2 mb-10">{t.page.gallery}</h2>
+        <h2 id="gallery" className={cn("t-h2", extra.imagesNote ? "mb-3" : "mb-10")}>{t.page.gallery}</h2>
+        {extra.imagesNote && <p className="t-small mb-10 text-stone-ink">{extra.imagesNote}</p>}
         <div
           className={
             {
@@ -142,6 +163,7 @@ export default async function CasePage({ params }: Props) {
               duo: "grid gap-8 lg:grid-cols-12 lg:items-center",
               reel: "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 sm:gap-6",
               stack: "mx-auto grid max-w-[1100px] gap-10",
+              showcase: "mx-auto grid max-w-[1200px] gap-14 sm:gap-24",
             }[c.layout]
           }
         >
@@ -182,6 +204,10 @@ export default async function CasePage({ params }: Props) {
                     </div>
                     <Pic image={m.image} alt={alt} sizes="(min-width: 1100px) 1100px, 100vw" />
                   </div>
+                ) : c.layout === "showcase" ? (
+                  <div className={slide} data-reveal>
+                    <Pic image={m.image} alt={alt} sizes="(min-width: 1280px) 1200px, 100vw" />
+                  </div>
                 ) : (
                   <div className="overflow-hidden rounded-[18px] border-[5px] border-white bg-white shadow-[0_24px_50px_-28px_rgb(18_18_18/0.55)]">
                     <Pic
@@ -192,18 +218,54 @@ export default async function CasePage({ params }: Props) {
                     />
                   </div>
                 )}
-                {caps[i] && <figcaption className="t-small mt-3 font-medium text-stone-ink">{caps[i]}</figcaption>}
+                {caps[i] && <figcaption className={cn("t-small mt-3 font-medium text-stone-ink", c.layout === "showcase" && "mt-5 text-center")}>{caps[i]}</figcaption>}
               </figure>
             );
           })}
         </div>
       </section>
 
+      {/* Результаты: цифры текстом (для чтения и поиска) + готовая визуализация из кейса */}
+      {c.results && (
+        <section aria-labelledby="result" className="wrap section pb-0">
+          <div className="mx-auto max-w-[1200px]">
+            <h2 id="result" className="t-h2">{t.page.result}</h2>
+            <dl className="mt-8 grid grid-cols-2 border-t border-ink/15 lg:grid-cols-4">
+              {c.results.map((r) => (
+                <div key={r.key} className="border-b border-ink/15 py-5 pr-4 lg:border-b-0 lg:py-6">
+                  <dt className="t-small text-stone-ink">{extra.metrics?.[r.key] ?? r.key}</dt>
+                  <dd className="mt-2 font-display text-[clamp(2rem,5vw,3.25rem)] leading-none font-black tracking-tight tabular-nums">{metric(r.value)}</dd>
+                </div>
+              ))}
+            </dl>
+            {pres?.results && (
+              <figure className={cn(slide, "mt-12 sm:mt-16")} data-reveal>
+                <Pic image={pres.results} alt={extra.resultsAlt ?? t.page.result} sizes="(min-width: 1280px) 1200px, 100vw" />
+              </figure>
+            )}
+            {extra.outcome && (
+              <p className="t-lead mx-auto mt-12 flex max-w-[50rem] items-start gap-4 sm:mt-16">
+                <span aria-hidden="true" className="mt-[0.5em] size-3 shrink-0 rounded-full bg-coral" />
+                {extra.outcome}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {pres?.outro && (
+        <div className="wrap section pb-0">
+          <figure className={cn(slide, "mx-auto max-w-[1200px]")} data-reveal>
+            <Pic image={pres.outro} alt={extra.outroAlt ?? text.title} sizes="(min-width: 1280px) 1200px, 100vw" />
+          </figure>
+        </div>
+      )}
+
       <section className="wrap section">
         <div className="on-dark relative overflow-hidden rounded-[var(--radius-card)] bg-ink p-8 text-paper sm:p-14">
-          <h2 className="t-h1 max-w-[40rem]">{t.page.similarTitle}</h2>
-          <p className="t-lead mt-5 max-w-[36rem] text-paper/80">{t.page.similarText}</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <h2 className="t-h1 relative z-10 max-w-[40rem]">{extra.ctaTitle ?? t.page.similarTitle}</h2>
+          <p className="t-lead relative z-10 mt-5 max-w-[36rem] text-paper/80">{extra.ctaText ?? t.page.similarText}</p>
+          <div className="relative z-10 mt-8 flex flex-col gap-3 sm:flex-row">
             <ButtonLink href={lp(locale, anchors.project)}>{d.cta.project}</ButtonLink>
             <ButtonLink href={lp(locale, anchors.partner)} variant="outline-light">
               {d.cta.partner}

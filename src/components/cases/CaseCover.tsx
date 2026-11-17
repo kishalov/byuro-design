@@ -37,6 +37,22 @@ const fan2 = [
 export function CaseCover({ cover, label, className, priority, tone = "sand" }: { cover: Cover; label: string; className?: string; priority?: boolean; tone?: "sand" | "ink" | "coral" | "paper" }) {
   const bg = { sand: "bg-sand", ink: "bg-ink", coral: "bg-coral", paper: "bg-paper" }[tone];
 
+  if (cover.kind === "image") {
+    // Готовая презентация кейса: светлая подложка, мягкая тень, лёгкое приближение при наведении
+    return (
+      <div className={cn("relative overflow-hidden", className)} style={{ background: cover.surface ?? "linear-gradient(135deg,#F7F4F0 0%,#F1ECE6 55%,#EEE9F3 100%)" }}>
+        <Pic
+          image={cover.image}
+          alt={label}
+          sizes="(min-width: 1280px) 1200px, 100vw"
+          priority={priority}
+          className="!h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover/case:scale-[1.025] motion-reduce:transition-none"
+        />
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_1px_rgb(18_18_18/0.06)]" />
+      </div>
+    );
+  }
+
   if (cover.kind === "collage") {
     const n = cover.images.length;
     const pos = n === 2 ? fan2 : n === 3 ? fan3 : n === 5 ? fan5 : fan;
