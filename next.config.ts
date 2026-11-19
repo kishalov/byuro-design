@@ -4,6 +4,10 @@ const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   trailingSlash: true,
+  // Шрифты PDF читаются с диска в /api/quote-pdf — включаем их в бандл функции
+  outputFileTracingIncludes: {
+    "/api/quote-pdf": ["./assets/pdf-fonts/**"],
+  },
   images: {
     // Реальные скриншоты кейсов отдаются в AVIF/WebP автоматически
     formats: ["image/avif", "image/webp"],

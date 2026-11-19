@@ -1,0 +1,841 @@
+"use client";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Locale } from "@/i18n/config";
+import type { CalcDict } from "@/i18n/calculator/ru";
+import { fmt } from "@/i18n/format";
+import { COMPLEXITY, EXTRA_ITEMS, ITEMS, ON_REQUEST_KEYS, SERVICE_IDS, SERVICES, URGENCY, type ComplexityKey, type ItemKey, type OnRequestKey, type ServiceId, type UrgencyKey } from "@/lib/calculator/catalog";
+import { computeQuote, emptySelection, parseSelection, selectionSignature, toggleService, type Quote, type Selection } from "@/lib/calculator/engine";
+import { formatDays, moneyFormatter, pct, qtyFormatter } from "@/lib/calculator/format";
+import { newCalcId } from "@/lib/calculator/ids";
+import { cn } from "@/lib/cn";
+import { Button } from "../ui/Button";
+import { Icon } from "../ui/Icon";
+import { BriefDialog } from "./BriefDialog";
+import { QtyRow } from "./QtyField";
+
+type Step = "services" | "scope" | "extras" | "summary";
+const STEPS: Step[] = ["services", "scope", "extras", "summary"];
+const STORAGE_KEY = "byuro:calculator:v1";
+
+type Saved = { selection: Selection; step: Step; projectName: string; calc: { sig: string; id: string } };
+
+export type CalculatorProps = {
+  locale: Locale;
+  t: CalcDict;
+  briefEnabled: boolean;
+  privacyHref: string;
+  instagram: { url: string; handle: string };
+};
+
+/* Калькулятор: выбор услуг → объём → опции и параметры → смета (PDF и бриф).
+   Расчёт мгновенный в браузере; PDF и бриф сервер пересчитывает сам.
+   Выбор хранится в sessionStorage вкладки: переживает перезагрузку и переходы между шагами. */
+export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: CalculatorProps) {
+  const [selection, setSelection] = useState<Selection>(emptySelection);
+  const [step, setStep] = useState<Step>("services");
+  const [projectName, setProjectName] = useState("");
+  const [calc, setCalc] = useState<{ sig: string; id: string }>({ sig: "", id: "" });
+  const [ready, setReady] = useState(false);
+  const [briefOpen, setBriefOpen] = useState(false);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  const money = useMemo(() => moneyFormatter(locale), [locale]);
+  const qty = useMemo(() => qtyFormatter(locale), [locale]);
+  const quote = useMemo(() => computeQuote(selection), [selection]);
+  const sig = useMemo(() => selectionSignature(selection), [selection]);
+
+  // Восстановление после перезагрузки
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<Saved>;
+        const parsed = parseSelection(saved.selection, false);
+        if (parsed.ok) setSelection(parsed.selection);
+        if (saved.step && STEPS.includes(saved.step)) setStep(saved.step);
+        if (typeof saved.projectName === "string") setProjectName(saved.projectName.slice(0, 120));
+        if (saved.calc?.id && saved.calc.sig) setCalc(saved.calc);
+      }
+    } catch {
+      /* хранилище недоступно (приватный режим) — просто начинаем заново */
+    }
+    setReady(true);
+  }, []);
+
+  // Новый состав расчёта — новый ID; тот же состав — тот же ID (совпадает в PDF и брифе)
+  useEffect(() => {
+    if (ready && calc.sig !== sig) setCalc({ sig, id: newCalcId() });
+  }, [ready, sig, calc.sig]);
+
+  useEffect(() => {
+    if (!ready) return;
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ selection, step, projectName, calc } satisfies Saved));
+    } catch {
+      /* ignore */
+    }
+  }, [ready, selection, step, projectName, calc]);
+
+  const go = useCallback((s: Step) => {
+    setStep(s);
+    requestAnimationFrame(() => {
+      const el = topRef.current;
+      if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el?.querySelector<HTMLElement>("[data-step-title]")?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  const setQty = (k: ItemKey, v: number) => setSelection((s) => ({ ...s, qty: { ...s.qty, [k]: v } }));
+  const toggleOnRequest = (k: OnRequestKey) => setSelection((s) => ({ ...s, onRequest: s.onRequest.includes(k) ? s.onRequest.filter((x) => x !== k) : [...s.onRequest, k] }));
+  const reset = () => {
+    setSelection(emptySelection());
+    setProjectName("");
+    go("services");
+  };
+
+  const i = STEPS.indexOf(step);
+  const stepTitle: Record<Step, string> = { services: t.steps.services, scope: t.steps.scope, extras: t.steps.extras, summary: t.steps.summary };
+  const calcId = ready ? calc.id : "";
+
+  const pdf = usePdf({ locale, selection, calcId, projectName, quote });
+
+  return (
+    <div id="calc-root" ref={topRef} className="scroll-mt-[calc(var(--header-h)+12px)]">
+      {/* Шаги */}
+      <nav aria-label={t.steps.label} className="mb-8 overflow-x-auto pb-1 [scrollbar-width:none]">
+        <ol className="flex min-w-max gap-2">
+          {STEPS.map((s, n) => (
+            <li key={s}>
+              <button
+                type="button"
+                onClick={() => go(s)}
+                aria-current={s === step ? "step" : undefined}
+                className={cn(
+                  "flex min-h-11 items-center gap-2 rounded-pill border-2 px-4 text-[15px] font-semibold transition-colors",
+                  s === step ? "border-ink bg-ink text-paper" : n < i ? "border-ink/40 bg-white hover:border-ink" : "border-ink/15 bg-transparent text-ink/70 hover:border-ink/50",
+                )}
+              >
+                <span className={cn("grid size-6 place-items-center rounded-full text-[12px]", s === step ? "bg-coral text-ink" : n < i ? "bg-ink text-paper" : "bg-sand")}>{n < i ? <Icon name="check" size={14} /> : n + 1}</span>
+                {stepTitle[s]}
+              </button>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] lg:gap-10 xl:gap-14">
+        <div className="min-w-0">
+          <p className="t-mono text-stone-ink">{fmt(t.steps.stepOf, { n: i + 1, total: STEPS.length })}</p>
+          <h2 data-step-title tabIndex={-1} className="t-h2 mt-2 outline-none focus-visible:outline-none">
+            {step === "services" ? t.pick.title : step === "scope" ? t.scope.title : step === "extras" ? t.extras.title : t.summary.title}
+          </h2>
+
+          <div className="mt-6">
+            {step === "services" && <ServicesStep t={t} selection={selection} money={money} locale={locale} onToggle={(id) => setSelection((s) => toggleService(s, id))} />}
+            {step === "scope" && <ScopeStep t={t} selection={selection} quote={quote} money={money} qty={qty} locale={locale} setQty={setQty} onBack={() => go("services")} />}
+            {step === "extras" && <ExtrasStep t={t} selection={selection} money={money} qty={qty} setQty={setQty} toggleOnRequest={toggleOnRequest} setComplexity={(c) => setSelection((s) => ({ ...s, complexity: c }))} setUrgency={(u) => setSelection((s) => ({ ...s, urgency: u }))} />}
+            {step === "summary" && (
+              <SummaryStep
+                t={t}
+                locale={locale}
+                quote={quote}
+                money={money}
+                qty={qty}
+                calcId={calcId}
+                projectName={projectName}
+                setProjectName={setProjectName}
+                pdf={pdf}
+                onBrief={() => setBriefOpen(true)}
+                onEdit={go}
+              />
+            )}
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-ink/15 pt-6">
+            {i > 0 && (
+              <Button variant="outline" icon={null} onClick={() => go(STEPS[i - 1])}>
+                <span className="inline-flex items-center gap-2">
+                  <Icon name="arrow-left" size={20} />
+                  {t.nav.back}
+                </span>
+              </Button>
+            )}
+            {i < STEPS.length - 1 && (
+              <Button variant="ink" onClick={() => go(STEPS[i + 1])}>
+                {i === STEPS.length - 2 ? t.nav.toSummary : t.nav.next}
+              </Button>
+            )}
+            <button type="button" onClick={reset} className="ml-auto min-h-11 rounded-pill px-3 text-[15px] font-medium text-stone-ink underline decoration-ink/30 underline-offset-4 hover:text-ink">
+              {t.nav.reset}
+            </button>
+          </div>
+        </div>
+
+        {/* Смета сбоку (десктоп) */}
+        <aside aria-label={t.summary.title} className="hidden lg:block">
+          <div className="sticky top-[calc(var(--header-h)+20px)]">
+            <SideSummary t={t} locale={locale} quote={quote} money={money} calcId={calcId} onOpen={() => go("summary")} isSummary={step === "summary"} />
+          </div>
+        </aside>
+      </div>
+
+      {/* Итог внизу экрана (телефон и планшет) */}
+      {step !== "summary" && (
+        <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
+          <div className="flex items-center gap-3 rounded-[22px] bg-ink p-2 pl-4 text-paper shadow-[0_10px_30px_rgb(18_18_18/0.3)]">
+            <div className="min-w-0 flex-1" aria-live="polite">
+                            <p className="truncate font-display text-[18px] leading-tight font-bold tabular-nums">
+                <span className="mr-1.5 font-sans text-[13px] font-medium text-paper/70">{t.summary.total}</span>
+                {money(quote.total)}
+              </p>
+              {quote.timeline && <p className="truncate text-[12px] text-paper/70">{formatDays(quote.timeline, t.days, locale)}</p>}
+            </div>
+            <button type="button" onClick={() => go("summary")} className="min-h-12 shrink-0 rounded-pill bg-coral px-5 font-semibold text-ink">
+              {t.summary.open}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <BriefDialog
+        open={briefOpen}
+        onClose={() => setBriefOpen(false)}
+        t={t}
+        locale={locale}
+        quote={quote}
+        selection={selection}
+        calcId={calcId}
+        projectName={projectName}
+        enabled={briefEnabled}
+        privacyHref={privacyHref}
+        instagram={instagram}
+        money={money}
+      />
+    </div>
+  );
+}
+
+/* ── PDF ─────────────────────────────────────────────────── */
+
+type PdfState = { status: "idle" | "loading" | "error"; download: () => void; disabled: boolean };
+
+function usePdf({ locale, selection, calcId, projectName, quote }: { locale: Locale; selection: Selection; calcId: string; projectName: string; quote: Quote }): PdfState {
+  const [status, setStatus] = useState<PdfState["status"]>("idle");
+  const busy = useRef(false);
+  const download = async () => {
+    if (busy.current || quote.isEmpty || !calcId) return;
+    busy.current = true;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/quote-pdf/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, calcId, selection, projectName, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }),
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!res.ok || !res.headers.get("content-type")?.includes("pdf")) throw new Error(String(res.status));
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `quote-${calcId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      setStatus("idle");
+    } catch {
+      setStatus("error");
+    } finally {
+      busy.current = false;
+    }
+  };
+  return { status, download, disabled: quote.isEmpty || !calcId || status === "loading" };
+}
+
+function Actions({ t, pdf, onBrief, quote }: { t: CalcDict; pdf: PdfState; onBrief: () => void; quote: Quote }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Button variant="coral" icon={null} onClick={pdf.download} disabled={pdf.disabled} aria-describedby={quote.isEmpty ? "calc-pdf-empty" : undefined} className="w-full">
+        {pdf.status === "loading" ? (
+          <span className="inline-flex items-center gap-3">
+            <span aria-hidden="true" className="size-5 animate-spin rounded-full border-[3px] border-ink/30 border-t-ink" />
+            {t.actions.pdfLoading}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-2">
+            <DownloadIcon />
+            {t.actions.pdf}
+          </span>
+        )}
+      </Button>
+      <Button variant="ink" onClick={onBrief} disabled={quote.isEmpty} className="w-full">
+        {t.actions.brief}
+      </Button>
+      <div aria-live="polite" className="sm:col-span-2">
+        {pdf.status === "error" && (
+          <p role="alert" className="t-small flex items-start gap-2 font-medium text-error">
+            <Icon name="alert" size={16} className="mt-0.5 shrink-0" />
+            {t.actions.pdfError}
+          </p>
+        )}
+        {quote.isEmpty && (
+          <p id="calc-pdf-empty" className="t-small text-stone-ink">
+            {t.actions.pdfEmpty}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const DownloadIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+  </svg>
+);
+
+/* ── Шаг 1: услуги ───────────────────────────────────────── */
+
+function startingPrice(id: ServiceId): { price: number; perUnit?: ItemKey } {
+  const s = SERVICES[id];
+  if (s.base) return { price: ITEMS[s.base].price };
+  const k = [...s.core].sort((a, b) => ITEMS[a].price - ITEMS[b].price)[0];
+  return { price: ITEMS[k].price, perUnit: k };
+}
+
+function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; selection: Selection; money: (v: number) => string; locale: Locale; onToggle: (id: ServiceId) => void }) {
+  return (
+    <>
+      <p className="t-body-l max-w-[40rem] text-ink/80">{t.pick.hint}</p>
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+        {SERVICE_IDS.map((id) => {
+          const on = selection.services.includes(id);
+          const svc = t.services[id];
+          const sp = startingPrice(id);
+          const options = SERVICES[id].options.flatMap((g) => g.items);
+          const typical = computeQuote({ ...emptySelection(), services: [id], qty: { ...SERVICES[id].defaults } });
+          const replaces = SERVICES[id].exclusiveWith?.some((x) => selection.services.includes(x));
+          return (
+            <li key={id} className={cn("flex flex-col rounded-card border-2 p-5 transition-colors sm:p-6", on ? "border-ink bg-white shadow-[0_14px_30px_-18px_rgb(18_18_18/0.45)]" : "border-ink/15 bg-white/60 hover:border-ink/40")}>
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="t-h4">{svc.title}</h3>
+                {on && (
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-coral" aria-hidden="true">
+                    <Icon name="check" size={18} />
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-[15px] text-ink/80">{svc.short}</p>
+              <p className="mt-3 font-display text-[17px] font-bold">
+                {sp.perUnit ? fmt(t.pick.perUnitFrom, { price: money(sp.price), unit: t.units[ITEMS[sp.perUnit].unit] }) : fmt(t.pick.from, { price: money(sp.price) })}
+              </p>
+              <details className="group mt-3">
+                <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[15px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
+                  {t.pick.details}
+                  <Icon name="plus" size={16} className="transition-transform group-open:rotate-45" />
+                </summary>
+                <div className="mt-3 space-y-4 text-[15px]">
+                  <p className="text-ink/85">{svc.description}</p>
+                  <ListBlock title={t.pick.includes} items={svc.includes} tone="in" />
+                  <ListBlock title={t.pick.excludes} items={svc.excludes} tone="out" />
+                  {typical.timeline && (
+                    <p>
+                      <span className="font-semibold">{t.pick.timeline}: </span>
+                      {formatDays(typical.timeline, t.days, locale)}
+                    </p>
+                  )}
+                  {options.length > 0 && (
+                    <div>
+                      <p className="font-semibold">{t.pick.options}</p>
+                      <p className="mt-1 text-ink/80">{options.map((k) => `${t.items[k]} (${money(ITEMS[k].price)})`).join(" · ")}</p>
+                    </div>
+                  )}
+                </div>
+              </details>
+              <div className="mt-auto pt-5">
+                <button
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => onToggle(id)}
+                  aria-describedby={replaces && !on ? `ex-${id}` : undefined}
+                  className={cn(
+                    "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-pill border-2 px-5 font-semibold transition-colors",
+                    on ? "border-ink bg-ink text-paper hover:bg-graphite" : "border-ink bg-transparent hover:bg-ink hover:text-paper",
+                  )}
+                >
+                  {on ? (
+                    <>
+                      <Icon name="check" size={18} /> {t.pick.selected}
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="plus" size={18} /> {t.pick.select}
+                    </>
+                  )}
+                </button>
+                {replaces && !on && (
+                  <p id={`ex-${id}`} className="t-small mt-2 text-stone-ink">
+                    {t.pick.exclusive}
+                  </p>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
+function ListBlock({ title, items, tone }: { title: string; items: readonly string[]; tone: "in" | "out" }) {
+  return (
+    <div>
+      <p className="font-semibold">{title}</p>
+      <ul className="mt-1.5 space-y-1">
+        {items.map((x) => (
+          <li key={x} className="flex gap-2 text-ink/85">
+            <span aria-hidden="true" className={cn("mt-[0.55em] size-1.5 shrink-0 rounded-full", tone === "in" ? "bg-coral" : "bg-stone")} />
+            {x}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ── Шаг 2: объём ────────────────────────────────────────── */
+
+function ScopeStep({ t, selection, quote, money, qty, locale, setQty, onBack }: { t: CalcDict; selection: Selection; quote: Quote; money: (v: number) => string; qty: (v: number) => string; locale: Locale; setQty: (k: ItemKey, v: number) => void; onBack: () => void }) {
+  if (!selection.services.length) {
+    return (
+      <div className="rounded-card border-2 border-dashed border-ink/25 p-6">
+        <p className="t-body-l">{t.scope.noServices}</p>
+        <Button variant="outline" icon="arrow-left" className="mt-5" onClick={onBack}>
+          {t.steps.services}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <>
+      <p className="t-body-l max-w-[40rem] text-ink/80">{t.scope.hint}</p>
+      <div className="mt-6 space-y-6">
+        {SERVICE_IDS.filter((id) => selection.services.includes(id)).map((id) => {
+          const s = SERVICES[id];
+          const q = quote.services.find((x) => x.id === id)!;
+          const hasVolume = q.lines.some((l) => l.kind !== "base");
+          return (
+            <section key={id} aria-labelledby={`sc-${id}`} className="rounded-card bg-sand/60 p-3 sm:p-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 px-1 pb-3">
+                <h3 id={`sc-${id}`} className="t-h4">
+                  {t.services[id].title}
+                </h3>
+                <p className="text-[15px] text-stone-ink">{formatDays(q.days, t.days, locale)}</p>
+              </div>
+              {s.base && (
+                <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-ink/20 px-4 py-3">
+                  <div>
+                    <p className="t-label text-stone-ink">{t.scope.base}</p>
+                    <p className="mt-1 text-[15px] font-semibold">{t.items[s.base]}</p>
+                  </div>
+                  <p className="text-[15px] font-semibold tabular-nums">{money(ITEMS[s.base].price)}</p>
+                </div>
+              )}
+              <p className="t-label px-1 pb-2 text-stone-ink">{t.scope.core}</p>
+              <div className="space-y-2">
+                {s.core.map((k) => (
+                  <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
+                ))}
+              </div>
+              {s.options.map((g) => {
+                const count = g.items.filter((k) => (selection.qty[k] ?? 0) > 0).length;
+                return (
+                  <details key={g.group} className="group mt-3" open={count > 0 || s.options.length === 1}>
+                    <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl px-1 text-[15px] font-semibold">
+                      <span>
+                        {t.scope.groups[g.group]}
+                        {count > 0 && <span className="ml-2 rounded-pill bg-ink px-2 py-0.5 text-[12px] text-paper">{count}</span>}
+                      </span>
+                      <span aria-hidden="true" className="grid size-9 place-items-center rounded-full border-2 border-ink transition-transform group-open:rotate-45">
+                        <Icon name="plus" size={16} />
+                      </span>
+                    </summary>
+                    <div className="space-y-2 pt-1">
+                      {g.items.map((k) => (
+                        <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
+                      ))}
+                    </div>
+                  </details>
+                );
+              })}
+              <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-3 text-paper">
+                <span className="font-semibold">{t.scope.subtotal}</span>
+                <span className="font-display text-[18px] font-bold tabular-nums">{money(q.subtotal)}</span>
+              </div>
+              {!hasVolume && !s.base && <p className="t-small mt-2 px-1 font-medium text-error">{t.scope.zeroHint}</p>}
+            </section>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/* ── Шаг 3: доп. работы и параметры ──────────────────────── */
+
+function ExtrasStep({
+  t,
+  selection,
+  money,
+  qty,
+  setQty,
+  toggleOnRequest,
+  setComplexity,
+  setUrgency,
+}: {
+  t: CalcDict;
+  selection: Selection;
+  money: (v: number) => string;
+  qty: (v: number) => string;
+  setQty: (k: ItemKey, v: number) => void;
+  toggleOnRequest: (k: OnRequestKey) => void;
+  setComplexity: (c: ComplexityKey) => void;
+  setUrgency: (u: UrgencyKey) => void;
+}) {
+  return (
+    <div className="space-y-10">
+      <section aria-labelledby="ex-work">
+        <h3 id="ex-work" className="t-h4">
+          {t.extras.workTitle}
+        </h3>
+        <p className="mt-1 text-[15px] text-stone-ink">{t.extras.workHint}</p>
+        <div className="mt-4 space-y-2 rounded-card bg-sand/60 p-3 sm:p-4">
+          {EXTRA_ITEMS.map((k) => (
+            <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} hint={t.extraHints[k]} />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="ex-req">
+        <h3 id="ex-req" className="t-h4">
+          {t.extras.onRequestTitle}
+        </h3>
+        <p className="mt-1 max-w-[40rem] text-[15px] text-stone-ink">{t.extras.onRequestHint}</p>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {ON_REQUEST_KEYS.map((k) => {
+            const on = selection.onRequest.includes(k);
+            return (
+              <li key={k}>
+                <button
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleOnRequest(k)}
+                  className={cn("flex h-full w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition-colors", on ? "border-ink bg-white" : "border-ink/15 bg-white/60 hover:border-ink/40")}
+                >
+                  <span aria-hidden="true" className={cn("mt-0.5 grid size-6 shrink-0 place-items-center rounded-md border-2", on ? "border-ink bg-ink text-paper" : "border-ink/40")}>
+                    {on && <Icon name="check" size={14} />}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-semibold">{t.onRequest[k].title}</span>
+                    <span className="mt-0.5 block text-[14px] text-stone-ink">{t.onRequest[k].text}</span>
+                    <span className="mt-2 inline-block rounded-pill border border-dashed border-stone-ink px-2.5 py-0.5 font-mono text-[11px] text-stone-ink">{t.extras.onRequestBadge}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <RadioCards legend={t.extras.complexityTitle} name="complexity" value={selection.complexity} onChange={setComplexity} options={(Object.keys(COMPLEXITY) as ComplexityKey[]).map((k) => ({ value: k, title: t.complexity[k].title, text: t.complexity[k].text, badge: COMPLEXITY[k].factor === 1 ? t.extras.noSurcharge : fmt(t.extras.surcharge, { pct: pct(COMPLEXITY[k].factor) }) }))} />
+      <RadioCards legend={t.extras.urgencyTitle} name="urgency" value={selection.urgency} onChange={setUrgency} options={(Object.keys(URGENCY) as UrgencyKey[]).map((k) => ({ value: k, title: t.urgency[k].title, text: t.urgency[k].text, badge: URGENCY[k].factor === 1 ? t.extras.noSurcharge : fmt(t.extras.surcharge, { pct: pct(URGENCY[k].factor) }) }))} />
+    </div>
+  );
+}
+
+function RadioCards<T extends string>({ legend, name, value, onChange, options }: { legend: string; name: string; value: T; onChange: (v: T) => void; options: { value: T; title: string; text: string; badge: string }[] }) {
+  return (
+    <fieldset>
+      <legend className="t-h4">{legend}</legend>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {options.map((o) => (
+          <label key={o.value} className="relative cursor-pointer">
+            <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="peer absolute inset-0 cursor-pointer opacity-0" />
+            <span className="flex h-full flex-col rounded-2xl border-2 border-ink/15 bg-white/60 p-4 transition-colors peer-checked:border-ink peer-checked:bg-white peer-hover:border-ink/40 peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">
+              <span className="flex items-start justify-between gap-2">
+                <span className="font-semibold">{o.title}</span>
+                <span className={cn("shrink-0 rounded-pill px-2 py-0.5 font-mono text-[12px]", value === o.value ? "bg-coral text-ink" : "bg-sand")}>{o.badge}</span>
+              </span>
+              <span className="mt-1 text-[14px] text-stone-ink">{o.text}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+/* ── Шаг 4: смета ────────────────────────────────────────── */
+
+function SummaryStep({
+  t,
+  locale,
+  quote,
+  money,
+  qty,
+  calcId,
+  projectName,
+  setProjectName,
+  pdf,
+  onBrief,
+  onEdit,
+}: {
+  t: CalcDict;
+  locale: Locale;
+  quote: Quote;
+  money: (v: number) => string;
+  qty: (v: number) => string;
+  calcId: string;
+  projectName: string;
+  setProjectName: (v: string) => void;
+  pdf: PdfState;
+  onBrief: () => void;
+  onEdit: (s: Step) => void;
+}) {
+  if (quote.isEmpty) {
+    return (
+      <div className="rounded-card border-2 border-dashed border-ink/25 p-6">
+        <p className="t-body-l">{t.pick.empty}</p>
+        <Button variant="ink" className="mt-5" onClick={() => onEdit("services")}>
+          {t.steps.services}
+        </Button>
+      </div>
+    );
+  }
+  const Lines = ({ lines }: { lines: Quote["services"][number]["lines"] }) => (
+    <ul className="divide-y divide-ink/10">
+      {lines.map((l) => (
+        <li key={l.key} className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 py-2.5 text-[15px]">
+          <span className="min-w-0">
+            {t.items[l.key]}
+            <span className="block text-[13px] text-stone-ink tabular-nums">
+              {qty(l.qty)} {t.units[l.unit]} × {money(l.unitPrice)}
+            </span>
+          </span>
+          <span className="text-right font-semibold tabular-nums">{money(l.amount)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div>
+          <label htmlFor="calc-project" className="mb-2 block text-[15px] font-semibold">
+            {t.summary.projectName} <span className="font-normal text-stone-ink">{t.summary.optional}</span>
+          </label>
+          <input id="calc-project" value={projectName} maxLength={120} onChange={(e) => setProjectName(e.target.value)} placeholder={t.summary.projectNamePh} className="block min-h-[52px] w-full rounded-2xl border-2 border-ink/20 bg-white px-4 text-base placeholder:text-stone-ink/80 hover:border-ink/50 focus:border-ink focus:outline-none" />
+        </div>
+        <p className="t-small text-stone-ink">
+          {t.summary.calcId}: <span className="font-mono font-semibold text-ink">{calcId || "…"}</span>
+        </p>
+      </div>
+
+      {quote.services.map((s) => (
+        <section key={s.id} aria-labelledby={`sum-${s.id}`} className="rounded-card bg-white p-4 sm:p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 id={`sum-${s.id}`} className="t-h4">
+              {t.services[s.id].title}
+            </h3>
+            <button type="button" onClick={() => onEdit("scope")} className="text-[14px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
+              {t.nav.edit}
+            </button>
+          </div>
+          <p className="mt-1 text-[14px] text-stone-ink">{t.services[s.id].description}</p>
+          <div className="mt-3">
+            <Lines lines={s.lines} />
+          </div>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-paper px-4 py-3">
+            <span className="text-[15px]">
+              <span className="font-semibold">{t.scope.subtotal}</span> · {formatDays(s.days, t.days, locale)}
+            </span>
+            <span className="font-display text-[17px] font-bold tabular-nums">{money(s.subtotal)}</span>
+          </div>
+          <details className="group mt-3">
+            <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[14px] font-semibold">
+              {t.pick.includes} / {t.pick.excludes}
+              <Icon name="plus" size={14} className="transition-transform group-open:rotate-45" />
+            </summary>
+            <div className="mt-2 grid gap-4 text-[14px] sm:grid-cols-2">
+              <ListBlock title={t.pick.includes} items={t.services[s.id].includes} tone="in" />
+              <ListBlock title={t.pick.excludes} items={t.services[s.id].excludes} tone="out" />
+            </div>
+          </details>
+        </section>
+      ))}
+
+      {quote.extras.lines.length > 0 && (
+        <section aria-labelledby="sum-extras" className="rounded-card bg-white p-4 sm:p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 id="sum-extras" className="t-h4">
+              {t.summary.extras}
+            </h3>
+            <button type="button" onClick={() => onEdit("extras")} className="text-[14px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
+              {t.nav.edit}
+            </button>
+          </div>
+          <div className="mt-3">
+            <Lines lines={quote.extras.lines} />
+          </div>
+        </section>
+      )}
+
+      {quote.onRequest.length > 0 && (
+        <section aria-labelledby="sum-req" className="rounded-card border-2 border-dashed border-ink/25 p-4 sm:p-6">
+          <h3 id="sum-req" className="t-h4">
+            {t.extras.onRequestTitle}
+          </h3>
+          <ul className="mt-3 divide-y divide-ink/10">
+            {quote.onRequest.map((k) => (
+              <li key={k} className="flex justify-between gap-4 py-2.5 text-[15px]">
+                <span>{t.onRequest[k].title}</span>
+                <span className="text-stone-ink">{t.summary.onRequest}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section aria-labelledby="sum-total" className="rounded-card bg-ink p-5 text-paper sm:p-7">
+        <h3 id="sum-total" className="sr-only">
+          {t.summary.total}
+        </h3>
+        <Totals t={t} quote={quote} money={money} dark />
+        <div className="mt-5 rounded-2xl bg-coral p-4 text-ink sm:p-5">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <p className="font-display text-[18px] font-bold">{t.summary.total}</p>
+              {quote.onRequest.length > 0 && <p className="text-[13px]">{t.summary.totalNote}</p>}
+            </div>
+            <p className="font-display text-[clamp(1.75rem,5vw,2.5rem)] leading-none font-black tabular-nums">{money(quote.total)}</p>
+          </div>
+        </div>
+        {quote.timeline && (
+          <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2 border-t border-paper/15 pt-4">
+            <span className="text-paper/80">{t.summary.timeline}</span>
+            <span className="font-display text-[18px] font-bold">{formatDays(quote.timeline, t.days, locale)}</span>
+          </div>
+        )}
+        {quote.services.length > 1 && <p className="t-small mt-2 text-paper/65">{t.summary.timelineNote}</p>}
+        {quote.onRequest.length > 0 && <p className="t-small mt-1 text-paper/65">{t.summary.timelineOnRequest}</p>}
+      </section>
+
+      <p className="flex gap-2 rounded-2xl bg-sand p-4 text-[15px] font-medium">
+        <Icon name="alert" size={20} className="mt-0.5 shrink-0" />
+        <span>
+          {t.page.disclaimer} <span className="font-normal text-stone-ink">{t.page.currency}</span>
+        </span>
+      </p>
+
+      <Actions t={t} pdf={pdf} onBrief={onBrief} quote={quote} />
+    </div>
+  );
+}
+
+function Totals({ t, quote, money, dark }: { t: CalcDict; quote: Quote; money: (v: number) => string; dark?: boolean }) {
+  const row = "flex items-baseline justify-between gap-3 py-1.5 text-[15px]";
+  const muted = dark ? "text-paper/75" : "text-stone-ink";
+  return (
+    <div>
+      <div className={row}>
+        <span className={muted}>{t.summary.base}</span>
+        <span className="font-semibold tabular-nums">{money(quote.base)}</span>
+      </div>
+      {quote.complexity.factor !== 1 && (
+        <div className={row}>
+          <span className={muted}>
+            {fmt(t.summary.complexity, { level: t.complexity[quote.complexity.key].title })} · +{pct(quote.complexity.factor)}
+          </span>
+          <span className="font-semibold tabular-nums">{money(quote.complexity.delta)}</span>
+        </div>
+      )}
+      {quote.urgency.factor !== 1 && (
+        <div className={row}>
+          <span className={muted}>
+            {fmt(t.summary.urgency, { level: t.urgency[quote.urgency.key].title })} · +{pct(quote.urgency.factor)}
+          </span>
+          <span className="font-semibold tabular-nums">{money(quote.urgency.delta)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Смета сбоку ─────────────────────────────────────────── */
+
+function SideSummary({ t, locale, quote, money, calcId, onOpen, isSummary }: { t: CalcDict; locale: Locale; quote: Quote; money: (v: number) => string; calcId: string; onOpen: () => void; isSummary: boolean }) {
+  return (
+    <div className="rounded-card bg-white p-6 shadow-[0_20px_40px_-28px_rgb(18_18_18/0.5)]">
+      <div className="flex items-center justify-between gap-3">
+        <p className="t-label flex items-center gap-2 text-stone-ink">
+          <span aria-hidden="true" className="size-2.5 rounded-full bg-coral" />
+          {t.summary.title}
+        </p>
+        {calcId && <span className="font-mono text-[12px] text-stone-ink">{calcId}</span>}
+      </div>
+      {quote.isEmpty ? (
+        <p className="mt-4 text-[15px] text-stone-ink">{t.summary.empty}</p>
+      ) : (
+        <>
+          <ul className="mt-4 divide-y divide-ink/10 text-[15px]">
+            {quote.services.map((s) => (
+              <li key={s.id} className="flex items-baseline justify-between gap-3 py-2">
+                <span className="min-w-0">
+                  {t.services[s.id].title}
+                  <span className="block text-[13px] text-stone-ink">{formatDays(s.days, t.days, locale)}</span>
+                </span>
+                <span className="font-semibold tabular-nums">{money(s.subtotal)}</span>
+              </li>
+            ))}
+            {quote.extras.lines.length > 0 && (
+              <li className="flex items-baseline justify-between gap-3 py-2">
+                <span>{t.summary.extras}</span>
+                <span className="font-semibold tabular-nums">{money(quote.extras.subtotal)}</span>
+              </li>
+            )}
+            {quote.onRequest.map((k) => (
+              <li key={k} className="flex items-baseline justify-between gap-3 py-2">
+                <span>{t.onRequest[k].title}</span>
+                <span className="text-stone-ink">{t.summary.onRequest}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 border-t-2 border-ink pt-3">
+            <Totals t={t} quote={quote} money={money} />
+          </div>
+        </>
+      )}
+      <div className="mt-4 rounded-2xl bg-paper p-4" aria-live="polite">
+        <div className="flex items-end justify-between gap-2">
+          <span className="font-semibold">{t.summary.total}</span>
+          <span className="font-display text-[28px] leading-none font-black tabular-nums">{money(quote.total)}</span>
+        </div>
+        {quote.onRequest.length > 0 && <p className="mt-1 text-[13px] text-stone-ink">{t.summary.totalNote}</p>}
+        {quote.timeline && (
+          <p className="mt-2 text-[14px]">
+            <span className="text-stone-ink">{t.summary.timeline}: </span>
+            <span className="font-semibold">{formatDays(quote.timeline, t.days, locale)}</span>
+          </p>
+        )}
+      </div>
+      <p className="t-small mt-3 text-stone-ink">{t.page.disclaimer}</p>
+      {!isSummary && (
+        <Button variant="ink" onClick={onOpen} disabled={quote.isEmpty} className="mt-5 w-full">
+          {t.summary.open}
+        </Button>
+      )}
+    </div>
+  );
+}

@@ -7,7 +7,7 @@ import { Eyebrow } from "../ui/SectionHead";
 
 /* Услуги — редакционный аккордеон на нативных <details>: работает без JS,
    с клавиатуры и на тач-экранах. */
-export function Services({ locale, t }: { locale: Locale; t: Dict["services"] }) {
+export function Services({ locale, t, calc }: { locale: Locale; t: Dict["services"]; calc: string }) {
   const markAt = t.title.indexOf(t.mark);
   return (
     <section id="services" aria-labelledby="services-title" className="cv section relative">
@@ -27,9 +27,14 @@ export function Services({ locale, t }: { locale: Locale; t: Dict["services"] })
               )}
             </h2>
             <p className="t-lead mt-6 max-w-[30rem] text-ink/80">{t.lead}</p>
-            <ButtonLink href={lp(locale, anchors.project)} variant="ink" className="mt-8">
-              {t.cta}
-            </ButtonLink>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <ButtonLink href={lp(locale, anchors.project)} variant="ink">
+                {t.cta}
+              </ButtonLink>
+              <ButtonLink href={lp(locale, anchors.calculator)} variant="outline">
+                {calc}
+              </ButtonLink>
+            </div>
           </div>
         </div>
 

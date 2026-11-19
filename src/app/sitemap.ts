@@ -4,7 +4,7 @@ import { locales } from "@/i18n/config";
 import { siteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ["/", ...cases.map((c) => `/cases/${c.slug}/`)];
+  const paths = ["/", "/calculator/", ...cases.map((c) => `/cases/${c.slug}/`)];
   return paths.flatMap((p) =>
     locales.map((l) => ({
       url: `${siteUrl}/${l.code}${p}`,

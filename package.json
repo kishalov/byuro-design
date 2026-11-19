@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.9.0",
     "next": "16.4.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -21,6 +23,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "4.3.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.0"
   }
 }

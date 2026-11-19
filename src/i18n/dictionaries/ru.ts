@@ -12,6 +12,7 @@ const ru = {
   },
   nav: {
     services: "Услуги",
+    calc: "Стоимость",
     cases: "Кейсы",
     partners: "Партнёрам",
     process: "Как работаем",
@@ -27,6 +28,7 @@ const ru = {
   },
   cta: {
     project: "Обсудить проект",
+    calc: "Рассчитать стоимость",
     partner: "Стать партнёром",
     partnerShort: "Партнёрам",
   },

@@ -9,6 +9,7 @@ const en = {
   },
   nav: {
     services: "Services",
+    calc: "Pricing",
     cases: "Work",
     partners: "Partners",
     process: "How we work",
@@ -24,6 +25,7 @@ const en = {
   },
   cta: {
     project: "Discuss a project",
+    calc: "Estimate the cost",
     partner: "Become a partner",
     partnerShort: "Partners",
   },

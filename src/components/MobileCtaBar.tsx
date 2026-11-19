@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { anchors, lp } from "@/i18n/paths";
@@ -9,7 +10,13 @@ import { cn } from "@/lib/cn";
    ушли из вида, и прячется у формы. */
 export function MobileCtaBar({ locale, project, partner }: { locale: Locale; project: string; partner: string }) {
   const [show, setShow] = useState(false);
+  const pathname = usePathname();
   useEffect(() => {
+    // на странице калькулятора внизу своя панель с итогом
+    if (document.getElementById("calc-root")) {
+      setShow(false);
+      return;
+    }
     const ctas = document.getElementById("hero-ctas");
     const contact = document.getElementById("contact");
     let ctaOut = !ctas;
@@ -25,7 +32,7 @@ export function MobileCtaBar({ locale, project, partner }: { locale: Locale; pro
     if (contact) io.observe(contact);
     setShow(ctaOut && !contactIn);
     return () => io.disconnect();
-  }, []);
+  }, [pathname]);
 
   return (
     <div

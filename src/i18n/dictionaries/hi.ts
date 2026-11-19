@@ -10,6 +10,7 @@ const hi = {
   },
   nav: {
     services: "सेवाएँ",
+    calc: "कीमतें",
     cases: "प्रोजेक्ट",
     partners: "पार्टनर्स",
     process: "हम कैसे काम करते हैं",
@@ -25,6 +26,7 @@ const hi = {
   },
   cta: {
     project: "प्रोजेक्ट पर बात करें",
+    calc: "लागत का अनुमान लगाएं",
     partner: "पार्टनर बनें",
     partnerShort: "पार्टनर्स",
   },

@@ -22,7 +22,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <Hero locale={locale} t={t.hero} cta={t.cta} />
       <Marquee t={t.marquee} />
       <Why t={t.why} cursors={{ design: t.hero.cursorDesign, code: t.hero.cursorCode }} />
-      <Services locale={locale} t={t.services} />
+      <Services locale={locale} t={t.services} calc={t.cta.calc} />
       <Cases locale={locale} t={t.cases} ctaProject={t.cta.project} />
       <Partners locale={locale} t={t.partners} />
       <Process locale={locale} t={t.process} />

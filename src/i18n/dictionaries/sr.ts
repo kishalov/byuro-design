@@ -10,6 +10,7 @@ const sr = {
   },
   nav: {
     services: "Usluge",
+    calc: "Cene",
     cases: "Projekti",
     partners: "Partnerima",
     process: "Kako radimo",
@@ -25,6 +26,7 @@ const sr = {
   },
   cta: {
     project: "Razgovarajmo o projektu",
+    calc: "Izračunajte cenu",
     partner: "Postanite partner",
     partnerShort: "Partnerima",
   },

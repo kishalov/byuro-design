@@ -9,6 +9,7 @@ const de = {
   },
   nav: {
     services: "Leistungen",
+    calc: "Preise",
     cases: "Projekte",
     partners: "Für Partner",
     process: "Arbeitsweise",
@@ -24,6 +25,7 @@ const de = {
   },
   cta: {
     project: "Projekt besprechen",
+    calc: "Kosten berechnen",
     partner: "Partner werden",
     partnerShort: "Partner",
   },

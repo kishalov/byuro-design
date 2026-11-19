@@ -9,6 +9,7 @@ const ja = {
   },
   nav: {
     services: "サービス",
+    calc: "料金",
     cases: "実績",
     partners: "パートナー",
     process: "進め方",
@@ -24,6 +25,7 @@ const ja = {
   },
   cta: {
     project: "プロジェクトを相談する",
+    calc: "費用を見積もる",
     partner: "パートナーになる",
     partnerShort: "パートナー",
   },

@@ -9,6 +9,7 @@ const es = {
   },
   nav: {
     services: "Servicios",
+    calc: "Precios",
     cases: "Proyectos",
     partners: "Partners",
     process: "Cómo trabajamos",
@@ -24,6 +25,7 @@ const es = {
   },
   cta: {
     project: "Hablar del proyecto",
+    calc: "Calcular el coste",
     partner: "Hacerse partner",
     partnerShort: "Partners",
   },

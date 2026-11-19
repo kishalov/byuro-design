@@ -10,6 +10,7 @@ import { Logo } from "./ui/Logo";
 export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["footer"]; nav: Dict["nav"]; cta: Dict["cta"] }) {
   const items = [
     { href: lp(locale, anchors.services), label: nav.services },
+    { href: lp(locale, anchors.calculator), label: nav.calc },
     { href: lp(locale, anchors.cases), label: nav.cases },
     { href: lp(locale, anchors.partners), label: nav.partners },
     { href: lp(locale, anchors.process), label: nav.process },

@@ -18,6 +18,7 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
   const panelRef = useRef<HTMLDivElement>(null);
   const items = [
     { href: lp(locale, anchors.services), label: nav.services },
+    { href: lp(locale, anchors.calculator), label: nav.calc },
     { href: lp(locale, anchors.cases), label: nav.cases },
     { href: lp(locale, anchors.partners), label: nav.partners },
     { href: lp(locale, anchors.process), label: nav.process },

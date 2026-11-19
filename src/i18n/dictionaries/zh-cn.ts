@@ -9,6 +9,7 @@ const zh = {
   },
   nav: {
     services: "服务",
+    calc: "价格",
     cases: "案例",
     partners: "合作伙伴",
     process: "工作方式",
@@ -24,6 +25,7 @@ const zh = {
   },
   cta: {
     project: "洽谈项目",
+    calc: "估算费用",
     partner: "成为合作伙伴",
     partnerShort: "合作伙伴",
   },

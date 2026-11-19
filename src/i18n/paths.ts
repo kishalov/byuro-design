@@ -11,4 +11,5 @@ export const anchors = {
   faq: "/#faq",
   project: "/#contact-project",
   partner: "/#contact-partner",
+  calculator: "/calculator/",
 } as const;

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import { anchors, lp } from "@/i18n/paths";
@@ -5,6 +6,7 @@ import { Mascot } from "../mm/Mascot";
 import { Cursor, DashPath, Orb, RingBadge, SelBox, Sticker, Toggle3D } from "../mm/Kit";
 import { Parallax } from "../mm/Parallax";
 import { ButtonLink } from "../ui/Button";
+import { Icon } from "../ui/Icon";
 
 /* HERO. Идея: «редактор, в котором собирают Бюро».
    Слева — заголовок из УТП, одно слово выделено рамкой как в Figma.
@@ -77,6 +79,10 @@ export function Hero({ locale, t, cta }: { locale: Locale; t: Dict["hero"]; cta:
             <ButtonLink href={lp(locale, anchors.partner)} variant="outline" className="cta-partner bg-paper/60">
               {cta.partner}
             </ButtonLink>
+            <Link href={lp(locale, anchors.calculator)} className="inline-flex min-h-12 items-center gap-2 self-start rounded-pill px-2 font-semibold underline decoration-coral decoration-2 underline-offset-[6px] transition-colors hover:text-coral sm:self-center">
+              {cta.calc}
+              <Icon name="arrow-right" size={18} />
+            </Link>
           </div>
           <div className="anim-fade mt-6" style={{ ["--d" as string]: "420ms" }}>
             <Sticker tone="white" rotate={2} className="!text-[13px] sm:!text-[14px]">
