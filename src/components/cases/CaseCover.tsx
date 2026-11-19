@@ -58,8 +58,8 @@ export function CaseCover({ cover, label, className, priority, tone = "sand" }: 
     const pos = n === 2 ? fan2 : n === 3 ? fan3 : n === 5 ? fan5 : fan;
     const tall = cover.images[0].h > cover.images[0].w * 1.5;
     return (
-      <div role="img" aria-label={label} className={cn("group/cover relative overflow-hidden", bg, className)}>
-        <div aria-hidden="true" className="dot-grid absolute inset-0 opacity-60" />
+      <div role="img" aria-label={label} className={cn("group/cover relative overflow-hidden", !cover.surface && bg, className)} style={cover.surface ? { background: cover.surface } : undefined}>
+        <div aria-hidden="true" className={cn("absolute inset-0", cover.surface ? "dot-grid-dark opacity-30" : "dot-grid opacity-60")} />
         <div aria-hidden="true" className="absolute inset-0 grid place-items-center">
           {cover.images.map((im, i) => {
             const p = pos[i % pos.length];

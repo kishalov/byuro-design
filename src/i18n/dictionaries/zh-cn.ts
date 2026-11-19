@@ -86,7 +86,7 @@ const zh = {
     demoBadge: "演示案例",
     demoPageBadge: "演示案例：将替换为真实作品",
     servicesLabel: "服务",
-    categories: { app: "应用", ads: "投放创意", landing: "落地页", branding: "品牌设计", motion: "动态设计" },
+    categories: { app: "应用", web: "网站", ads: "投放创意", landing: "落地页", branding: "品牌设计", motion: "动态设计" },
     mockAlt: "演示样机：{title}",
     mock: {
       web3Title: "你的资产，你的密钥",
@@ -119,6 +119,18 @@ const zh = {
       appdev: "应用开发", uxui: "UI/UX 设计", tma: "Telegram Mini Apps",
     },
     items: {
+      "dental-clinic": {
+        title: "牙科诊所 — 网站设计与开发",
+        client: "牙科诊所（NDA）",
+        summary: "牙科诊所网站改版：用单一焦点取代图库照片拼贴，搭配大字号排版、玻璃质感 3D 和一键预约。",
+        task: "让诊所网站更现代、更清晰：去除视觉干扰，突出重点，并简化预约流程——尤其是在手机上。",
+        solution: ["去繁就简：每屏只有一个焦点，通栏标题一秒即可读懂。", "用统一的 3D 风格（玻璃、陶瓷与金属铬）替代图库照片，并放大字号，阅读更轻松。", "打造只有一个主按钮的移动版：在首屏一键即可预约就诊。"],
+        captions: ["改版前：照片拼贴、字号小、重点过多", "改版后：单一焦点取代拼贴", "玻璃 3D 与大字号排版", "移动版：一键预约", "以 3D 视觉取代图库照片", "我们做了哪些改变"],
+        nda: "客户品牌受保密协议（NDA）约束——我们有意不展示诊所名称和标志。",
+        ctaTitle: "想要这样的改版吗？",
+        ctaText: "留下需求——我们会分析您的网站，并给出让它更现代、预约更方便的方案。",
+        imagesNote: "案例幻灯片为英文，网站界面为俄文。",
+      },
       "telegram-food-delivery": {
         title: "外卖配送 — Telegram Mini App",
         client: "披萨店",

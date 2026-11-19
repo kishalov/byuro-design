@@ -13,7 +13,7 @@ import { SectionHead } from "../ui/SectionHead";
 export function Cases({ locale, t, ctaProject }: { locale: Locale; t: Dict["cases"]; ctaProject: string }) {
   const by = (s: string) => cases.find((c) => c.slug === s)!;
   const order = cases.map((c) => c.category);
-  const counts = (["app", "ads", "landing", "branding", "motion"] as const).map((k) => ({ k, n: order.filter((x) => x === k).length })).filter((x) => x.n);
+  const counts = (["app", "web", "ads", "landing", "branding", "motion"] as const).map((k) => ({ k, n: order.filter((x) => x === k).length })).filter((x) => x.n);
   return (
     <section id="cases" aria-labelledby="cases-title" className="cv section relative bg-white">
       <div className="wrap">
@@ -42,6 +42,7 @@ export function Cases({ locale, t, ctaProject }: { locale: Locale; t: Dict["case
           <CaseCard c={by("inout")} t={t} locale={locale} className="md:col-span-5 md:mt-32" />
           <CaseCard c={by("cape-caviar")} t={t} locale={locale} className="md:col-span-5" />
           <CaseCard c={by("angelaw")} t={t} locale={locale} className="md:col-span-7 md:mt-32" />
+          <CaseCard c={by("dental-clinic")} t={t} locale={locale} size="lg" className="md:col-span-12" aspect="aspect-[4/3] sm:aspect-[16/8]" />
           <CaseCard c={by("biomavital")} t={t} locale={locale} className="md:col-span-7" />
           <CaseCard c={by("petal-punk")} t={t} locale={locale} className="md:col-span-5 md:mt-32" />
           <CaseCard c={by("nibble")} t={t} locale={locale} size="lg" className="md:col-span-12" aspect="aspect-[4/3] sm:aspect-[16/8]" />

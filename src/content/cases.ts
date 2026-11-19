@@ -19,7 +19,7 @@ export type CaseBase = {
   results: { value: number; key: string }[] | null;
   cover: CaseCover;
   gallery: CaseMedia[];
-  layout: "grid" | "stack" | "slides" | "bento" | "duo" | "reel" | "showcase";
+  layout: "grid" | "stack" | "slides" | "bento" | "duo" | "reel" | "showcase" | "pairs";
   /** Готовая презентация кейса (картинки в исходных пропорциях): обложка страницы,
       визуализация результатов и финальный слайд перед CTA */
   presentation?: { hero: Img; results?: Img; outro?: Img };
@@ -39,6 +39,8 @@ const reel = [1, 2, 3, 4].map((i) => ({ src: `/cases/reel-${i}.mp4`, poster: img
 // Telegram Mini App: готовые слайды 2250×1800 (оригиналы — assets/originals/telegram-food-delivery)
 const tg = [1, 2, 3, 4, 5].map((i): Img => ({ base: `tgfood-${i}`, w: 2250, h: 1800, widths: [750, 1125, 1500, 2250], avif: true }));
 const tgCover: Img = { base: "tgfood-cover", w: 2090, h: 1000, widths: [800, 1400, 2090], avif: true }; // кадр из слайда 02
+// Стоматология (NDA): 6 слайдов 1024×1280; на 6-м CTA заменён на «оставьте заявку внизу сайта»
+const dental = [1, 2, 3, 4, 5, 6].map((i): Img => ({ base: `dental-${i}`, w: 1024, h: 1280, widths: [512, 768, 1024], avif: true }));
 const full = (n: string, w: number, h: number) => img(`${n}-full`, w, h, [760, 1200]);
 const cover = (n: string, w: number, h: number) => img(`${n}-cover`, w, h, [640, 1200]);
 
@@ -58,6 +60,17 @@ export const cases: CaseBase[] = [
     gallery: [tg[1], tg[2]].map((image) => ({ kind: "image", image })),
     layout: "showcase",
     presentation: { hero: tg[0], results: tg[3], outro: tg[4] },
+  },
+  {
+    slug: "dental-clinic",
+    category: "web",
+    industry: "health",
+    tags: ["webDesign", "ui", "frontend"],
+    results: null,
+    // свой синий фон кейса; сверху — «стало»
+    cover: { kind: "collage", images: [dental[0], dental[1], dental[3], dental[4]], front: 1, surface: "#1E4BFE" },
+    gallery: dental.map((image) => ({ kind: "image", image })),
+    layout: "pairs",
   },
   {
     slug: "realty-ads",

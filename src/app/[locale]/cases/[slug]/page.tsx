@@ -67,7 +67,7 @@ export default async function CasePage({ params }: Props) {
   ];
   const caps: string[] = text.captions ?? [];
   // Поля «презентационных» кейсов (есть не у всех)
-  const extra = text as Partial<{ heroAlt: string; resultsAlt: string; outroAlt: string; metrics: Record<string, string>; outcome: string; ctaTitle: string; ctaText: string; imagesNote: string }>;
+  const extra = text as Partial<{ heroAlt: string; resultsAlt: string; outroAlt: string; metrics: Record<string, string>; outcome: string; ctaTitle: string; ctaText: string; imagesNote: string; nda: string }>;
   const pres = c.presentation;
   const pct = new Intl.NumberFormat(markets[locale].numberLocale, { style: "percent", maximumFractionDigits: 0, signDisplay: "exceptZero" });
   // в русском — как на слайдах кейса: «+38%»; в остальных — по правилам локали
@@ -124,6 +124,18 @@ export default async function CasePage({ params }: Props) {
               </dd>
             </div>
           </dl>
+          {extra.nda && (
+            <p className="t-small mt-6 flex items-start gap-3 rounded-2xl border-2 border-dashed border-stone-ink/60 p-4 text-stone-ink">
+              <svg aria-hidden="true" viewBox="0 0 20 20" className="mt-0.5 size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="9" width="12" height="8" rx="2" />
+                <path d="M7 9V6.5a3 3 0 0 1 6 0V9" />
+              </svg>
+              <span>
+                <span className="font-semibold text-ink">NDA. </span>
+                {extra.nda}
+              </span>
+            </p>
+          )}
         </aside>
         <div className="space-y-16 lg:col-span-7 lg:col-start-6">
           <section aria-labelledby="task">
@@ -164,6 +176,7 @@ export default async function CasePage({ params }: Props) {
               reel: "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 sm:gap-6",
               stack: "mx-auto grid max-w-[1100px] gap-10",
               showcase: "mx-auto grid max-w-[1200px] gap-14 sm:gap-24",
+              pairs: "mx-auto grid max-w-[1100px] gap-x-8 gap-y-12 sm:grid-cols-2 sm:gap-y-16",
             }[c.layout]
           }
         >
@@ -204,9 +217,9 @@ export default async function CasePage({ params }: Props) {
                     </div>
                     <Pic image={m.image} alt={alt} sizes="(min-width: 1100px) 1100px, 100vw" />
                   </div>
-                ) : c.layout === "showcase" ? (
+                ) : c.layout === "showcase" || c.layout === "pairs" ? (
                   <div className={slide} data-reveal>
-                    <Pic image={m.image} alt={alt} sizes="(min-width: 1280px) 1200px, 100vw" />
+                    <Pic image={m.image} alt={alt} sizes={c.layout === "pairs" ? "(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw" : "(min-width: 1280px) 1200px, 100vw"} />
                   </div>
                 ) : (
                   <div className="overflow-hidden rounded-[18px] border-[5px] border-white bg-white shadow-[0_24px_50px_-28px_rgb(18_18_18/0.55)]">
@@ -218,7 +231,7 @@ export default async function CasePage({ params }: Props) {
                     />
                   </div>
                 )}
-                {caps[i] && <figcaption className={cn("t-small mt-3 font-medium text-stone-ink", c.layout === "showcase" && "mt-5 text-center")}>{caps[i]}</figcaption>}
+                {caps[i] && <figcaption className={cn("t-small mt-3 font-medium text-stone-ink", (c.layout === "showcase" || c.layout === "pairs") && "mt-5 text-center")}>{caps[i]}</figcaption>}
               </figure>
             );
           })}

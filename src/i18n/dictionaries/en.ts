@@ -86,7 +86,7 @@ const en = {
     demoBadge: "Demo case",
     demoPageBadge: "Demo case: will be replaced with real work",
     servicesLabel: "Services",
-    categories: { app: "Apps", ads: "Ad creatives", landing: "Landing page", branding: "Branding", motion: "Motion" },
+    categories: { app: "Apps", web: "Websites", ads: "Ad creatives", landing: "Landing page", branding: "Branding", motion: "Motion" },
     mockAlt: "Demo mockup: {title}",
     mock: {
       web3Title: "Your assets. Your keys",
@@ -119,6 +119,18 @@ const en = {
       appdev: "App development", uxui: "UI/UX design", tma: "Telegram Mini Apps",
     },
     items: {
+      "dental-clinic": {
+        title: "Dental Clinic — Website Design & Development",
+        client: "Dental clinic (NDA)",
+        summary: "A dental clinic website redesign: one focus instead of a stock-photo collage, bold type, glass 3D and booking in one tap.",
+        task: "Make the clinic’s website modern and clear: remove visual noise, highlight what matters and make booking easier — especially on mobile.",
+        solution: ["We removed the clutter: one focus per screen and a full-width headline that reads in a second.", "We replaced stock photos with a single 3D style — glass, ceramics and chrome — and made the type bigger and easier to read.", "We built a mobile version with one main button: patients book an appointment in one tap from the first screen."],
+        captions: ["Before: a photo collage, small type and too many accents", "After: one focus instead of a collage", "Glass 3D and bold type", "Mobile version: booking in one tap", "3D visuals instead of stock photos", "What we changed"],
+        nda: "The client’s brand is under NDA — we intentionally don’t show the clinic’s name or logo.",
+        ctaTitle: "Want a redesign like this?",
+        ctaText: "Leave a request — we’ll look at your website and suggest how to make it more modern and easier to book from.",
+        imagesNote: "",
+      },
       "telegram-food-delivery": {
         title: "Food Delivery — Telegram Mini App",
         client: "Pizzeria",

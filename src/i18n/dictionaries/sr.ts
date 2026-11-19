@@ -87,7 +87,7 @@ const sr = {
     demoBadge: "Demo projekat",
     demoPageBadge: "Demo projekat: biće zamenjen pravim radom",
     servicesLabel: "Usluge",
-    categories: { app: "Aplikacije", ads: "Kreative za oglase", landing: "Landing stranica", branding: "Brending", motion: "Motion" },
+    categories: { app: "Aplikacije", web: "Sajtovi", ads: "Kreative za oglase", landing: "Landing stranica", branding: "Brending", motion: "Motion" },
     mockAlt: "Demo maketa: {title}",
     mock: {
       web3Title: "Vaša sredstva. Vaši ključevi",
@@ -120,6 +120,18 @@ const sr = {
       appdev: "Razvoj aplikacija", uxui: "UI/UX dizajn", tma: "Telegram Mini Apps",
     },
     items: {
+      "dental-clinic": {
+        title: "Stomatološka klinika — dizajn i izrada sajta",
+        client: "Stomatološka klinika (NDA)",
+        summary: "Redizajn sajta stomatološke klinike: jedan fokus umesto kolaža stok fotografija, krupna tipografija, stakleni 3D i zakazivanje jednim dodirom.",
+        task: "Učiniti sajt klinike modernim i jasnim: ukloniti vizuelni šum, istaći najvažnije i pojednostaviti zakazivanje — naročito na telefonu.",
+        solution: ["Uklonili smo suvišno: jedan fokus po ekranu i naslov preko cele širine koji se pročita za sekundu.", "Stok fotografije zamenili smo jedinstvenim 3D stilom — staklo, keramika i hrom — i povećali tekst da bi se lako čitao.", "Napravili smo mobilnu verziju sa jednim glavnim dugmetom: termin se zakazuje jednim dodirom sa prvog ekrana."],
+        captions: ["Pre: kolaž fotografija, sitan tekst i previše akcenata", "Posle: jedan fokus umesto kolaža", "Stakleni 3D i krupna tipografija", "Mobilna verzija: zakazivanje jednim dodirom", "3D vizuali umesto stok fotografija", "Šta smo promenili"],
+        nda: "Brend klijenta je pod NDA — naziv i logo klinike namerno ne prikazujemo.",
+        ctaTitle: "Želite ovakav redizajn?",
+        ctaText: "Ostavite zahtev — pogledaćemo vaš sajt i predložiti kako da bude moderniji i pogodniji za zakazivanje.",
+        imagesNote: "Slajdovi kejsa su na engleskom, a interfejs sajta na ruskom.",
+      },
       "telegram-food-delivery": {
         title: "Dostava hrane — Telegram Mini App",
         client: "Picerija",

@@ -8,7 +8,7 @@ import { Badge } from "../ui/Badge";
 import { Icon } from "../ui/Icon";
 import { CaseCover } from "./CaseCover";
 
-const tones = { app: "paper", ads: "coral", landing: "sand", branding: "paper", motion: "ink" } as const;
+const tones = { app: "paper", web: "paper", ads: "coral", landing: "sand", branding: "paper", motion: "ink" } as const;
 
 export function CaseCard({
   c,
@@ -29,7 +29,8 @@ export function CaseCard({
 }) {
   const H = headingLevel;
   const text = t.items[c.slug];
-  const soft = c.cover.kind === "image";
+  // у кейсов со своей эстетикой — светлые стикеры, без тяжёлых плашек
+  const soft = c.cover.kind === "image" || (c.cover.kind === "collage" && !!c.cover.surface);
   return (
     <article className={cn("group/case group relative", className)} data-reveal>
       <div className="relative">

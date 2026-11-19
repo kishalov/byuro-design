@@ -86,7 +86,7 @@ const es = {
     demoBadge: "Proyecto demo",
     demoPageBadge: "Proyecto demo: se sustituirá por un trabajo real",
     servicesLabel: "Servicios",
-    categories: { app: "Aplicaciones", ads: "Creatividades para ads", landing: "Landing page", branding: "Branding", motion: "Motion" },
+    categories: { app: "Aplicaciones", web: "Sitios web", ads: "Creatividades para ads", landing: "Landing page", branding: "Branding", motion: "Motion" },
     mockAlt: "Maqueta de demostración: {title}",
     mock: {
       web3Title: "Tus activos. Tus claves",
@@ -119,6 +119,18 @@ const es = {
       appdev: "Desarrollo de apps", uxui: "Diseño UI/UX", tma: "Telegram Mini Apps",
     },
     items: {
+      "dental-clinic": {
+        title: "Clínica dental — diseño y desarrollo web",
+        client: "Clínica dental (NDA)",
+        summary: "Rediseño de la web de una clínica dental: un solo foco en lugar de un collage de fotos de stock, tipografía grande, vidrio 3D y cita en un toque.",
+        task: "Hacer la web de la clínica moderna y clara: eliminar el ruido visual, destacar lo importante y simplificar la reserva de citas, sobre todo en el móvil.",
+        solution: ["Quitamos lo que sobraba: un foco por pantalla y un titular a todo lo ancho que se lee en un segundo.", "Sustituimos las fotos de stock por un estilo 3D único —vidrio, cerámica y cromo— y aumentamos el tamaño del texto para que se lea con facilidad.", "Creamos una versión móvil con un solo botón principal: se pide cita en un toque desde la primera pantalla."],
+        captions: ["Antes: collage de fotos, texto pequeño y demasiados acentos", "Después: un solo foco en lugar de un collage", "Vidrio 3D y tipografía grande", "Versión móvil: cita en un toque", "Visuales 3D en lugar de fotos de stock", "Qué cambiamos"],
+        nda: "La marca del cliente está bajo NDA: no mostramos a propósito el nombre ni el logotipo de la clínica.",
+        ctaTitle: "¿Quieres un rediseño así?",
+        ctaText: "Deja una solicitud: revisaremos tu web y te propondremos cómo hacerla más moderna y facilitar la reserva de citas.",
+        imagesNote: "Las imágenes del caso están en inglés y la interfaz de la web, en ruso.",
+      },
       "telegram-food-delivery": {
         title: "Entrega de comida — Telegram Mini App",
         client: "Pizzería",

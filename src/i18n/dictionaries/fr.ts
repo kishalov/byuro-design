@@ -86,7 +86,7 @@ const fr = {
     demoBadge: "Projet démo",
     demoPageBadge: "Projet démo : sera remplacé par un vrai projet",
     servicesLabel: "Services",
-    categories: { app: "Applications", ads: "Créations social ads", landing: "Landing page", branding: "Branding", motion: "Motion" },
+    categories: { app: "Applications", web: "Sites web", ads: "Créations social ads", landing: "Landing page", branding: "Branding", motion: "Motion" },
     mockAlt: "Maquette de démonstration : {title}",
     mock: {
       web3Title: "Vos actifs. Vos clés",
@@ -119,6 +119,18 @@ const fr = {
       appdev: "Développement d’applications", uxui: "Design UI/UX", tma: "Telegram Mini Apps",
     },
     items: {
+      "dental-clinic": {
+        title: "Clinique dentaire — design et développement du site",
+        client: "Clinique dentaire (NDA)",
+        summary: "Refonte du site d’une clinique dentaire : un seul point focal au lieu d’un collage de photos de stock, une typographie forte, du verre 3D et la prise de rendez-vous en un tap.",
+        task: "Rendre le site de la clinique moderne et clair : supprimer le bruit visuel, mettre en avant l’essentiel et simplifier la prise de rendez-vous, surtout sur mobile.",
+        solution: ["Nous avons fait le tri : un seul point focal par écran et un titre pleine largeur qui se lit en une seconde.", "Nous avons remplacé les photos de stock par un style 3D unique — verre, céramique et chrome — et agrandi le texte pour qu’il soit facile à lire.", "Nous avons créé une version mobile avec un seul bouton principal : on prend rendez-vous en un tap dès le premier écran."],
+        captions: ["Avant : un collage de photos, un petit texte et trop d’accents", "Après : un seul point focal au lieu d’un collage", "Verre 3D et typographie forte", "Version mobile : rendez-vous en un tap", "Visuels 3D au lieu de photos de stock", "Ce que nous avons changé"],
+        nda: "La marque du client est sous NDA : nous ne montrons volontairement ni le nom ni le logo de la clinique.",
+        ctaTitle: "Vous voulez une refonte comme celle-ci ?",
+        ctaText: "Laissez une demande : nous étudierons votre site et vous proposerons de le rendre plus moderne et plus simple pour prendre rendez-vous.",
+        imagesNote: "Les visuels du projet sont en anglais, l’interface du site est en russe.",
+      },
       "telegram-food-delivery": {
         title: "Livraison de repas — Telegram Mini App",
         client: "Pizzeria",

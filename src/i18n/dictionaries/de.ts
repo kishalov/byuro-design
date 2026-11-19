@@ -86,7 +86,7 @@ const de = {
     demoBadge: "Demo-Projekt",
     demoPageBadge: "Demo-Projekt: wird durch eine echte Arbeit ersetzt",
     servicesLabel: "Leistungen",
-    categories: { app: "Apps", ads: "Werbe-Creatives", landing: "Landingpage", branding: "Branding", motion: "Motion" },
+    categories: { app: "Apps", web: "Websites", ads: "Werbe-Creatives", landing: "Landingpage", branding: "Branding", motion: "Motion" },
     mockAlt: "Demo-Mockup: {title}",
     mock: {
       web3Title: "Ihre Assets. Ihre Schlüssel",
@@ -119,6 +119,18 @@ const de = {
       appdev: "App-Entwicklung", uxui: "UI/UX-Design", tma: "Telegram Mini Apps",
     },
     items: {
+      "dental-clinic": {
+        title: "Zahnklinik — Website-Design & Entwicklung",
+        client: "Zahnklinik (NDA)",
+        summary: "Redesign der Website einer Zahnklinik: ein klarer Fokus statt einer Stockfoto-Collage, große Typografie, Glas-3D und Terminbuchung mit einem Tippen.",
+        task: "Die Website der Klinik modern und verständlich machen: visuelles Rauschen entfernen, das Wichtigste hervorheben und die Terminbuchung vereinfachen – besonders auf dem Smartphone.",
+        solution: ["Wir haben aufgeräumt: ein Fokus pro Screen und eine Headline über die volle Breite, die in einer Sekunde erfasst wird.", "Stockfotos haben wir durch einen einheitlichen 3D-Stil ersetzt – Glas, Keramik und Chrom – und die Schrift vergrößert, damit sie leicht lesbar ist.", "Die mobile Version hat einen Hauptbutton: Patienten buchen ihren Termin mit einem Tippen direkt vom ersten Screen."],
+        captions: ["Vorher: Fotocollage, kleine Schrift und zu viele Akzente", "Nachher: ein Fokus statt Collage", "Glas-3D und große Typografie", "Mobile Version: Termin mit einem Tippen", "3D-Visuals statt Stockfotos", "Was wir geändert haben"],
+        nda: "Die Marke des Kunden unterliegt einer NDA – Name und Logo der Klinik zeigen wir bewusst nicht.",
+        ctaTitle: "Sie möchten so ein Redesign?",
+        ctaText: "Senden Sie eine Anfrage – wir sehen uns Ihre Website an und zeigen, wie sie moderner wird und Termine leichter gebucht werden.",
+        imagesNote: "Die Case-Slides sind auf Englisch, die Website-Oberfläche auf Russisch.",
+      },
       "telegram-food-delivery": {
         title: "Essenslieferung — Telegram Mini App",
         client: "Pizzeria",
