@@ -130,6 +130,10 @@ const de = {
         ctaTitle: "Sie möchten so ein Redesign?",
         ctaText: "Senden Sie eine Anfrage – wir sehen uns Ihre Website an und zeigen, wie sie moderner wird und Termine leichter gebucht werden.",
         imagesNote: "Die Case-Slides sind auf Englisch, die Website-Oberfläche auf Russisch.",
+        resultTitle: "Ergebnisse des Redesigns",
+        resultParas: ["Das Redesign der Website wurde für die Zahnklinik zu einem Werkzeug, um neue Patienten zu gewinnen.", "Wir haben die Conversion der Website-Besucher in Zielaktionen gesteigert: Anfragen, Anrufe und Terminbuchungen für Beratungen.", "Die Zahl der Anfragen ist gestiegen, und ein komfortablerer Nutzerablauf hat geholfen, weniger potenzielle Patienten bei der Auswahl der Leistung zu verlieren."],
+        outcome: "Fazit: Mehr Besucher wenden sich an die Klinik, und mehr Anfragen werden zu Terminen und verkauften medizinischen Leistungen.",
+        resultVerified: "Alle Ergebnisse sind durch Analysedaten belegt.",
       },
       "telegram-food-delivery": {
         title: "Essenslieferung — Telegram Mini App",

@@ -130,6 +130,10 @@ const en = {
         ctaTitle: "Want a redesign like this?",
         ctaText: "Leave a request — we’ll look at your website and suggest how to make it more modern and easier to book from.",
         imagesNote: "",
+        resultTitle: "Redesign results",
+        resultParas: ["The dental clinic’s website redesign became a tool for attracting new patients.", "We increased the conversion of website visitors into target actions: requests, calls and consultation bookings.", "The number of inquiries grew, and a more convenient user flow helped reduce the loss of potential patients at the service selection stage."],
+        outcome: "Outcome: more visitors started contacting the clinic, and more inquiries turned into bookings and sales of medical services.",
+        resultVerified: "All results are confirmed by analytics.",
       },
       "telegram-food-delivery": {
         title: "Food Delivery — Telegram Mini App",

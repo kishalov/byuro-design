@@ -130,6 +130,10 @@ const es = {
         ctaTitle: "¿Quieres un rediseño así?",
         ctaText: "Deja una solicitud: revisaremos tu web y te propondremos cómo hacerla más moderna y facilitar la reserva de citas.",
         imagesNote: "Las imágenes del caso están en inglés y la interfaz de la web, en ruso.",
+        resultTitle: "Resultados del rediseño",
+        resultParas: ["El rediseño de la web se convirtió para la clínica dental en una herramienta para atraer nuevos pacientes.", "Aumentamos la conversión de los visitantes de la web en acciones clave: solicitudes, llamadas y citas para consulta.", "Creció el número de solicitudes, y un recorrido más cómodo ayudó a perder menos pacientes potenciales en la fase de elegir el servicio."],
+        outcome: "Resultado: más visitantes contactan con la clínica, y más solicitudes se convierten en citas y ventas de servicios médicos.",
+        resultVerified: "Todos los resultados están confirmados por la analítica.",
       },
       "telegram-food-delivery": {
         title: "Entrega de comida — Telegram Mini App",

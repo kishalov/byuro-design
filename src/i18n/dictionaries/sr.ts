@@ -131,6 +131,10 @@ const sr = {
         ctaTitle: "Želite ovakav redizajn?",
         ctaText: "Ostavite zahtev — pogledaćemo vaš sajt i predložiti kako da bude moderniji i pogodniji za zakazivanje.",
         imagesNote: "Slajdovi kejsa su na engleskom, a interfejs sajta na ruskom.",
+        resultTitle: "Rezultati redizajna",
+        resultParas: ["Redizajn sajta postao je za stomatološku kliniku alat za privlačenje novih pacijenata.", "Povećali smo konverziju posetilaca sajta u ciljne radnje: zahteve, pozive i zakazivanje konsultacija.", "Broj upita je porastao, a praktičniji korisnički tok pomogao je da se izgubi manje potencijalnih pacijenata u fazi izbora usluge."],
+        outcome: "Ishod: više posetilaca se obraća klinici, a više upita prelazi u zakazane termine i prodaju medicinskih usluga.",
+        resultVerified: "Svi rezultati su potvrđeni analitikom.",
       },
       "telegram-food-delivery": {
         title: "Dostava hrane — Telegram Mini App",

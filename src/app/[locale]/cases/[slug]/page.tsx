@@ -67,7 +67,7 @@ export default async function CasePage({ params }: Props) {
   ];
   const caps: string[] = text.captions ?? [];
   // Поля «презентационных» кейсов (есть не у всех)
-  const extra = text as Partial<{ heroAlt: string; resultsAlt: string; outroAlt: string; metrics: Record<string, string>; outcome: string; ctaTitle: string; ctaText: string; imagesNote: string; nda: string }>;
+  const extra = text as Partial<{ heroAlt: string; resultsAlt: string; outroAlt: string; metrics: Record<string, string>; outcome: string; ctaTitle: string; ctaText: string; imagesNote: string; nda: string; resultTitle: string; resultParas: string[]; resultVerified: string }>;
   const pres = c.presentation;
   const pct = new Intl.NumberFormat(markets[locale].numberLocale, { style: "percent", maximumFractionDigits: 0, signDisplay: "exceptZero" });
   // в русском — как на слайдах кейса: «+38%»; в остальных — по правилам локали
@@ -155,8 +155,33 @@ export default async function CasePage({ params }: Props) {
           </section>
           {!c.results && (
             <section aria-labelledby="result">
-              <h2 id="result" className="t-h2">{t.page.result}</h2>
-              <p className="t-body-l mt-5 rounded-2xl border-2 border-dashed border-stone-ink p-6 text-stone-ink">{t.page.resultEmpty}</p>
+              <h2 id="result" className="t-h2">{extra.resultTitle ?? t.page.result}</h2>
+              {extra.resultParas ? (
+                // результаты словами (без цифр): абзацы, итог и пометка о проверке аналитикой
+                <>
+                  <div className="t-body-l mt-5 space-y-4 text-ink/85">
+                    {extra.resultParas.map((p) => (
+                      <p key={p}>{p}</p>
+                    ))}
+                  </div>
+                  {extra.outcome && (
+                    <p className="t-body-l mt-6 flex items-start gap-4 border-t-2 border-ink pt-6 font-semibold">
+                      <span aria-hidden="true" className="mt-[0.55em] size-3 shrink-0 rounded-full bg-coral" />
+                      {extra.outcome}
+                    </p>
+                  )}
+                  {extra.resultVerified && (
+                    <p className="t-small mt-5 inline-flex items-center gap-2 rounded-pill border border-ink/20 px-3.5 py-2 text-stone-ink">
+                      <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4 text-coral" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 8.5l3 3 7-7" />
+                      </svg>
+                      {extra.resultVerified}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="t-body-l mt-5 rounded-2xl border-2 border-dashed border-stone-ink p-6 text-stone-ink">{t.page.resultEmpty}</p>
+              )}
             </section>
           )}
         </div>

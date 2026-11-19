@@ -130,6 +130,10 @@ const fr = {
         ctaTitle: "Vous voulez une refonte comme celle-ci ?",
         ctaText: "Laissez une demande : nous étudierons votre site et vous proposerons de le rendre plus moderne et plus simple pour prendre rendez-vous.",
         imagesNote: "Les visuels du projet sont en anglais, l’interface du site est en russe.",
+        resultTitle: "Résultats de la refonte",
+        resultParas: ["La refonte du site est devenue pour la clinique dentaire un outil pour attirer de nouveaux patients.", "Nous avons augmenté la conversion des visiteurs en actions clés : demandes, appels et prises de rendez-vous pour une consultation.", "Le nombre de demandes a augmenté, et un parcours plus pratique a permis de perdre moins de patients potentiels au moment du choix du soin."],
+        outcome: "Bilan : davantage de visiteurs contactent la clinique, et davantage de demandes se transforment en rendez-vous et en ventes de soins.",
+        resultVerified: "Tous les résultats sont confirmés par les données d’analyse.",
       },
       "telegram-food-delivery": {
         title: "Livraison de repas — Telegram Mini App",
