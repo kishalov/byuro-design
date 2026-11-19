@@ -1,4 +1,4 @@
-import type { CalcDict } from "./ru";
+import type { CalcSource } from "./ru";
 
 const es = {
   meta: {
@@ -30,9 +30,11 @@ const es = {
   },
   pick: {
     title: "¿Qué necesitas?",
-    hint: "Puedes elegir varios servicios. Para la web, una de las dos opciones.",
+    hint: "Puedes elegir varios servicios. Los que no tienen precio en la tarifa los presupuestaremos de forma individual.",
     select: "Elegir",
     selected: "Elegido",
+    variantsTitle: "Cómo hacemos la web",
+    requestOnly: "Presupuesto individual",
     from: "desde {price}",
     perUnitFrom: "desde {price} por {unit}",
     details: "Más sobre el servicio",
@@ -40,7 +42,6 @@ const es = {
     excludes: "No incluye",
     timeline: "Plazo aproximado",
     options: "Opciones adicionales",
-    exclusive: "Esta opción sustituirá el otro tipo de web",
     empty: "Elige al menos un servicio o trabajo adicional para obtener el cálculo.",
   },
   scope: {
@@ -62,16 +63,15 @@ const es = {
     noServices: "Primero elige servicios en el primer paso.",
     subtotal: "Total del servicio",
     zeroHint: "Indica la cantidad de al menos una partida.",
+    partsTitle: "Presupuesto individual",
+    partsHint: "Estos trabajos no tienen precio en nuestra tarifa: te lo daremos tras el brief. Marca lo que necesitas:",
+    requestOnlyHint: "Este servicio lo presupuestamos de forma individual tras el brief. Marca lo que necesitas para preparar la propuesta más rápido.",
   },
   extras: {
     title: "Opciones y parámetros",
     workTitle: "Trabajos adicionales",
     workHint: "Para todo el proyecto, no para un servicio concreto.",
-    onRequestTitle: "Presupuesto individual",
-    onRequestHint: "Estos servicios no tienen precio fijo en nuestra tarifa: te daremos el precio tras el brief. No se incluyen en el total.",
     onRequestBadge: "Presupuesto individual",
-    add: "Añadir",
-    added: "Añadido",
     complexityTitle: "Complejidad del proyecto",
     urgencyTitle: "Urgencia",
     surcharge: "+{pct}",
@@ -120,48 +120,42 @@ const es = {
     brief: "Enviar brief a Byuro",
   },
   services: {
-    site_builder: {
-      title: "Web con constructor",
-      short: "Lanzamiento rápido: landing o web pequeña que puedes gestionar sin programador.",
-      description: "La web se monta en un constructor: se lanza rápido y después puedes cambiar textos e imágenes por tu cuenta.",
-      includes: ["Estructura y diseño de la web", "Montaje en el constructor", "Adaptación a móviles y tabletas", "Entrega de los accesos"],
-      excludes: ["Plan del constructor y dominio", "Textos y fotos: el copywriting se presupuesta aparte", "Logotipo e identidad corporativa", "Publicidad y promoción"],
+    web: {
+      includes: ["Estructura y diseño de la web", "Maquetación o montaje en el constructor", "Adaptación a móviles y tabletas", "Entrega de los accesos"],
+      excludes: ["Hosting, dominio y plan del constructor", "Textos y fotos", "Logotipo e identidad corporativa", "Publicidad y promoción"],
     },
-    site_custom: {
-      title: "Web con desarrollo a medida",
-      short: "Diseño único y código propio, sin los límites de un constructor.",
-      description: "Una web desde cero para tu objetivo: diseño único, cualquier lógica, carga rápida y control total del código.",
-      includes: ["Prototipo y diseño único", "Maquetación y desarrollo", "Adaptación a todos los dispositivos", "Optimización de la velocidad de carga", "Entrega del código fuente"],
-      excludes: ["Hosting y dominio", "Textos y fotos: el copywriting se presupuesta aparte", "Logotipo e identidad corporativa", "Publicidad y promoción"],
+    apps: {
+      includes: [],
+      excludes: ["Cuotas de cuentas de desarrollador en las tiendas de apps", "Infraestructura de servidor y servicios de pago"],
     },
-    bot: {
-      title: "Bot de Telegram",
-      short: "Solicitudes, reservas, ventas y soporte directamente en Telegram.",
-      description: "Un bot con un flujo bien pensado: recoge solicitudes, responde preguntas frecuentes, gestiona citas y acepta pagos.",
+    bots: {
       includes: ["Guion del diálogo", "Lógica básica y botones", "Puesta en marcha y pruebas", "Entrega del bot y los accesos"],
       excludes: ["Servidor y hosting", "Servicios y API de terceros de pago", "Textos de envíos masivos"],
     },
-    graphics: {
-      title: "Creatividades y banners",
-      short: "Gráficos estáticos para publicidad, redes sociales y webs con un estilo único.",
-      description: "Series de creatividades para lanzamientos y pruebas: estilo coherente y adaptaciones para cada plataforma.",
-      includes: ["Diseño según el brief y la identidad de marca", "Archivos listos para publicar", "Archivos fuente"],
-      excludes: ["Sesión de fotos y bancos de imágenes de pago", "Textos para las creatividades", "Configuración y gestión de anuncios", "Cambios fuera de lo acordado: según tarifa"],
+    brand: {
+      includes: [],
+      excludes: ["Registro de marca", "Impresión de soportes"],
     },
-    video: {
-      title: "Vídeo y motion design",
-      short: "Motion graphics, vídeo con IA, edición, subtítulos y locución con IA.",
-      description: "Vídeos para publicidad y redes sociales. La animación y la edición se calculan por duración en segundos.",
+    graphic: {
+      includes: ["Diseño a partir de tus textos y materiales", "Infografías y esquemas", "Archivos para imprenta o presentación y archivos fuente"],
+      excludes: ["Redacción de textos", "Impresión y producción", "Ilustraciones y fotos de pago"],
+    },
+    motion: {
       includes: ["Storyboard o montaje a partir de un guion", "Animación y edición", "Exportación en los formatos necesarios"],
       excludes: ["Guion: puedes añadir «Concepto / guion»", "Rodaje y actores", "Música con licencia y bancos de imágenes", "Locución por un locutor profesional"],
     },
-    presentation: {
-      title: "Presentaciones",
-      short: "Pitch decks, presentaciones comerciales y corporativas.",
-      description: "Presentaciones con las que se toma en serio a la empresa: estructura clara, infografías y maquetación cuidada.",
-      includes: ["Diseño de diapositivas a partir de tu texto", "Infografías y esquemas", "PDF y archivos fuente"],
-      excludes: ["Redacción de textos", "Ilustraciones y fotos de pago", "Vídeo y locución"],
+    ads: {
+      includes: ["Diseño según el brief y la identidad de marca", "Archivos listos para publicar", "Archivos fuente"],
+      excludes: ["Sesión de fotos y bancos de imágenes de pago", "Textos para las creatividades", "Configuración y gestión de anuncios", "Cambios fuera de lo acordado: según tarifa"],
     },
+    special: {
+      includes: [],
+      excludes: ["Hosting y servicios de terceros de pago"],
+    },
+  },
+  variants: {
+    builder: { title: "Con constructor", text: "Lanzamiento rápido; después puedes cambiar textos e imágenes tú mismo." },
+    custom: { title: "Desarrollo a medida", text: "Diseño único y código propio, sin los límites de un constructor." },
   },
   items: {
     static: "Creatividad estática",
@@ -216,12 +210,6 @@ const es = {
     research: "Análisis de competencia, audiencia y referencias",
     small_edit: "Ajuste puntual tras la entrega",
     big_edit: "Rehacer de forma notable un bloque, pantalla o escena",
-  },
-  onRequest: {
-    logo: { title: "Diseño de logotipo", text: "Símbolo o logotipo tipográfico con sus variantes de uso." },
-    identity: { title: "Identidad corporativa", text: "Colores, tipografías, gráficos y reglas: la base del manual de marca." },
-    copywriting: { title: "Copywriting", text: "Textos para la web, la presentación o las creatividades." },
-    support: { title: "Mantenimiento y soporte técnico", text: "Actualizaciones, mejoras y supervisión tras el lanzamiento." },
   },
   brief: {
     title: "Brief para Byuro",
@@ -305,6 +293,6 @@ const es = {
     paidOptions: "Opciones adicionales de pago",
     notesTitle: "Nota",
   },
-} satisfies CalcDict;
+} satisfies CalcSource;
 
 export default es;

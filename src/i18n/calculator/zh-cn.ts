@@ -1,4 +1,4 @@
-import type { CalcDict } from "./ru";
+import type { CalcSource } from "./ru";
 
 const zhCn = {
   meta: {
@@ -30,9 +30,11 @@ const zhCn = {
   },
   pick: {
     title: "您需要什么？",
-    hint: "可选择多项服务。网站只能在两种方案中选择一种。",
+    hint: "可选择多项服务。价目表中没有价格的服务将单独报价。",
     select: "选择",
     selected: "已选择",
+    variantsTitle: "网站制作方式",
+    requestOnly: "单独报价",
     from: "{price} 起",
     perUnitFrom: "每{unit} {price} 起",
     details: "了解服务详情",
@@ -40,7 +42,6 @@ const zhCn = {
     excludes: "不包含",
     timeline: "预计工期",
     options: "附加选项",
-    exclusive: "选择此方案将替换另一种网站类型",
     empty: "请至少选择一项服务或附加工作以获取报价。",
   },
   scope: {
@@ -62,16 +63,15 @@ const zhCn = {
     noServices: "请先在第一步选择服务。",
     subtotal: "该服务小计",
     zeroHint: "请至少为一项填写数量。",
+    partsTitle: "单独报价",
+    partsHint: "这些工作在价目表中没有价格，我们会在收到简报后报价。请勾选所需内容：",
+    requestOnlyHint: "此服务将在收到简报后单独报价。请勾选所需内容，以便我们更快准备方案。",
   },
   extras: {
     title: "选项与参数",
     workTitle: "附加工作",
     workHint: "适用于整个项目，而非单项服务。",
-    onRequestTitle: "单独报价",
-    onRequestHint: "这些服务在价目表中没有固定价格，我们会在收到简报后报价。它们不计入总价。",
     onRequestBadge: "单独报价",
-    add: "添加",
-    added: "已添加",
     complexityTitle: "项目复杂度",
     urgencyTitle: "紧急程度",
     surcharge: "+{pct}",
@@ -120,48 +120,42 @@ const zhCn = {
     brief: "向 Byuro 发送简报",
   },
   services: {
-    site_builder: {
-      title: "建站平台网站",
-      short: "快速上线：落地页或小型网站，无需程序员即可自行管理。",
-      description: "网站基于建站平台搭建：上线快，之后可以自行修改文字和图片。",
-      includes: ["网站结构与设计", "在建站平台上搭建", "适配手机和平板", "移交网站访问权限"],
-      excludes: ["建站平台套餐和域名", "文字和图片——文案另行报价", "标志和品牌形象", "广告与推广"],
+    web: {
+      includes: ["网站结构与设计", "前端开发或建站平台搭建", "适配手机和平板", "移交访问权限"],
+      excludes: ["主机、域名和建站平台套餐", "文字和图片", "标志和品牌形象", "广告与推广"],
     },
-    site_custom: {
-      title: "定制开发网站",
-      short: "独特设计与自有代码，不受建站平台限制。",
-      description: "根据需求从零打造：独特设计、任意逻辑、加载快速，完全掌控代码。",
-      includes: ["原型与独特设计", "前端与开发", "适配所有设备", "加载速度优化", "移交源代码"],
-      excludes: ["主机和域名", "文字和图片——文案另行报价", "标志和品牌形象", "广告与推广"],
+    apps: {
+      includes: [],
+      excludes: ["应用商店开发者账号费用", "服务器基础设施和付费服务"],
     },
-    bot: {
-      title: "Telegram 机器人",
-      short: "直接在 Telegram 中处理咨询、预约、销售和客服。",
-      description: "流程周全的机器人：接收咨询、回答常见问题、预约客户并接收付款。",
+    bots: {
       includes: ["对话流程", "基础逻辑和按钮", "上线与测试", "移交机器人和权限"],
       excludes: ["服务器和主机", "第三方付费服务和 API", "群发消息文案"],
     },
-    graphics: {
-      title: "广告素材和横幅",
-      short: "风格统一的静态图形，用于广告、社交媒体和网站。",
-      description: "为上线和测试制作系列素材：风格统一，并适配各个平台。",
-      includes: ["按简报和品牌风格设计", "可直接发布的文件", "源文件"],
-      excludes: ["拍摄和付费图库", "素材文案", "广告投放设置与管理", "超出约定范围的修改——按价目表收费"],
+    brand: {
+      includes: [],
+      excludes: ["商标注册", "物料印刷"],
     },
-    video: {
-      title: "视频与动态设计",
-      short: "动态图形、AI 视频、剪辑、字幕和 AI 配音。",
-      description: "用于广告和社交媒体的视频。动画和剪辑按时长（秒）计费。",
+    graphic: {
+      includes: ["根据您的文字和素材设计", "信息图和示意图", "印刷或展示用文件及源文件"],
+      excludes: ["文案撰写", "印刷与制作", "付费插画和照片"],
+    },
+    motion: {
       includes: ["分镜或按现成脚本制作", "动画与剪辑", "导出所需格式"],
       excludes: ["脚本——可添加“创意 / 脚本”", "拍摄和演员", "授权音乐和素材", "专业配音员配音"],
     },
-    presentation: {
-      title: "演示文稿",
-      short: "融资路演、销售和企业演示文稿。",
-      description: "让公司显得专业可信的演示文稿：结构清晰、信息图表丰富、排版整洁。",
-      includes: ["根据您的文字设计幻灯片", "信息图和示意图", "PDF 和源文件"],
-      excludes: ["文案撰写", "付费插画和照片", "视频和配音"],
+    ads: {
+      includes: ["按简报和品牌风格设计", "可直接发布的文件", "源文件"],
+      excludes: ["拍摄和付费图库", "素材文案", "广告投放设置与管理", "超出约定范围的修改——按价目表收费"],
     },
+    special: {
+      includes: [],
+      excludes: ["主机和第三方付费服务"],
+    },
+  },
+  variants: {
+    builder: { title: "建站平台", text: "上线快，之后可自行修改文字和图片。" },
+    custom: { title: "定制开发", text: "独特设计与自有代码，不受建站平台限制。" },
   },
   items: {
     static: "静态素材",
@@ -216,12 +210,6 @@ const zhCn = {
     research: "竞品、受众和参考案例分析",
     small_edit: "交付后的局部修改",
     big_edit: "对板块、页面或场景的较大改动",
-  },
-  onRequest: {
-    logo: { title: "标志设计", text: "图形标志或文字标志，含多种使用方式。" },
-    identity: { title: "品牌形象", text: "色彩、字体、图形和规范——品牌手册的基础。" },
-    copywriting: { title: "文案撰写", text: "网站、演示文稿或素材的文字内容。" },
-    support: { title: "维护与技术支持", text: "上线后的更新、优化和运行监控。" },
   },
   brief: {
     title: "给 Byuro 的简报",
@@ -305,6 +293,6 @@ const zhCn = {
     paidOptions: "付费附加选项",
     notesTitle: "备注",
   },
-} satisfies CalcDict;
+} satisfies CalcSource;
 
 export default zhCn;

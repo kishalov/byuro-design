@@ -1,11 +1,11 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
-import { COMPLEXITY, EXTRA_ITEMS, ITEMS, ON_REQUEST_KEYS, SERVICE_IDS, SERVICES, URGENCY, type ComplexityKey, type ItemKey, type OnRequestKey, type ServiceId, type UrgencyKey } from "@/lib/calculator/catalog";
-import { computeQuote, emptySelection, parseSelection, selectionSignature, toggleService, type Quote, type Selection } from "@/lib/calculator/engine";
-import { formatDays, moneyFormatter, pct, qtyFormatter } from "@/lib/calculator/format";
+import { COMPLEXITY, EXTRA_ITEMS, ITEMS, SERVICE_IDS, SERVICES, URGENCY, WEB_VARIANTS, serviceScope, type ComplexityKey, type ItemKey, type ServiceId, type UrgencyKey, type WebVariant } from "@/lib/calculator/catalog";
+import { computeQuote, emptySelection, parseSelection, selectionSignature, setVariant, togglePart, toggleService, type Quote, type QuoteService, type Selection } from "@/lib/calculator/engine";
+import { formatDays, moneyFormatter, pct, qtyFormatter, requestPartNames, serviceTitle } from "@/lib/calculator/format";
 import { newCalcId } from "@/lib/calculator/ids";
 import { cn } from "@/lib/cn";
 import { Button } from "../ui/Button";
@@ -86,7 +86,6 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
   }, []);
 
   const setQty = (k: ItemKey, v: number) => setSelection((s) => ({ ...s, qty: { ...s.qty, [k]: v } }));
-  const toggleOnRequest = (k: OnRequestKey) => setSelection((s) => ({ ...s, onRequest: s.onRequest.includes(k) ? s.onRequest.filter((x) => x !== k) : [...s.onRequest, k] }));
   const reset = () => {
     setSelection(emptySelection());
     setProjectName("");
@@ -132,8 +131,8 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
 
           <div className="mt-6">
             {step === "services" && <ServicesStep t={t} selection={selection} money={money} locale={locale} onToggle={(id) => setSelection((s) => toggleService(s, id))} />}
-            {step === "scope" && <ScopeStep t={t} selection={selection} quote={quote} money={money} qty={qty} locale={locale} setQty={setQty} onBack={() => go("services")} />}
-            {step === "extras" && <ExtrasStep t={t} selection={selection} money={money} qty={qty} setQty={setQty} toggleOnRequest={toggleOnRequest} setComplexity={(c) => setSelection((s) => ({ ...s, complexity: c }))} setUrgency={(u) => setSelection((s) => ({ ...s, urgency: u }))} />}
+            {step === "scope" && <ScopeStep t={t} selection={selection} quote={quote} money={money} qty={qty} locale={locale} setQty={setQty} onVariant={(v) => setSelection((s) => setVariant(s, v))} onPart={(id, n) => setSelection((s) => togglePart(s, id, n))} onBack={() => go("services")} />}
+            {step === "extras" && <ExtrasStep t={t} selection={selection} money={money} qty={qty} setQty={setQty} setComplexity={(c) => setSelection((s) => ({ ...s, complexity: c }))} setUrgency={(u) => setSelection((s) => ({ ...s, urgency: u }))} />}
             {step === "summary" && (
               <SummaryStep
                 t={t}
@@ -297,9 +296,13 @@ const DownloadIcon = () => (
 
 /* ── Шаг 1: услуги ───────────────────────────────────────── */
 
-function startingPrice(id: ServiceId): { price: number; perUnit?: ItemKey } {
+/** Цена «от»: для сайта — самая доступная база из двух вариантов; null — только индивидуальная оценка */
+function startingPrice(id: ServiceId): { price: number; perUnit?: ItemKey } | null {
   const s = SERVICES[id];
-  if (s.base) return { price: ITEMS[s.base].price };
+  if (s.requestOnly) return null;
+  const scopes = s.variants ? Object.values(s.variants) : [s];
+  const bases = scopes.flatMap((x) => (x.base ? [ITEMS[x.base].price] : []));
+  if (bases.length) return { price: Math.min(...bases) };
   const k = [...s.core].sort((a, b) => ITEMS[a].price - ITEMS[b].price)[0];
   return { price: ITEMS[k].price, perUnit: k };
 }
@@ -314,8 +317,7 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
           const svc = t.services[id];
           const sp = startingPrice(id);
           const options = SERVICES[id].options.flatMap((g) => g.items);
-          const typical = computeQuote({ ...emptySelection(), services: [id], qty: { ...SERVICES[id].defaults } });
-          const replaces = SERVICES[id].exclusiveWith?.some((x) => selection.services.includes(x));
+          const typical = computeQuote({ ...emptySelection(), services: [id], variant: selection.variant, qty: { ...serviceScope(SERVICES[id], selection.variant).defaults } });
           return (
             <li key={id} className={cn("flex flex-col rounded-card border-2 p-5 transition-colors sm:p-6", on ? "border-ink bg-white shadow-[0_14px_30px_-18px_rgb(18_18_18/0.45)]" : "border-ink/15 bg-white/60 hover:border-ink/40")}>
               <div className="flex items-start justify-between gap-3">
@@ -327,8 +329,15 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                 )}
               </div>
               <p className="mt-2 text-[15px] text-ink/80">{svc.short}</p>
-              <p className="mt-3 font-display text-[17px] font-bold">
-                {sp.perUnit ? fmt(t.pick.perUnitFrom, { price: money(sp.price), unit: t.units[ITEMS[sp.perUnit].unit] }) : fmt(t.pick.from, { price: money(sp.price) })}
+              <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={t.pick.includes}>
+                {svc.deliverables.map((d) => (
+                  <li key={d} className="rounded-pill bg-sand px-2.5 py-1 text-[13px] font-medium">
+                    {d}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 font-display text-[17px] font-bold">
+                {!sp ? t.pick.requestOnly : sp.perUnit ? fmt(t.pick.perUnitFrom, { price: money(sp.price), unit: t.units[ITEMS[sp.perUnit].unit] }) : fmt(t.pick.from, { price: money(sp.price) })}
               </p>
               <details className="group mt-3">
                 <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[15px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
@@ -336,14 +345,17 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                   <Icon name="plus" size={16} className="transition-transform group-open:rotate-45" />
                 </summary>
                 <div className="mt-3 space-y-4 text-[15px]">
-                  <p className="text-ink/85">{svc.description}</p>
-                  <ListBlock title={t.pick.includes} items={svc.includes} tone="in" />
+                  {svc.includes.length > 0 && <ListBlock title={t.pick.includes} items={svc.includes} tone="in" />}
                   <ListBlock title={t.pick.excludes} items={svc.excludes} tone="out" />
-                  {typical.timeline && (
-                    <p>
-                      <span className="font-semibold">{t.pick.timeline}: </span>
-                      {formatDays(typical.timeline, t.days, locale)}
-                    </p>
+                  {SERVICES[id].requestOnly ? (
+                    <p className="text-stone-ink">{t.scope.requestOnlyHint}</p>
+                  ) : (
+                    typical.timeline && (
+                      <p>
+                        <span className="font-semibold">{t.pick.timeline}: </span>
+                        {formatDays(typical.timeline, t.days, locale)}
+                      </p>
+                    )
                   )}
                   {options.length > 0 && (
                     <div>
@@ -358,7 +370,6 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                   type="button"
                   aria-pressed={on}
                   onClick={() => onToggle(id)}
-                  aria-describedby={replaces && !on ? `ex-${id}` : undefined}
                   className={cn(
                     "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-pill border-2 px-5 font-semibold transition-colors",
                     on ? "border-ink bg-ink text-paper hover:bg-graphite" : "border-ink bg-transparent hover:bg-ink hover:text-paper",
@@ -374,11 +385,6 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                     </>
                   )}
                 </button>
-                {replaces && !on && (
-                  <p id={`ex-${id}`} className="t-small mt-2 text-stone-ink">
-                    {t.pick.exclusive}
-                  </p>
-                )}
               </div>
             </li>
           );
@@ -406,7 +412,48 @@ function ListBlock({ title, items, tone }: { title: string; items: readonly stri
 
 /* ── Шаг 2: объём ────────────────────────────────────────── */
 
-function ScopeStep({ t, selection, quote, money, qty, locale, setQty, onBack }: { t: CalcDict; selection: Selection; quote: Quote; money: (v: number) => string; qty: (v: number) => string; locale: Locale; setQty: (k: ItemKey, v: number) => void; onBack: () => void }) {
+function PartChips({ t, id, selection, onPart }: { t: CalcDict; id: ServiceId; selection: Selection; onPart: (id: ServiceId, i: number) => void }) {
+  const chosen = selection.parts[id] ?? [];
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {SERVICES[id].requestParts.map((i) => {
+        const on = chosen.includes(i);
+        return (
+          <li key={i}>
+            <button type="button" aria-pressed={on} onClick={() => onPart(id, i)} className={cn("inline-flex min-h-11 items-center gap-2 rounded-pill border-2 px-4 text-[15px] font-medium transition-colors", on ? "border-ink bg-ink text-paper" : "border-ink/20 bg-white hover:border-ink/50")}>
+              {on ? <Icon name="check" size={16} /> : <Icon name="plus" size={16} />}
+              {t.services[id].deliverables[i]}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function ScopeStep({
+  t,
+  selection,
+  quote,
+  money,
+  qty,
+  locale,
+  setQty,
+  onVariant,
+  onPart,
+  onBack,
+}: {
+  t: CalcDict;
+  selection: Selection;
+  quote: Quote;
+  money: (v: number) => string;
+  qty: (v: number) => string;
+  locale: Locale;
+  setQty: (k: ItemKey, v: number) => void;
+  onVariant: (v: WebVariant) => void;
+  onPart: (id: ServiceId, i: number) => void;
+  onBack: () => void;
+}) {
   if (!selection.services.length) {
     return (
       <div className="rounded-card border-2 border-dashed border-ink/25 p-6">
@@ -423,57 +470,102 @@ function ScopeStep({ t, selection, quote, money, qty, locale, setQty, onBack }: 
       <div className="mt-6 space-y-6">
         {SERVICE_IDS.filter((id) => selection.services.includes(id)).map((id) => {
           const s = SERVICES[id];
+          const scope = serviceScope(s, selection.variant);
           const q = quote.services.find((x) => x.id === id)!;
-          const hasVolume = q.lines.some((l) => l.kind !== "base");
+          const hasVolume = q.lines.some((l) => l.kind !== "base") || q.parts.length > 0;
           return (
             <section key={id} aria-labelledby={`sc-${id}`} className="rounded-card bg-sand/60 p-3 sm:p-5">
               <div className="flex flex-wrap items-baseline justify-between gap-2 px-1 pb-3">
                 <h3 id={`sc-${id}`} className="t-h4">
                   {t.services[id].title}
                 </h3>
-                <p className="text-[15px] text-stone-ink">{formatDays(q.days, t.days, locale)}</p>
+                <p className="text-[15px] text-stone-ink">{s.requestOnly ? t.pick.requestOnly : q.days.max > 0 ? formatDays(q.days, t.days, locale) : null}</p>
               </div>
-              {s.base && (
-                <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-ink/20 px-4 py-3">
-                  <div>
-                    <p className="t-label text-stone-ink">{t.scope.base}</p>
-                    <p className="mt-1 text-[15px] font-semibold">{t.items[s.base]}</p>
+
+              {s.requestOnly ? (
+                <div className="rounded-2xl bg-white p-4">
+                  <p className="text-[15px] text-ink/80">{t.scope.requestOnlyHint}</p>
+                  <div className="mt-4">
+                    <PartChips t={t} id={id} selection={selection} onPart={onPart} />
                   </div>
-                  <p className="text-[15px] font-semibold tabular-nums">{money(ITEMS[s.base].price)}</p>
                 </div>
-              )}
-              <p className="t-label px-1 pb-2 text-stone-ink">{t.scope.core}</p>
-              <div className="space-y-2">
-                {s.core.map((k) => (
-                  <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
-                ))}
-              </div>
-              {s.options.map((g) => {
-                const count = g.items.filter((k) => (selection.qty[k] ?? 0) > 0).length;
-                return (
-                  <details key={g.group} className="group mt-3" open={count > 0 || s.options.length === 1}>
-                    <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl px-1 text-[15px] font-semibold">
-                      <span>
-                        {t.scope.groups[g.group]}
-                        {count > 0 && <span className="ml-2 rounded-pill bg-ink px-2 py-0.5 text-[12px] text-paper">{count}</span>}
-                      </span>
-                      <span aria-hidden="true" className="grid size-9 place-items-center rounded-full border-2 border-ink transition-transform group-open:rotate-45">
-                        <Icon name="plus" size={16} />
-                      </span>
-                    </summary>
-                    <div className="space-y-2 pt-1">
-                      {g.items.map((k) => (
-                        <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
-                      ))}
+              ) : (
+                <>
+                  {s.variants && (
+                    <fieldset className="mb-4">
+                      <legend className="t-label px-1 pb-2 text-stone-ink">{t.pick.variantsTitle}</legend>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {WEB_VARIANTS.map((v) => (
+                          <label key={v} className="relative cursor-pointer">
+                            <input type="radio" name="web-variant" value={v} checked={selection.variant === v} onChange={() => onVariant(v)} className="peer absolute inset-0 cursor-pointer opacity-0" />
+                            <span className="flex h-full flex-col rounded-2xl border-2 border-ink/15 bg-white/60 p-4 transition-colors peer-checked:border-ink peer-checked:bg-white peer-hover:border-ink/40 peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">
+                              <span className="flex items-start justify-between gap-2">
+                                <span className="font-semibold">{t.variants[v].title}</span>
+                                <span className={cn("shrink-0 rounded-pill px-2 py-0.5 font-mono text-[12px]", selection.variant === v ? "bg-coral text-ink" : "bg-sand")}>{fmt(t.pick.from, { price: money(ITEMS[s.variants![v].base!].price) })}</span>
+                              </span>
+                              <span className="mt-1 text-[14px] text-stone-ink">{t.variants[v].text}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                  {scope.base && (
+                    <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-ink/20 px-4 py-3">
+                      <div>
+                        <p className="t-label text-stone-ink">{t.scope.base}</p>
+                        <p className="mt-1 text-[15px] font-semibold">{t.items[scope.base]}</p>
+                      </div>
+                      <p className="text-[15px] font-semibold tabular-nums">{money(ITEMS[scope.base].price)}</p>
                     </div>
-                  </details>
-                );
-              })}
-              <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-3 text-paper">
-                <span className="font-semibold">{t.scope.subtotal}</span>
-                <span className="font-display text-[18px] font-bold tabular-nums">{money(q.subtotal)}</span>
-              </div>
-              {!hasVolume && !s.base && <p className="t-small mt-2 px-1 font-medium text-error">{t.scope.zeroHint}</p>}
+                  )}
+                  {scope.core.length > 0 && (
+                    <>
+                      <p className="t-label px-1 pb-2 text-stone-ink">{t.scope.core}</p>
+                      <div className="space-y-2">
+                        {scope.core.map((k) => (
+                          <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {s.options.map((g) => {
+                    const count = g.items.filter((k) => (selection.qty[k] ?? 0) > 0).length;
+                    return (
+                      <details key={g.group} className="group mt-3" open={count > 0 || s.options.length === 1}>
+                        <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl px-1 text-[15px] font-semibold">
+                          <span>
+                            {t.scope.groups[g.group]}
+                            {count > 0 && <span className="ml-2 rounded-pill bg-ink px-2 py-0.5 text-[12px] text-paper">{count}</span>}
+                          </span>
+                          <span aria-hidden="true" className="grid size-9 place-items-center rounded-full border-2 border-ink transition-transform group-open:rotate-45">
+                            <Icon name="plus" size={16} />
+                          </span>
+                        </summary>
+                        <div className="space-y-2 pt-1">
+                          {g.items.map((k) => (
+                            <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
+                          ))}
+                        </div>
+                      </details>
+                    );
+                  })}
+                  {s.requestParts.length > 0 && (
+                    <div className="mt-4 rounded-2xl border-2 border-dashed border-ink/20 p-4">
+                      <p className="font-semibold">{t.scope.partsTitle}</p>
+                      <p className="t-small mt-1 text-stone-ink">{t.scope.partsHint}</p>
+                      <div className="mt-3">
+                        <PartChips t={t} id={id} selection={selection} onPart={onPart} />
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-3 text-paper">
+                    <span className="font-semibold">{t.scope.subtotal}</span>
+                    <span className="font-display text-[18px] font-bold tabular-nums">{money(q.subtotal)}</span>
+                  </div>
+                  {!hasVolume && !scope.base && <p className="t-small mt-2 px-1 font-medium text-error">{t.scope.zeroHint}</p>}
+                </>
+              )}
             </section>
           );
         })}
@@ -490,7 +582,6 @@ function ExtrasStep({
   money,
   qty,
   setQty,
-  toggleOnRequest,
   setComplexity,
   setUrgency,
 }: {
@@ -499,7 +590,6 @@ function ExtrasStep({
   money: (v: number) => string;
   qty: (v: number) => string;
   setQty: (k: ItemKey, v: number) => void;
-  toggleOnRequest: (k: OnRequestKey) => void;
   setComplexity: (c: ComplexityKey) => void;
   setUrgency: (u: UrgencyKey) => void;
 }) {
@@ -515,37 +605,6 @@ function ExtrasStep({
             <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} hint={t.extraHints[k]} />
           ))}
         </div>
-      </section>
-
-      <section aria-labelledby="ex-req">
-        <h3 id="ex-req" className="t-h4">
-          {t.extras.onRequestTitle}
-        </h3>
-        <p className="mt-1 max-w-[40rem] text-[15px] text-stone-ink">{t.extras.onRequestHint}</p>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {ON_REQUEST_KEYS.map((k) => {
-            const on = selection.onRequest.includes(k);
-            return (
-              <li key={k}>
-                <button
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => toggleOnRequest(k)}
-                  className={cn("flex h-full w-full items-start gap-3 rounded-2xl border-2 p-4 text-left transition-colors", on ? "border-ink bg-white" : "border-ink/15 bg-white/60 hover:border-ink/40")}
-                >
-                  <span aria-hidden="true" className={cn("mt-0.5 grid size-6 shrink-0 place-items-center rounded-md border-2", on ? "border-ink bg-ink text-paper" : "border-ink/40")}>
-                    {on && <Icon name="check" size={14} />}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-semibold">{t.onRequest[k].title}</span>
-                    <span className="mt-0.5 block text-[14px] text-stone-ink">{t.onRequest[k].text}</span>
-                    <span className="mt-2 inline-block rounded-pill border border-dashed border-stone-ink px-2.5 py-0.5 font-mono text-[11px] text-stone-ink">{t.extras.onRequestBadge}</span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
       </section>
 
       <RadioCards legend={t.extras.complexityTitle} name="complexity" value={selection.complexity} onChange={setComplexity} options={(Object.keys(COMPLEXITY) as ComplexityKey[]).map((k) => ({ value: k, title: t.complexity[k].title, text: t.complexity[k].text, badge: COMPLEXITY[k].factor === 1 ? t.extras.noSurcharge : fmt(t.extras.surcharge, { pct: pct(COMPLEXITY[k].factor) }) }))} />
@@ -644,36 +703,9 @@ function SummaryStep({
       </div>
 
       {quote.services.map((s) => (
-        <section key={s.id} aria-labelledby={`sum-${s.id}`} className="rounded-card bg-white p-4 sm:p-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 id={`sum-${s.id}`} className="t-h4">
-              {t.services[s.id].title}
-            </h3>
-            <button type="button" onClick={() => onEdit("scope")} className="text-[14px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
-              {t.nav.edit}
-            </button>
-          </div>
-          <p className="mt-1 text-[14px] text-stone-ink">{t.services[s.id].description}</p>
-          <div className="mt-3">
-            <Lines lines={s.lines} />
-          </div>
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-paper px-4 py-3">
-            <span className="text-[15px]">
-              <span className="font-semibold">{t.scope.subtotal}</span> · {formatDays(s.days, t.days, locale)}
-            </span>
-            <span className="font-display text-[17px] font-bold tabular-nums">{money(s.subtotal)}</span>
-          </div>
-          <details className="group mt-3">
-            <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[14px] font-semibold">
-              {t.pick.includes} / {t.pick.excludes}
-              <Icon name="plus" size={14} className="transition-transform group-open:rotate-45" />
-            </summary>
-            <div className="mt-2 grid gap-4 text-[14px] sm:grid-cols-2">
-              <ListBlock title={t.pick.includes} items={t.services[s.id].includes} tone="in" />
-              <ListBlock title={t.pick.excludes} items={t.services[s.id].excludes} tone="out" />
-            </div>
-          </details>
-        </section>
+        <SummaryService key={s.id} s={s} t={t} locale={locale} money={money} onEdit={() => onEdit("scope")}>
+          <Lines lines={s.lines} />
+        </SummaryService>
       ))}
 
       {quote.extras.lines.length > 0 && (
@@ -692,22 +724,6 @@ function SummaryStep({
         </section>
       )}
 
-      {quote.onRequest.length > 0 && (
-        <section aria-labelledby="sum-req" className="rounded-card border-2 border-dashed border-ink/25 p-4 sm:p-6">
-          <h3 id="sum-req" className="t-h4">
-            {t.extras.onRequestTitle}
-          </h3>
-          <ul className="mt-3 divide-y divide-ink/10">
-            {quote.onRequest.map((k) => (
-              <li key={k} className="flex justify-between gap-4 py-2.5 text-[15px]">
-                <span>{t.onRequest[k].title}</span>
-                <span className="text-stone-ink">{t.summary.onRequest}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <section aria-labelledby="sum-total" className="rounded-card bg-ink p-5 text-paper sm:p-7">
         <h3 id="sum-total" className="sr-only">
           {t.summary.total}
@@ -717,7 +733,7 @@ function SummaryStep({
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
               <p className="font-display text-[18px] font-bold">{t.summary.total}</p>
-              {quote.onRequest.length > 0 && <p className="text-[13px]">{t.summary.totalNote}</p>}
+              {quote.hasOnRequest && <p className="text-[13px]">{t.summary.totalNote}</p>}
             </div>
             <p className="font-display text-[clamp(1.75rem,5vw,2.5rem)] leading-none font-black tabular-nums">{money(quote.total)}</p>
           </div>
@@ -728,8 +744,8 @@ function SummaryStep({
             <span className="font-display text-[18px] font-bold">{formatDays(quote.timeline, t.days, locale)}</span>
           </div>
         )}
-        {quote.services.length > 1 && <p className="t-small mt-2 text-paper/65">{t.summary.timelineNote}</p>}
-        {quote.onRequest.length > 0 && <p className="t-small mt-1 text-paper/65">{t.summary.timelineOnRequest}</p>}
+        {quote.services.filter((x) => x.days.max > 0).length > 1 && <p className="t-small mt-2 text-paper/65">{t.summary.timelineNote}</p>}
+        {quote.hasOnRequest && <p className="t-small mt-1 text-paper/65">{t.summary.timelineOnRequest}</p>}
       </section>
 
       <p className="flex gap-2 rounded-2xl bg-sand p-4 text-[15px] font-medium">
@@ -741,6 +757,61 @@ function SummaryStep({
 
       <Actions t={t} pdf={pdf} onBrief={onBrief} quote={quote} />
     </div>
+  );
+}
+
+function SummaryService({ s, t, locale, money, onEdit, children }: { s: QuoteService; t: CalcDict; locale: Locale; money: (v: number) => string; onEdit: () => void; children: ReactNode }) {
+  const svc = t.services[s.id];
+  const req = requestPartNames(t, s);
+  return (
+    <section aria-labelledby={`sum-${s.id}`} className={cn("rounded-card p-4 sm:p-6", s.requestOnly ? "border-2 border-dashed border-ink/25" : "bg-white")}>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 id={`sum-${s.id}`} className="t-h4">
+          {serviceTitle(t, s)}
+        </h3>
+        <button type="button" onClick={onEdit} className="text-[14px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
+          {t.nav.edit}
+        </button>
+      </div>
+      <p className="mt-1 text-[14px] text-stone-ink">{svc.short}</p>
+      {s.requestOnly ? (
+        <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 rounded-2xl bg-paper px-4 py-3">
+          <span className="text-[15px]">{req.length ? req.join(" · ") : svc.deliverables.join(" · ")}</span>
+          <span className="font-semibold text-stone-ink">{t.summary.onRequest}</span>
+        </div>
+      ) : (
+        <>
+          <div className="mt-3">{children}</div>
+          {req.length > 0 && (
+            <ul className="divide-y divide-ink/10 border-t border-ink/10">
+              {req.map((r) => (
+                <li key={r} className="flex justify-between gap-4 py-2.5 text-[15px]">
+                  <span>{r}</span>
+                  <span className="text-stone-ink">{t.summary.onRequest}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-paper px-4 py-3">
+            <span className="text-[15px]">
+              <span className="font-semibold">{t.scope.subtotal}</span>
+              {s.days.max > 0 && <> · {formatDays(s.days, t.days, locale)}</>}
+            </span>
+            <span className="font-display text-[17px] font-bold tabular-nums">{money(s.subtotal)}</span>
+          </div>
+        </>
+      )}
+      <details className="group mt-3">
+        <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[14px] font-semibold">
+          {t.pick.includes} / {t.pick.excludes}
+          <Icon name="plus" size={14} className="transition-transform group-open:rotate-45" />
+        </summary>
+        <div className="mt-2 grid gap-4 text-[14px] sm:grid-cols-2">
+          <ListBlock title={t.pick.includes} items={svc.includes.length ? svc.includes : svc.deliverables} tone="in" />
+          <ListBlock title={t.pick.excludes} items={svc.excludes} tone="out" />
+        </div>
+      </details>
+    </section>
   );
 }
 
@@ -794,9 +865,10 @@ function SideSummary({ t, locale, quote, money, calcId, onOpen, isSummary }: { t
               <li key={s.id} className="flex items-baseline justify-between gap-3 py-2">
                 <span className="min-w-0">
                   {t.services[s.id].title}
-                  <span className="block text-[13px] text-stone-ink">{formatDays(s.days, t.days, locale)}</span>
+                  {!s.requestOnly && s.days.max > 0 && <span className="block text-[13px] text-stone-ink">{formatDays(s.days, t.days, locale)}</span>}
+                  {!s.requestOnly && s.parts.length > 0 && <span className="block text-[13px] text-stone-ink">+ {requestPartNames(t, s).join(", ")} — {t.summary.onRequest}</span>}
                 </span>
-                <span className="font-semibold tabular-nums">{money(s.subtotal)}</span>
+                {s.requestOnly ? <span className="shrink-0 text-stone-ink">{t.summary.onRequest}</span> : <span className="font-semibold tabular-nums">{money(s.subtotal)}</span>}
               </li>
             ))}
             {quote.extras.lines.length > 0 && (
@@ -805,12 +877,6 @@ function SideSummary({ t, locale, quote, money, calcId, onOpen, isSummary }: { t
                 <span className="font-semibold tabular-nums">{money(quote.extras.subtotal)}</span>
               </li>
             )}
-            {quote.onRequest.map((k) => (
-              <li key={k} className="flex items-baseline justify-between gap-3 py-2">
-                <span>{t.onRequest[k].title}</span>
-                <span className="text-stone-ink">{t.summary.onRequest}</span>
-              </li>
-            ))}
           </ul>
           <div className="mt-2 border-t-2 border-ink pt-3">
             <Totals t={t} quote={quote} money={money} />
@@ -822,7 +888,7 @@ function SideSummary({ t, locale, quote, money, calcId, onOpen, isSummary }: { t
           <span className="font-semibold">{t.summary.total}</span>
           <span className="font-display text-[28px] leading-none font-black tabular-nums">{money(quote.total)}</span>
         </div>
-        {quote.onRequest.length > 0 && <p className="mt-1 text-[13px] text-stone-ink">{t.summary.totalNote}</p>}
+        {quote.hasOnRequest && <p className="mt-1 text-[13px] text-stone-ink">{t.summary.totalNote}</p>}
         {quote.timeline && (
           <p className="mt-2 text-[14px]">
             <span className="text-stone-ink">{t.summary.timeline}: </span>

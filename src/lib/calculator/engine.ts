@@ -7,31 +7,35 @@ import {
   EXTRA_ITEMS,
   EXTRA_PHASE,
   ITEMS,
-  ON_REQUEST_KEYS,
   SERVICE_IDS,
   SERVICES,
   UNIT_RULES,
   URGENCY,
+  WEB_VARIANTS,
   serviceItems,
+  serviceScope,
   type ComplexityKey,
   type ExtraItem,
   type ItemKey,
-  type OnRequestKey,
   type ServiceId,
   type Unit,
   type UrgencyKey,
+  type WebVariant,
 } from "./catalog";
 
 /** То, что выбрал посетитель. Единственные данные, которые браузер передаёт серверу. */
 export type Selection = {
   services: ServiceId[];
+  /** вариант сайта: конструктор или индивидуальная разработка */
+  variant: WebVariant;
   qty: Partial<Record<ItemKey, number>>;
-  onRequest: OnRequestKey[];
+  /** отмеченные пункты с индивидуальной оценкой: индексы из «Что входит» услуги на сайте */
+  parts: Partial<Record<ServiceId, number[]>>;
   complexity: ComplexityKey;
   urgency: UrgencyKey;
 };
 
-export const emptySelection = (): Selection => ({ services: [], qty: {}, onRequest: [], complexity: "simple", urgency: "none" });
+export const emptySelection = (): Selection => ({ services: [], variant: "builder", qty: {}, parts: {}, complexity: "simple", urgency: "none" });
 
 export type DayRange = { min: number; max: number };
 
@@ -46,16 +50,22 @@ export type QuoteLine = {
 
 export type QuoteService = {
   id: ServiceId;
+  variant?: WebVariant;
   lines: QuoteLine[];
   subtotal: number;
   days: DayRange;
+  /** пункты с индивидуальной оценкой (индексы deliverables услуги) */
+  parts: number[];
+  /** у услуги нет цены в прайсе — вся услуга оценивается индивидуально */
+  requestOnly: boolean;
 };
 
 export type Quote = {
   currency: "USD";
   services: QuoteService[];
   extras: { lines: QuoteLine[]; subtotal: number; before: DayRange; after: DayRange };
-  onRequest: OnRequestKey[];
+  /** есть позиции с индивидуальной оценкой (в сумму не входят) */
+  hasOnRequest: boolean;
   /** сумма позиций до коэффициентов */
   base: number;
   complexity: { key: ComplexityKey; factor: number; delta: number };
@@ -69,8 +79,7 @@ export type Quote = {
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
 const roundQty = (q: number, unit: Unit) => {
-  const d = UNIT_RULES[unit].decimals;
-  const p = 10 ** d;
+  const p = 10 ** UNIT_RULES[unit].decimals;
   return Math.round(q * p) / p;
 };
 
@@ -91,22 +100,15 @@ export function parseSelection(input: unknown, strict = true): SelectionResult {
   const src = input as Record<string, unknown>;
   const fail = (e: string): SelectionResult => ({ ok: false, error: e });
 
-  const rawServices = Array.isArray(src.services) ? src.services : [];
   const services: ServiceId[] = [];
-  for (const s of rawServices) {
+  for (const s of Array.isArray(src.services) ? src.services : []) {
     if ((SERVICE_IDS as readonly unknown[]).includes(s)) {
       if (!services.includes(s as ServiceId)) services.push(s as ServiceId);
     } else if (strict) return fail("services");
   }
-  // взаимоисключающие услуги (два вида сайта): оставляем первую выбранную
-  const kept: ServiceId[] = [];
-  for (const s of services) {
-    if (SERVICES[s].exclusiveWith?.some((x) => kept.includes(x))) {
-      if (strict) return fail("exclusive");
-      continue;
-    }
-    kept.push(s);
-  }
+
+  const variant = (WEB_VARIANTS as readonly unknown[]).includes(src.variant) ? (src.variant as WebVariant) : null;
+  if (strict && !variant) return fail("variant");
 
   const qty: Partial<Record<ItemKey, number>> = {};
   const rawQty = src.qty && typeof src.qty === "object" ? (src.qty as Record<string, unknown>) : {};
@@ -122,11 +124,21 @@ export function parseSelection(input: unknown, strict = true): SelectionResult {
     if (q > 0) qty[key] = q;
   }
 
-  const onRequest: OnRequestKey[] = [];
-  for (const k of Array.isArray(src.onRequest) ? src.onRequest : []) {
-    if ((ON_REQUEST_KEYS as readonly unknown[]).includes(k)) {
-      if (!onRequest.includes(k as OnRequestKey)) onRequest.push(k as OnRequestKey);
-    } else if (strict) return fail("onRequest");
+  const parts: Partial<Record<ServiceId, number[]>> = {};
+  const rawParts = src.parts && typeof src.parts === "object" ? (src.parts as Record<string, unknown>) : {};
+  for (const [k, v] of Object.entries(rawParts)) {
+    if (!(SERVICE_IDS as readonly string[]).includes(k) || !Array.isArray(v)) {
+      if (strict) return fail("parts");
+      continue;
+    }
+    const allowed = SERVICES[k as ServiceId].requestParts;
+    const list: number[] = [];
+    for (const i of v) {
+      if (allowed.includes(i as number)) {
+        if (!list.includes(i as number)) list.push(i as number);
+      } else if (strict) return fail("parts");
+    }
+    if (list.length) parts[k as ServiceId] = list.sort((a, b) => a - b);
   }
 
   const complexity = typeof src.complexity === "string" && src.complexity in COMPLEXITY ? (src.complexity as ComplexityKey) : null;
@@ -135,7 +147,7 @@ export function parseSelection(input: unknown, strict = true): SelectionResult {
 
   return {
     ok: true,
-    selection: { services: kept, qty, onRequest, complexity: complexity ?? "simple", urgency: urgency ?? "none" },
+    selection: { services, variant: variant ?? "builder", qty, parts, complexity: complexity ?? "simple", urgency: urgency ?? "none" },
   };
 }
 
@@ -167,9 +179,10 @@ const scaleDays = (r: DayRange, f: number): DayRange => (r.max <= 0 ? r : wholeD
 /** Порядок позиций внутри услуги — как в каталоге */
 function serviceLines(id: ServiceId, sel: Selection): QuoteLine[] {
   const s = SERVICES[id];
+  const scope = serviceScope(s, sel.variant);
   const out: QuoteLine[] = [];
-  if (s.base) out.push(line(s.base, 1, "base"));
-  for (const k of s.core) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "core"));
+  if (scope.base) out.push(line(scope.base, 1, "base"));
+  for (const k of scope.core) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "core"));
   for (const g of s.options) for (const k of g.items) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "option"));
   return out;
 }
@@ -183,12 +196,16 @@ export function computeQuote(sel: Selection): Quote {
   const services: QuoteService[] = [];
   for (const id of SERVICE_IDS) {
     if (!sel.services.includes(id)) continue;
+    const s = SERVICES[id];
     const lines = serviceLines(id, sel).filter((l) => (charged.has(l.key) ? false : (charged.add(l.key), true)));
     services.push({
       id,
+      ...(s.variants ? { variant: sel.variant } : {}),
       lines,
       subtotal: round2(lines.reduce((a, l) => a + l.amount, 0)),
       days: scaleDays(sumDays(lines), urgency.timeFactor),
+      parts: (sel.parts[id] ?? []).filter((i) => s.requestParts.includes(i)),
+      requestOnly: Boolean(s.requestOnly),
     });
   }
 
@@ -206,43 +223,58 @@ export function computeQuote(sel: Selection): Quote {
   const total = round2(base * complexity.factor * urgency.factor); // как в исходнике: без промежуточного округления
 
   /* Сроки: разные услуги ведут разные специалисты параллельно (берём самый длинный поток),
-     подготовка (концепция, ресёрч) идёт до них, правки — после. */
+     подготовка (концепция, ресёрч) идёт до них, правки — после.
+     Услуги с индивидуальной оценкой в срок не входят — его назовём после брифа. */
   const parallel = services.reduce<DayRange>((acc, s) => ({ min: Math.max(acc.min, s.days.min), max: Math.max(acc.max, s.days.max) }), { min: 0, max: 0 });
   const tl = {
     min: extras.before.min + parallel.min + extras.after.min,
     max: extras.before.max + parallel.max + extras.after.max,
   };
 
-  const isEmpty = services.length === 0 && extraLines.length === 0 && sel.onRequest.length === 0;
   return {
     currency: "USD",
     services,
     extras,
-    onRequest: ON_REQUEST_KEYS.filter((k) => sel.onRequest.includes(k)),
+    hasOnRequest: services.some((s) => s.requestOnly || s.parts.length > 0),
     base,
     complexity: { key: sel.complexity, factor: complexity.factor, delta: round2(afterComplexity - base) },
     urgency: { key: sel.urgency, factor: urgency.factor, delta: round2(total - afterComplexity) },
     total,
     timeline: tl.max > 0 ? tl : null,
-    isEmpty,
+    isEmpty: services.length === 0 && extraLines.length === 0,
   };
 }
 
-/** Выбор/снятие услуги: учитывает взаимоисключения и подставляет стартовый объём */
+/** Выбор/снятие услуги; при первом выборе подставляет стартовый объём */
 export function toggleService(sel: Selection, id: ServiceId): Selection {
   if (sel.services.includes(id)) return { ...sel, services: sel.services.filter((s) => s !== id) };
   const s = SERVICES[id];
-  const services = [...sel.services.filter((x) => !s.exclusiveWith?.includes(x)), id];
-  const own = serviceItems(s);
-  const hasAny = own.some((k) => (sel.qty[k] ?? 0) > 0 && k !== s.base);
+  const scope = serviceScope(s, sel.variant);
+  const hasAny = serviceItems(s).some((k) => (sel.qty[k] ?? 0) > 0 && k !== scope.base);
   const qty = { ...sel.qty };
-  if (!hasAny) for (const [k, v] of Object.entries(s.defaults)) qty[k as ItemKey] = v;
-  return { ...sel, services, qty };
+  if (!hasAny) for (const [k, v] of Object.entries(scope.defaults)) qty[k as ItemKey] = v;
+  return { ...sel, services: [...sel.services, id], qty };
+}
+
+/** Смена варианта сайта: общие опции сохраняются, для пустого варианта — стартовый объём */
+export function setVariant(sel: Selection, variant: WebVariant): Selection {
+  if (sel.variant === variant) return sel;
+  const scope = SERVICES.web.variants![variant];
+  const qty = { ...sel.qty };
+  if (!scope.core.some((k) => (qty[k] ?? 0) > 0)) for (const [k, v] of Object.entries(scope.defaults)) qty[k as ItemKey] = v;
+  return { ...sel, variant, qty };
+}
+
+export function togglePart(sel: Selection, id: ServiceId, i: number): Selection {
+  const cur = sel.parts[id] ?? [];
+  const next = cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i].sort((a, b) => a - b);
+  return { ...sel, parts: { ...sel.parts, [id]: next } };
 }
 
 /** Стабильная подпись расчёта: меняется только при изменении состава/параметров */
 export function selectionSignature(sel: Selection): string {
   const q = computeQuote(sel);
   const lines = [...q.services.flatMap((s) => s.lines), ...q.extras.lines].map((l) => `${l.key}:${l.qty}`).join(",");
-  return [q.services.map((s) => s.id).join("+"), lines, q.onRequest.join("+"), sel.complexity, sel.urgency].join("|");
+  const svc = q.services.map((s) => `${s.id}${s.variant ? `/${s.variant}` : ""}${s.parts.length ? `[${s.parts.join(".")}]` : ""}`).join("+");
+  return [svc, lines, sel.complexity, sel.urgency].join("|");
 }

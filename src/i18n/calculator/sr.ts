@@ -1,4 +1,4 @@
-import type { CalcDict } from "./ru";
+import type { CalcSource } from "./ru";
 
 const sr = {
   meta: {
@@ -30,9 +30,11 @@ const sr = {
   },
   pick: {
     title: "Šta vam je potrebno?",
-    hint: "Možete izabrati više usluga. Za sajt — jednu od dve varijante.",
+    hint: "Možete izabrati više usluga. One bez cene u cenovniku procenićemo individualno.",
     select: "Izaberi",
     selected: "Izabrano",
+    variantsTitle: "Kako pravimo sajt",
+    requestOnly: "Individualna procena",
     from: "od {price}",
     perUnitFrom: "od {price} po {unit}",
     details: "Više o usluzi",
@@ -40,7 +42,6 @@ const sr = {
     excludes: "Nije uključeno",
     timeline: "Okvirni rok",
     options: "Dodatne opcije",
-    exclusive: "Ovaj izbor zamenjuje drugu vrstu sajta",
     empty: "Izaberite bar jednu uslugu ili dodatni posao da biste dobili obračun.",
   },
   scope: {
@@ -62,16 +63,15 @@ const sr = {
     noServices: "Prvo izaberite usluge u prvom koraku.",
     subtotal: "Ukupno za uslugu",
     zeroHint: "Unesite količinu bar za jednu stavku.",
+    partsTitle: "Individualna procena",
+    partsHint: "Za ove poslove nema cene u cenovniku — navešćemo je nakon brifa. Označite šta vam treba:",
+    requestOnlyHint: "Ovu uslugu procenjujemo individualno nakon brifa. Označite šta vam treba — tako ćemo brže pripremiti ponudu.",
   },
   extras: {
     title: "Opcije i parametri",
     workTitle: "Dodatni poslovi",
     workHint: "Za ceo projekat, a ne za pojedinačnu uslugu.",
-    onRequestTitle: "Individualna procena",
-    onRequestHint: "Ove usluge nemaju fiksnu cenu u cenovniku: cenu ćemo navesti nakon brifa. Nisu uključene u ukupan iznos.",
     onRequestBadge: "Individualna procena",
-    add: "Dodaj",
-    added: "Dodato",
     complexityTitle: "Složenost projekta",
     urgencyTitle: "Hitnost",
     surcharge: "+{pct}",
@@ -120,48 +120,42 @@ const sr = {
     brief: "Pošalji brif Byuru",
   },
   services: {
-    site_builder: {
-      title: "Sajt na konstruktoru",
-      short: "Brzo pokretanje: landing ili manji sajt kojim lako upravljate bez programera.",
-      description: "Sajt se pravi na konstruktoru: brzo se pokreće, a tekstove i slike kasnije možete menjati sami.",
-      includes: ["Struktura i dizajn sajta", "Izrada na konstruktoru", "Prilagođavanje za telefone i tablete", "Predaja pristupa sajtu"],
-      excludes: ["Pretplata na konstruktor i domen", "Tekstovi i fotografije — kopirajting se procenjuje posebno", "Logo i vizuelni identitet", "Reklama i promocija"],
+    web: {
+      includes: ["Struktura i dizajn sajta", "Kodiranje ili izrada na konstruktoru", "Prilagođavanje za telefone i tablete", "Predaja pristupa"],
+      excludes: ["Hosting, domen i pretplata na konstruktor", "Tekstovi i fotografije", "Logo i vizuelni identitet", "Reklama i promocija"],
     },
-    site_custom: {
-      title: "Sajt sa individualnim razvojem",
-      short: "Jedinstven dizajn i sopstveni kod — bez ograničenja konstruktora.",
-      description: "Sajt od nule za vaš zadatak: jedinstven dizajn, bilo kakva logika, brzo učitavanje i potpuna kontrola nad kodom.",
-      includes: ["Prototip i jedinstven dizajn", "Kodiranje i razvoj", "Prilagođavanje svim uređajima", "Optimizacija brzine učitavanja", "Predaja izvornog koda"],
-      excludes: ["Hosting i domen", "Tekstovi i fotografije — kopirajting se procenjuje posebno", "Logo i vizuelni identitet", "Reklama i promocija"],
+    apps: {
+      includes: [],
+      excludes: ["Takse za developerske naloge u prodavnicama aplikacija", "Serverska infrastruktura i plaćeni servisi"],
     },
-    bot: {
-      title: "Telegram bot",
-      short: "Upiti, zakazivanje, prodaja i podrška direktno u Telegramu.",
-      description: "Bot sa promišljenim scenarijem: prima upite, odgovara na česta pitanja, zakazuje termine i prima uplate.",
+    bots: {
       includes: ["Scenario dijaloga", "Osnovna logika i dugmad", "Pokretanje i testiranje", "Predaja bota i pristupa"],
       excludes: ["Server i hosting", "Plaćeni servisi i API trećih strana", "Tekstovi za masovne poruke"],
     },
-    graphics: {
-      title: "Kreative i baneri",
-      short: "Statična grafika za reklame, društvene mreže i sajtove u jedinstvenom stilu.",
-      description: "Serije kreativa za lansiranja i testove: jedinstven stil i prilagođavanja za svaku platformu.",
-      includes: ["Dizajn prema brifu i vizuelnom identitetu", "Fajlovi spremni za objavu", "Izvorni fajlovi"],
-      excludes: ["Fotografisanje i plaćene foto-banke", "Tekstovi za kreative", "Podešavanje i vođenje reklama", "Izmene van dogovorenog — po cenovniku"],
+    brand: {
+      includes: [],
+      excludes: ["Registracija žiga", "Štampa materijala"],
     },
-    video: {
-      title: "Video i motion dizajn",
-      short: "Motion grafika, AI video, montaža, titlovi i AI naracija.",
-      description: "Video snimci za reklame i društvene mreže. Animacija i montaža se obračunavaju po trajanju u sekundama.",
+    graphic: {
+      includes: ["Dizajn prema vašem tekstu i materijalima", "Infografika i šeme", "Fajlovi za štampu ili prikaz i izvorni fajlovi"],
+      excludes: ["Pisanje tekstova", "Štampa i proizvodnja", "Plaćene ilustracije i fotografije"],
+    },
+    motion: {
       includes: ["Storiboard ili montaža po gotovom scenariju", "Animacija i montaža", "Izvoz u potrebnim formatima"],
       excludes: ["Scenario — možete dodati „Koncept / scenario“", "Snimanje i glumci", "Licencirana muzika i stok materijal", "Naracija profesionalnog spikera"],
     },
-    presentation: {
-      title: "Prezentacije",
-      short: "Pitch deck, prodajne i korporativne prezentacije.",
-      description: "Prezentacije zbog kojih kompaniju shvataju ozbiljno: jasna struktura, infografika i uredan prelom.",
-      includes: ["Dizajn slajdova prema vašem tekstu", "Infografika i šeme", "PDF i izvorni fajlovi"],
-      excludes: ["Pisanje tekstova", "Plaćene ilustracije i fotografije", "Video i naracija"],
+    ads: {
+      includes: ["Dizajn prema brifu i vizuelnom identitetu", "Fajlovi spremni za objavu", "Izvorni fajlovi"],
+      excludes: ["Fotografisanje i plaćene foto-banke", "Tekstovi za kreative", "Podešavanje i vođenje reklama", "Izmene van dogovorenog — po cenovniku"],
     },
+    special: {
+      includes: [],
+      excludes: ["Hosting i plaćeni servisi trećih strana"],
+    },
+  },
+  variants: {
+    builder: { title: "Na konstruktoru", text: "Brzo pokretanje, tekstove i slike kasnije možete menjati sami." },
+    custom: { title: "Individualni razvoj", text: "Jedinstven dizajn i sopstveni kod bez ograničenja konstruktora." },
   },
   items: {
     static: "Statična kreativa",
@@ -216,12 +210,6 @@ const sr = {
     research: "Analiza konkurencije, publike i referenci",
     small_edit: "Pojedinačna izmena nakon predaje",
     big_edit: "Primetna prerada bloka, ekrana ili scene",
-  },
-  onRequest: {
-    logo: { title: "Izrada logotipa", text: "Znak ili tipografski logo sa varijantama upotrebe." },
-    identity: { title: "Vizuelni identitet", text: "Boje, fontovi, grafika i pravila — osnova brendbuka." },
-    copywriting: { title: "Kopirajting", text: "Tekstovi za sajt, prezentaciju ili kreative." },
-    support: { title: "Održavanje i tehnička podrška", text: "Ažuriranja, dorade i nadzor nakon pokretanja." },
   },
   brief: {
     title: "Brif za Byuro",
@@ -305,6 +293,6 @@ const sr = {
     paidOptions: "Dodatne opcije uz doplatu",
     notesTitle: "Napomena",
   },
-} satisfies CalcDict;
+} satisfies CalcSource;
 
 export default sr;

@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
 import { type Quote, type Selection } from "@/lib/calculator/engine";
-import { formatDays, projectType } from "@/lib/calculator/format";
+import { formatDays, projectType, requestPartNames } from "@/lib/calculator/format";
 import { LIMITS, extractLinks, normalizeTelegram, validateBrief, type BriefErrors, type BriefRequest } from "@/lib/brief/schema";
 import { briefText } from "@/lib/brief/text";
 import { cn } from "@/lib/cn";
@@ -227,8 +227,11 @@ export function BriefDialog({
                 <ul className="mt-2 space-y-1 text-[14px]">
                   {quote.services.map((s) => (
                     <li key={s.id} className="flex justify-between gap-3">
-                      <span>{t.services[s.id].title}</span>
-                      <span className="tabular-nums">{money(s.subtotal)}</span>
+                      <span>
+                        {t.services[s.id].title}
+                        {s.parts.length > 0 && !s.requestOnly && <span className="block text-stone-ink">+ {requestPartNames(t, s).join(", ")} — {t.summary.onRequest}</span>}
+                      </span>
+                      {s.requestOnly ? <span className="shrink-0 text-stone-ink">{t.summary.onRequest}</span> : <span className="tabular-nums">{money(s.subtotal)}</span>}
                     </li>
                   ))}
                   {quote.extras.lines.length > 0 && (
@@ -237,12 +240,6 @@ export function BriefDialog({
                       <span className="tabular-nums">{money(quote.extras.subtotal)}</span>
                     </li>
                   )}
-                  {quote.onRequest.map((k) => (
-                    <li key={k} className="flex justify-between gap-3 text-stone-ink">
-                      <span>{t.onRequest[k].title}</span>
-                      <span>{t.summary.onRequest}</span>
-                    </li>
-                  ))}
                 </ul>
                 <p className="mt-3 flex flex-wrap justify-between gap-2 border-t border-ink/10 pt-3 font-semibold">
                   <span>

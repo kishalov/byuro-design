@@ -1,4 +1,4 @@
-import type { CalcDict } from "./ru";
+import type { CalcSource } from "./ru";
 
 const de = {
   meta: {
@@ -30,9 +30,11 @@ const de = {
   },
   pick: {
     title: "Was brauchen Sie?",
-    hint: "Sie können mehrere Leistungen wählen. Bei der Website ist eine von zwei Varianten möglich.",
+    hint: "Sie können mehrere Leistungen wählen. Leistungen ohne Preis in der Preisliste kalkulieren wir individuell.",
     select: "Auswählen",
     selected: "Ausgewählt",
+    variantsTitle: "Wie wir die Website umsetzen",
+    requestOnly: "Individuelles Angebot",
     from: "ab {price}",
     perUnitFrom: "ab {price} pro {unit}",
     details: "Mehr zur Leistung",
@@ -40,7 +42,6 @@ const de = {
     excludes: "Nicht enthalten",
     timeline: "Voraussichtliche Dauer",
     options: "Zusatzoptionen",
-    exclusive: "Diese Auswahl ersetzt die andere Website-Variante",
     empty: "Wählen Sie mindestens eine Leistung oder Zusatzarbeit, um eine Kalkulation zu erhalten.",
   },
   scope: {
@@ -62,16 +63,15 @@ const de = {
     noServices: "Wählen Sie zuerst im ersten Schritt Leistungen aus.",
     subtotal: "Summe der Leistung",
     zeroHint: "Geben Sie für mindestens eine Position eine Menge an.",
+    partsTitle: "Individuelles Angebot",
+    partsHint: "Für diese Arbeiten gibt es keinen Preis in der Preisliste – wir nennen ihn nach dem Briefing. Markieren Sie, was Sie brauchen:",
+    requestOnlyHint: "Diese Leistung kalkulieren wir individuell nach dem Briefing. Markieren Sie, was Sie brauchen – so bereiten wir das Angebot schneller vor.",
   },
   extras: {
     title: "Optionen und Parameter",
     workTitle: "Zusätzliche Arbeiten",
     workHint: "Für das gesamte Projekt, nicht für eine einzelne Leistung.",
-    onRequestTitle: "Individuelles Angebot",
-    onRequestHint: "Für diese Leistungen gibt es keinen Festpreis in der Preisliste: Wir nennen den Preis nach dem Briefing. Sie sind nicht in der Summe enthalten.",
     onRequestBadge: "Individuelles Angebot",
-    add: "Hinzufügen",
-    added: "Hinzugefügt",
     complexityTitle: "Projektkomplexität",
     urgencyTitle: "Dringlichkeit",
     surcharge: "+{pct}",
@@ -120,48 +120,42 @@ const de = {
     brief: "Briefing an Byuro senden",
   },
   services: {
-    site_builder: {
-      title: "Website mit Baukasten",
-      short: "Schneller Start: Landingpage oder kleine Website, die Sie ohne Entwickler pflegen können.",
-      description: "Die Website wird mit einem Baukasten erstellt: Sie startet schnell, und Texte und Bilder können Sie später selbst ändern.",
-      includes: ["Struktur und Design der Website", "Umsetzung im Baukasten", "Anpassung für Smartphones und Tablets", "Übergabe der Zugänge"],
-      excludes: ["Baukasten-Tarif und Domain", "Texte und Fotos – Copywriting wird separat kalkuliert", "Logo und Corporate Design", "Werbung und Promotion"],
+    web: {
+      includes: ["Struktur und Design der Website", "Frontend-Umsetzung oder Aufbau im Baukasten", "Anpassung für Smartphones und Tablets", "Übergabe der Zugänge"],
+      excludes: ["Hosting, Domain und Baukasten-Tarif", "Texte und Fotos", "Logo und Corporate Design", "Werbung und Promotion"],
     },
-    site_custom: {
-      title: "Individuell entwickelte Website",
-      short: "Einzigartiges Design und eigener Code – ohne Grenzen eines Baukastens.",
-      description: "Eine Website von Grund auf: einzigartiges Design, beliebige Logik, schnelle Ladezeiten und volle Kontrolle über den Code.",
-      includes: ["Prototyp und individuelles Design", "Frontend und Entwicklung", "Anpassung für alle Geräte", "Optimierung der Ladegeschwindigkeit", "Übergabe des Quellcodes"],
-      excludes: ["Hosting und Domain", "Texte und Fotos – Copywriting wird separat kalkuliert", "Logo und Corporate Design", "Werbung und Promotion"],
+    apps: {
+      includes: [],
+      excludes: ["Gebühren für Entwicklerkonten in App-Stores", "Serverinfrastruktur und kostenpflichtige Dienste"],
     },
-    bot: {
-      title: "Telegram-Bot",
-      short: "Anfragen, Buchungen, Verkauf und Support direkt in Telegram.",
-      description: "Ein Bot mit durchdachtem Ablauf: nimmt Anfragen an, beantwortet häufige Fragen, bucht Termine und nimmt Zahlungen an.",
+    bots: {
       includes: ["Dialogszenario", "Grundlogik und Buttons", "Start und Test", "Übergabe von Bot und Zugängen"],
       excludes: ["Server und Hosting", "Kostenpflichtige Dienste und APIs Dritter", "Texte für Rundsendungen"],
     },
-    graphics: {
-      title: "Werbemittel und Banner",
-      short: "Statische Grafiken für Werbung, Social Media und Websites in einem Stil.",
-      description: "Serien von Werbemitteln für Launches und Tests: einheitlicher Stil und Anpassungen für jede Plattform.",
-      includes: ["Design nach Briefing und Corporate Design", "Dateien, bereit zur Veröffentlichung", "Quelldateien"],
-      excludes: ["Fotoshooting und kostenpflichtige Stockfotos", "Texte für die Werbemittel", "Einrichtung und Betreuung von Werbung", "Korrekturen über das Vereinbarte hinaus – laut Preisliste"],
+    brand: {
+      includes: [],
+      excludes: ["Markenanmeldung", "Druck von Werbemitteln"],
     },
-    video: {
-      title: "Video und Motion Design",
-      short: "Motion Graphics, KI-Video, Schnitt, Untertitel und KI-Vertonung.",
-      description: "Videos für Werbung und Social Media. Animation und Schnitt werden nach Dauer in Sekunden berechnet.",
+    graphic: {
+      includes: ["Design nach Ihrem Text und Ihren Materialien", "Infografiken und Diagramme", "Druck- oder Präsentationsdateien und Quelldateien"],
+      excludes: ["Texterstellung", "Druck und Produktion", "Kostenpflichtige Illustrationen und Fotos"],
+    },
+    motion: {
       includes: ["Storyboard oder Umsetzung nach fertigem Skript", "Animation und Schnitt", "Export in den benötigten Formaten"],
       excludes: ["Skript – „Konzept / Skript“ kann ergänzt werden", "Dreh und Darsteller", "Lizenzierte Musik und Stockmaterial", "Vertonung durch professionelle Sprecher"],
     },
-    presentation: {
-      title: "Präsentationen",
-      short: "Pitch-Decks, Verkaufs- und Unternehmenspräsentationen.",
-      description: "Präsentationen, mit denen ein Unternehmen ernst genommen wird: klare Struktur, Infografiken und saubere Gestaltung.",
-      includes: ["Foliendesign nach Ihrem Text", "Infografiken und Diagramme", "PDF und Quelldateien"],
-      excludes: ["Texterstellung", "Kostenpflichtige Illustrationen und Fotos", "Video und Vertonung"],
+    ads: {
+      includes: ["Design nach Briefing und Corporate Design", "Dateien, bereit zur Veröffentlichung", "Quelldateien"],
+      excludes: ["Fotoshooting und kostenpflichtige Stockfotos", "Texte für die Werbemittel", "Einrichtung und Betreuung von Werbung", "Korrekturen über das Vereinbarte hinaus – laut Preisliste"],
     },
+    special: {
+      includes: [],
+      excludes: ["Hosting und kostenpflichtige Dienste Dritter"],
+    },
+  },
+  variants: {
+    builder: { title: "Mit Baukasten", text: "Schneller Start, Texte und Bilder können Sie später selbst ändern." },
+    custom: { title: "Individualentwicklung", text: "Einzigartiges Design und eigener Code ohne Grenzen eines Baukastens." },
   },
   items: {
     static: "Statisches Werbemittel",
@@ -216,12 +210,6 @@ const de = {
     research: "Analyse von Wettbewerb, Zielgruppe und Referenzen",
     small_edit: "Punktuelle Korrektur nach der Abgabe",
     big_edit: "Spürbare Überarbeitung eines Blocks, Screens oder einer Szene",
-  },
-  onRequest: {
-    logo: { title: "Logoentwicklung", text: "Bildzeichen oder Wortmarke mit Anwendungsvarianten." },
-    identity: { title: "Corporate Design", text: "Farben, Schriften, Grafik und Regeln – die Basis eines Brandbooks." },
-    copywriting: { title: "Copywriting", text: "Texte für Website, Präsentation oder Werbemittel." },
-    support: { title: "Betreuung und technischer Support", text: "Updates, Weiterentwicklung und Kontrolle nach dem Launch." },
   },
   brief: {
     title: "Briefing für Byuro",
@@ -305,6 +293,6 @@ const de = {
     paidOptions: "Kostenpflichtige Zusatzoptionen",
     notesTitle: "Hinweis",
   },
-} satisfies CalcDict;
+} satisfies CalcSource;
 
 export default de;

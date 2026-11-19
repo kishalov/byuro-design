@@ -6,7 +6,7 @@ import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
 import { ITEMS, SERVICES } from "@/lib/calculator/catalog";
 import type { Quote, QuoteLine } from "@/lib/calculator/engine";
-import { formatDays, moneyFormatter, pct, projectType, qtyFormatter } from "@/lib/calculator/format";
+import { formatDays, moneyFormatter, pct, projectType, qtyFormatter, requestPartNames, serviceTitle } from "@/lib/calculator/format";
 import { fontStack } from "./fonts";
 
 /* Коммерческое предложение в фирменном стиле Бюро — без логотипа и контактов (по ТЗ).
@@ -84,7 +84,14 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
     </View>
   );
 
-  const Block = ({ title, description, lines, subtotal, days }: { title: string; description?: string; lines: QuoteLine[]; subtotal: number; days?: string }) => (
+  const RequestRow = ({ label, last }: { label: string; last: boolean }) => (
+    <View wrap={false} style={[s.row, { paddingVertical: 5.5, borderBottomWidth: last ? 0 : 0.6, borderBottomColor: C.line }]}>
+      <Text style={s.cellItem}>{label}</Text>
+      <Text style={[s.muted, { width: 150, textAlign: "right" }]}>{t.pdf.onRequestAmount}</Text>
+    </View>
+  );
+
+  const Block = ({ title, description, lines, subtotal, days, requests = [] }: { title: string; description?: string; lines: QuoteLine[]; subtotal: number; days?: string; requests?: string[] }) => (
     <View style={{ marginBottom: 14, borderRadius: 12, borderWidth: 0.8, borderColor: C.line, overflow: "hidden" }}>
       <View wrap={false} minPresenceAhead={70} style={{ backgroundColor: C.paper, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 9 }}>
         <Text style={[s.display, { fontSize: 11 }]}>{title}</Text>
@@ -93,7 +100,10 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
       <View style={{ paddingHorizontal: 12, paddingTop: 8 }}>
         <TableHead />
         {lines.map((l, i) => (
-          <Line key={l.key} l={l} last={i === lines.length - 1} />
+          <Line key={l.key} l={l} last={i === lines.length - 1 && !requests.length} />
+        ))}
+        {requests.map((r, i) => (
+          <RequestRow key={r} label={r} last={i === requests.length - 1} />
         ))}
       </View>
       <View wrap={false} style={[s.row, { marginTop: 4, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: C.paper, alignItems: "center" }]}>
@@ -169,24 +179,31 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
         {/* Состав работ */}
         <View style={s.section}>
           <SectionTitle>{t.pdf.servicesTitle}</SectionTitle>
-          {quote.services.map((q) => (
-            <Block key={q.id} title={t.services[q.id].title} description={t.services[q.id].description} lines={q.lines} subtotal={q.subtotal} days={formatDays(q.days, t.days, locale)} />
-          ))}
-          {quote.extras.lines.length > 0 && <Block title={t.pdf.extrasTitle} lines={quote.extras.lines} subtotal={quote.extras.subtotal} />}
-          {quote.onRequest.length > 0 && (
-            <View style={{ marginBottom: 14, borderRadius: 12, borderWidth: 0.8, borderColor: C.line, borderStyle: "dashed", paddingHorizontal: 12, paddingVertical: 10 }}>
-              <Text style={[s.display, { fontSize: 11, marginBottom: 4 }]}>{t.pdf.onRequestTitle}</Text>
-              {quote.onRequest.map((k) => (
-                <View key={k} wrap={false} style={[s.row, { paddingVertical: 4 }]}>
+          {quote.services.map((q) =>
+            q.requestOnly ? (
+              <View key={q.id} wrap={false} style={{ marginBottom: 14, borderRadius: 12, borderWidth: 0.8, borderColor: C.line, borderStyle: "dashed", paddingHorizontal: 12, paddingVertical: 10 }}>
+                <View style={[s.row, { alignItems: "flex-start" }]}>
                   <View style={s.cellItem}>
-                    <Text style={{ fontWeight: 600 }}>{t.onRequest[k].title}</Text>
-                    <Text style={[s.muted, { fontSize: 8.5 }]}>{t.onRequest[k].text}</Text>
+                    <Text style={[s.display, { fontSize: 11 }]}>{t.services[q.id].title}</Text>
+                    <Text style={[s.muted, { marginTop: 3, fontSize: 8.5 }]}>{t.services[q.id].short}</Text>
                   </View>
-                  <Text style={[s.cellAmount, s.muted, { width: 110 }]}>{t.pdf.onRequestAmount}</Text>
+                  <Text style={[s.muted, { width: 130, textAlign: "right" }]}>{t.pdf.onRequestAmount}</Text>
                 </View>
-              ))}
-            </View>
+                {q.parts.length > 0 && <Text style={{ marginTop: 6 }}>{requestPartNames(t, q).join("  ·  ")}</Text>}
+              </View>
+            ) : (
+              <Block
+                key={q.id}
+                title={serviceTitle(t, q)}
+                description={t.services[q.id].short}
+                lines={q.lines}
+                subtotal={q.subtotal}
+                days={q.days.max > 0 ? formatDays(q.days, t.days, locale) : undefined}
+                requests={requestPartNames(t, q)}
+              />
+            ),
           )}
+          {quote.extras.lines.length > 0 && <Block title={t.pdf.extrasTitle} lines={quote.extras.lines} subtotal={quote.extras.subtotal} />}
         </View>
 
         {/* Итог */}
@@ -198,7 +215,7 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
           <View style={[s.row, { marginTop: 10, backgroundColor: C.coral, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 13, alignItems: "center" }]}>
             <View style={{ flex: 1 }}>
               <Text style={[s.display, { fontSize: 14 }]}>{t.summary.total}</Text>
-              {quote.onRequest.length > 0 && <Text style={{ fontSize: 8, marginTop: 2 }}>{t.summary.totalNote}</Text>}
+              {quote.hasOnRequest && <Text style={{ fontSize: 8, marginTop: 2 }}>{t.summary.totalNote}</Text>}
             </View>
             <Text style={[s.display, { fontSize: 20 }]}>{money(quote.total)}</Text>
           </View>
@@ -209,17 +226,19 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
         {quote.timeline && (
           <View wrap={false} style={s.section}>
             <SectionTitle>{t.pdf.timelineTitle}</SectionTitle>
-            {quote.services.map((q) => (
-              <TotalRow key={q.id} label={t.services[q.id].title} value={formatDays(q.days, t.days, locale)} />
-            ))}
+            {quote.services
+              .filter((q) => q.days.max > 0)
+              .map((q) => (
+                <TotalRow key={q.id} label={t.services[q.id].title} value={formatDays(q.days, t.days, locale)} />
+              ))}
             {quote.extras.before.max > 0 && <TotalRow label={quote.extras.lines.filter((l) => l.key === "concept" || l.key === "research").map((l) => t.items[l.key]).join(", ")} value={formatDays(quote.extras.before, t.days, locale)} />}
             {quote.extras.after.max > 0 && <TotalRow label={quote.extras.lines.filter((l) => l.key === "small_edit" || l.key === "big_edit").map((l) => t.items[l.key]).join(", ")} value={formatDays(quote.extras.after, t.days, locale)} />}
             <View style={[s.row, { marginTop: 8, backgroundColor: C.ink, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, alignItems: "center" }]}>
               <Text style={{ flex: 1, color: C.paper, fontWeight: 600 }}>{t.pdf.timelineTotal}</Text>
               <Text style={[s.display, { color: C.paper, fontSize: 12 }]}>{formatDays(quote.timeline, t.days, locale)}</Text>
             </View>
-            {quote.services.length > 1 && <Text style={[s.muted, { marginTop: 6, fontSize: 8 }]}>{t.summary.timelineNote}</Text>}
-            {quote.onRequest.length > 0 && <Text style={[s.muted, { marginTop: 3, fontSize: 8 }]}>{t.summary.timelineOnRequest}</Text>}
+            {quote.services.filter((q) => q.days.max > 0).length > 1 && <Text style={[s.muted, { marginTop: 6, fontSize: 8 }]}>{t.summary.timelineNote}</Text>}
+            {quote.hasOnRequest && <Text style={[s.muted, { marginTop: 3, fontSize: 8 }]}>{t.summary.timelineOnRequest}</Text>}
           </View>
         )}
 
@@ -238,7 +257,7 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
                     <View style={s.row}>
                       <View style={{ flex: 1, paddingRight: 14 }}>
                         <Text style={s.label}>{t.pick.includes}</Text>
-                        <Bullets items={t.services[q.id].includes} />
+                        <Bullets items={t.services[q.id].includes.length ? t.services[q.id].includes : t.services[q.id].deliverables} />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={s.label}>{t.pick.excludes}</Text>

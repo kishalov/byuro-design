@@ -6,7 +6,7 @@ import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
 import type { Quote } from "../calculator/engine";
-import { formatDays, lineText, moneyFormatter, pct, projectType } from "../calculator/format";
+import { formatDays, lineText, moneyFormatter, pct, projectType, requestPartNames, serviceTitle } from "../calculator/format";
 
 export type BriefTextInput = {
   briefId?: string;
@@ -67,18 +67,23 @@ export function briefText(t: CalcDict, textLocale: Locale, b: BriefTextInput): s
 
   out.push(`— ${t.brief.attached} —`);
   for (const s of q.services) {
-    out.push(`${t.services[s.id].title}: ${money(s.subtotal)} · ${formatDays(s.days, t.days, textLocale)}`);
+    const req = requestPartNames(t, s);
+    if (s.requestOnly) {
+      out.push(`${serviceTitle(t, s)}: ${t.summary.onRequest}${req.length ? ` (${req.join(", ")})` : ""}`);
+      continue;
+    }
+    out.push(`${serviceTitle(t, s)}: ${money(s.subtotal)}${s.days.max ? ` · ${formatDays(s.days, t.days, textLocale)}` : ""}`);
     for (const l of s.lines) out.push(`  • ${lineText(t, l, textLocale, money)}`);
+    if (req.length) out.push(`  • ${req.join(", ")} — ${t.summary.onRequest}`);
   }
   if (q.extras.lines.length) {
     out.push(`${t.summary.extras}: ${money(q.extras.subtotal)}`);
     for (const l of q.extras.lines) out.push(`  • ${lineText(t, l, textLocale, money)}`);
   }
-  if (q.onRequest.length) out.push(`${t.pdf.onRequestTitle}: ${q.onRequest.map((k) => t.onRequest[k].title).join(", ")} — ${t.summary.onRequest}`);
   out.push(`${t.summary.base}: ${money(q.base)}`);
   if (q.complexity.factor !== 1) out.push(`${fmt(t.summary.complexity, { level: t.complexity[q.complexity.key].title })} (+${pct(q.complexity.factor)}): ${money(q.complexity.delta)}`);
   if (q.urgency.factor !== 1) out.push(`${fmt(t.summary.urgency, { level: t.urgency[q.urgency.key].title })} (+${pct(q.urgency.factor)}): ${money(q.urgency.delta)}`);
-  out.push(`${t.summary.total}: ${money(q.total)}${q.onRequest.length ? ` (${t.summary.totalNote})` : ""}`);
+  out.push(`${t.summary.total}: ${money(q.total)}${q.hasOnRequest ? ` (${t.summary.totalNote})` : ""}`);
   if (q.timeline) out.push(`${t.summary.timeline}: ${formatDays(q.timeline, t.days, textLocale)}`);
   out.push("", t.page.disclaimer);
   return out.join("\n");

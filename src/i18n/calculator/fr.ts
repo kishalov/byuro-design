@@ -1,4 +1,4 @@
-import type { CalcDict } from "./ru";
+import type { CalcSource } from "./ru";
 
 const fr = {
   meta: {
@@ -30,9 +30,11 @@ const fr = {
   },
   pick: {
     title: "De quoi avez-vous besoin ?",
-    hint: "Vous pouvez choisir plusieurs services. Pour le site, une seule des deux options.",
+    hint: "Vous pouvez choisir plusieurs services. Ceux qui n’ont pas de prix dans notre grille seront chiffrés sur devis.",
     select: "Choisir",
     selected: "Choisi",
+    variantsTitle: "Comment nous réalisons le site",
+    requestOnly: "Sur devis",
     from: "à partir de {price}",
     perUnitFrom: "à partir de {price} par {unit}",
     details: "En savoir plus",
@@ -40,7 +42,6 @@ const fr = {
     excludes: "Non inclus",
     timeline: "Délai indicatif",
     options: "Options supplémentaires",
-    exclusive: "Ce choix remplacera l’autre type de site",
     empty: "Choisissez au moins un service ou un travail supplémentaire pour obtenir un devis.",
   },
   scope: {
@@ -62,16 +63,15 @@ const fr = {
     noServices: "Choisissez d’abord des services à la première étape.",
     subtotal: "Total du service",
     zeroHint: "Indiquez une quantité pour au moins un élément.",
+    partsTitle: "Sur devis",
+    partsHint: "Ces travaux n’ont pas de prix dans notre grille — nous les chiffrerons après le brief. Cochez ce dont vous avez besoin :",
+    requestOnlyHint: "Nous chiffrons ce service sur devis après le brief. Cochez ce dont vous avez besoin pour que nous préparions la proposition plus vite.",
   },
   extras: {
     title: "Options et paramètres",
     workTitle: "Travaux supplémentaires",
     workHint: "Pour l’ensemble du projet, pas pour un seul service.",
-    onRequestTitle: "Sur devis",
-    onRequestHint: "Ces services n’ont pas de prix fixe dans notre grille : nous les chiffrerons après le brief. Ils ne sont pas inclus dans le total.",
     onRequestBadge: "Sur devis",
-    add: "Ajouter",
-    added: "Ajouté",
     complexityTitle: "Complexité du projet",
     urgencyTitle: "Urgence",
     surcharge: "+{pct}",
@@ -120,48 +120,42 @@ const fr = {
     brief: "Envoyer un brief à Byuro",
   },
   services: {
-    site_builder: {
-      title: "Site sur un constructeur",
-      short: "Lancement rapide : landing page ou petit site, facile à gérer sans développeur.",
-      description: "Le site est monté sur un constructeur : il se lance vite, et vous pourrez ensuite modifier textes et images vous-même.",
-      includes: ["Structure et design du site", "Montage sur le constructeur", "Adaptation aux mobiles et tablettes", "Remise des accès au site"],
-      excludes: ["Abonnement au constructeur et nom de domaine", "Textes et photos — la rédaction est chiffrée à part", "Logo et identité visuelle", "Publicité et promotion"],
+    web: {
+      includes: ["Structure et design du site", "Intégration ou montage sur constructeur", "Adaptation aux mobiles et tablettes", "Remise des accès"],
+      excludes: ["Hébergement, nom de domaine et abonnement au constructeur", "Textes et photos", "Logo et identité visuelle", "Publicité et promotion"],
     },
-    site_custom: {
-      title: "Site développé sur mesure",
-      short: "Design unique et code propre — sans les limites d’un constructeur.",
-      description: "Un site créé de zéro pour votre besoin : design unique, logique libre, chargement rapide et contrôle total du code.",
-      includes: ["Prototype et design unique", "Intégration et développement", "Adaptation à tous les appareils", "Optimisation de la vitesse de chargement", "Remise du code source"],
-      excludes: ["Hébergement et nom de domaine", "Textes et photos — la rédaction est chiffrée à part", "Logo et identité visuelle", "Publicité et promotion"],
+    apps: {
+      includes: [],
+      excludes: ["Frais de comptes développeur dans les stores", "Infrastructure serveur et services payants"],
     },
-    bot: {
-      title: "Bot Telegram",
-      short: "Demandes, réservations, ventes et support directement dans Telegram.",
-      description: "Un bot au scénario soigné : il recueille les demandes, répond aux questions fréquentes, prend les rendez-vous et accepte les paiements.",
+    bots: {
       includes: ["Scénario de dialogue", "Logique de base et boutons", "Lancement et tests", "Remise du bot et des accès"],
       excludes: ["Serveur et hébergement", "Services et API tiers payants", "Textes des envois groupés"],
     },
-    graphics: {
-      title: "Visuels publicitaires et bannières",
-      short: "Graphisme statique pour la publicité, les réseaux sociaux et les sites, dans un style unique.",
-      description: "Séries de visuels pour lancements et tests : un style cohérent et des déclinaisons pour chaque plateforme.",
-      includes: ["Design selon votre brief et votre charte", "Fichiers prêts à publier", "Fichiers sources"],
-      excludes: ["Shooting photo et banques d’images payantes", "Textes des visuels", "Configuration et gestion des campagnes", "Retouches au-delà du convenu — selon la grille tarifaire"],
+    brand: {
+      includes: [],
+      excludes: ["Dépôt de marque", "Impression des supports"],
     },
-    video: {
-      title: "Vidéo et motion design",
-      short: "Motion design, vidéo IA, montage, sous-titres et voix off IA.",
-      description: "Vidéos pour la publicité et les réseaux sociaux. L’animation et le montage sont facturés à la durée, en secondes.",
+    graphic: {
+      includes: ["Design d’après vos textes et contenus", "Infographies et schémas", "Fichiers pour l’impression ou la projection et sources"],
+      excludes: ["Rédaction des textes", "Impression et fabrication", "Illustrations et photos payantes"],
+    },
+    motion: {
       includes: ["Storyboard ou montage d’après un script fourni", "Animation et montage", "Export dans les formats nécessaires"],
       excludes: ["Script — vous pouvez ajouter « Concept / script »", "Tournage et acteurs", "Musique sous licence et banques d’images", "Voix off par un comédien professionnel"],
     },
-    presentation: {
-      title: "Présentations",
-      short: "Pitch decks, présentations commerciales et institutionnelles.",
-      description: "Des présentations qui font prendre l’entreprise au sérieux : structure claire, infographies et mise en page soignée.",
-      includes: ["Design des diapositives d’après votre texte", "Infographies et schémas", "PDF et fichiers sources"],
-      excludes: ["Rédaction des textes", "Illustrations et photos payantes", "Vidéo et voix off"],
+    ads: {
+      includes: ["Design selon votre brief et votre charte", "Fichiers prêts à publier", "Fichiers sources"],
+      excludes: ["Shooting photo et banques d’images payantes", "Textes des visuels", "Configuration et gestion des campagnes", "Retouches au-delà du convenu — selon la grille tarifaire"],
     },
+    special: {
+      includes: [],
+      excludes: ["Hébergement et services tiers payants"],
+    },
+  },
+  variants: {
+    builder: { title: "Sur un constructeur", text: "Lancement rapide, vous pourrez modifier textes et images vous-même." },
+    custom: { title: "Développement sur mesure", text: "Design unique et code propre, sans les limites d’un constructeur." },
   },
   items: {
     static: "Visuel statique",
@@ -216,12 +210,6 @@ const fr = {
     research: "Analyse de la concurrence, de l’audience et des références",
     small_edit: "Correction ponctuelle après la livraison",
     big_edit: "Refonte notable d’un bloc, d’un écran ou d’une scène",
-  },
-  onRequest: {
-    logo: { title: "Création de logo", text: "Symbole ou logotype avec ses déclinaisons." },
-    identity: { title: "Identité visuelle", text: "Couleurs, typographies, graphisme et règles — la base d’une charte." },
-    copywriting: { title: "Rédaction", text: "Textes pour un site, une présentation ou des visuels." },
-    support: { title: "Accompagnement et support technique", text: "Mises à jour, évolutions et suivi après la mise en ligne." },
   },
   brief: {
     title: "Brief pour Byuro",
@@ -305,6 +293,6 @@ const fr = {
     paidOptions: "Options supplémentaires payantes",
     notesTitle: "Remarque",
   },
-} satisfies CalcDict;
+} satisfies CalcSource;
 
 export default fr;

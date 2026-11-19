@@ -109,27 +109,34 @@ export const UNIT_RULES: Record<Unit, { step: number; max: number; decimals: num
 };
 
 /* ── Услуги ─────────────────────────────────────────────────
-   Услуга = понятное клиенту направление. Внутри — позиции исходного прайса:
-   base (входит всегда, 1 шт), core (основной объём), options (доп. платные опции).
-   Каждая позиция принадлежит одной группе, кроме опций сайта: они общие для двух
-   видов сайта, а сайт можно выбрать только один (exclusive), поэтому позиция
-   никогда не начисляется дважды. */
+   Ровно те 8 услуг, что в разделе «Услуги» на сайте (id совпадают с services.items
+   в словарях; названия и описания берутся оттуда же, чтобы не расходились).
+   Внутри — позиции исходного прайса: base (входит всегда, 1 шт), core (основной объём),
+   options (доп. платные опции). Для сайта два варианта (конструктор / индивидуальная
+   разработка) с общими опциями — выбирается один, поэтому опция не начисляется дважды.
 
-export const SERVICE_IDS = ["site_builder", "site_custom", "bot", "graphics", "video", "presentation"] as const;
+   requestParts — индексы пунктов из «Что входит» этой услуги на сайте (deliverables),
+   для которых в прайсе нет цены: они оцениваются индивидуально и в сумму не входят.
+   requestOnly — у услуги вообще нет цен в прайсе, только индивидуальная оценка. */
+
+export const SERVICE_IDS = ["web", "apps", "bots", "brand", "graphic", "motion", "ads", "special"] as const;
 export type ServiceId = (typeof SERVICE_IDS)[number];
 
 export type OptionGroupId = "components" | "animations" | "integrations" | "launch" | "extra";
+export const WEB_VARIANTS = ["builder", "custom"] as const;
+export type WebVariant = (typeof WEB_VARIANTS)[number];
 
-export type Service = {
+type Scope = { base?: ItemKey; core: readonly ItemKey[]; defaults: Partial<Record<ItemKey, number>> };
+
+export type Service = Scope & {
   id: ServiceId;
   /** параллельный поток работ: потоки идут одновременно, позиции внутри — последовательно */
-  track: "web" | "bot" | "graphics" | "video" | "slides";
-  base?: ItemKey;
-  core: readonly ItemKey[];
+  track: "web" | "apps" | "bot" | "brand" | "graphic" | "video" | "ads" | "special";
+  /** варианты с разной базой и основным объёмом (только у сайтов) */
+  variants?: Record<WebVariant, Scope>;
   options: readonly { group: OptionGroupId; items: readonly ItemKey[] }[];
-  /** стартовый объём при выборе услуги, чтобы смета не была пустой */
-  defaults: Partial<Record<ItemKey, number>>;
-  exclusiveWith?: readonly ServiceId[];
+  requestParts: readonly number[];
+  requestOnly?: boolean;
 };
 
 const SITE_OPTIONS = [
@@ -140,54 +147,60 @@ const SITE_OPTIONS = [
 ] as const;
 
 export const SERVICES: Record<ServiceId, Service> = {
-  site_builder: {
-    id: "site_builder",
+  web: {
+    id: "web",
     track: "web",
-    base: "builder_base",
-    core: ["builder_section_simple", "builder_section_complex", "builder_page"],
+    core: [],
+    defaults: {},
+    variants: {
+      builder: { base: "builder_base", core: ["builder_section_simple", "builder_section_complex", "builder_page"], defaults: { builder_section_simple: 5 } },
+      custom: { base: "custom_base", core: ["custom_section", "custom_page", "ui_component"], defaults: { custom_section: 5 } },
+    },
     options: SITE_OPTIONS,
-    defaults: { builder_section_simple: 5 },
-    exclusiveWith: ["site_custom"],
+    requestParts: [],
   },
-  site_custom: {
-    id: "site_custom",
-    track: "web",
-    base: "custom_base",
-    core: ["custom_section", "custom_page", "ui_component"],
-    options: SITE_OPTIONS,
-    defaults: { custom_section: 5 },
-    exclusiveWith: ["site_builder"],
-  },
-  bot: {
-    id: "bot",
+  apps: { id: "apps", track: "apps", core: [], defaults: {}, options: [], requestParts: [0, 1, 2, 3], requestOnly: true },
+  bots: {
+    id: "bots",
     track: "bot",
     base: "bot_base",
     core: ["bot_commands", "bot_db", "bot_admin"],
     options: [{ group: "integrations", items: ["bot_api", "bot_payments", "bot_miniapp"] }],
     defaults: { bot_commands: 1 },
+    requestParts: [],
   },
-  graphics: {
-    id: "graphics",
-    track: "graphics",
-    core: ["static"],
-    options: [{ group: "extra", items: ["adaptation", "resize"] }],
-    defaults: { static: 5 },
+  brand: { id: "brand", track: "brand", core: [], defaults: {}, options: [], requestParts: [0, 1, 2, 3], requestOnly: true },
+  graphic: {
+    id: "graphic",
+    track: "graphic",
+    core: ["slide", "complex_slide"],
+    options: [{ group: "extra", items: ["slide_animation"] }],
+    defaults: { slide: 10 },
+    requestParts: [1, 2, 3], // полиграфия, упаковка, мерч — цен в прайсе нет
   },
-  video: {
-    id: "video",
+  motion: {
+    id: "motion",
     track: "video",
     core: ["motion", "motion_light", "neuro_video", "editing"],
     options: [{ group: "extra", items: ["subtitles", "voiceover"] }],
     defaults: { motion: 15 },
+    requestParts: [],
   },
-  presentation: {
-    id: "presentation",
-    track: "slides",
-    core: ["slide", "complex_slide"],
-    options: [{ group: "extra", items: ["slide_animation"] }],
-    defaults: { slide: 10 },
+  ads: {
+    id: "ads",
+    track: "ads",
+    core: ["static"],
+    options: [{ group: "extra", items: ["adaptation", "resize"] }],
+    defaults: { static: 5 },
+    requestParts: [],
   },
+  special: { id: "special", track: "special", core: [], defaults: {}, options: [], requestParts: [0, 1, 2], requestOnly: true },
 };
+
+/** Объём услуги с учётом выбранного варианта сайта */
+export function serviceScope(s: Service, variant: WebVariant): Scope {
+  return s.variants ? s.variants[variant] : s;
+}
 
 /* Дополнительные работы ко всему проекту (не привязаны к услуге).
    before — идут до основной работы, after — после. */
@@ -199,11 +212,6 @@ export const EXTRA_PHASE: Record<ExtraItem, "before" | "after"> = {
   small_edit: "after",
   big_edit: "after",
 };
-
-/* Опции без утверждённой цены в прайсе — только индивидуальная оценка.
-   Цену не придумываем: в сумму не входят, в смете помечены «по запросу». */
-export const ON_REQUEST_KEYS = ["logo", "identity", "copywriting", "support"] as const;
-export type OnRequestKey = (typeof ON_REQUEST_KEYS)[number];
 
 /* Коэффициенты — из исходного калькулятора. timeFactor — ускорение сроков за срочность
    (в исходнике сроков не было; черновая норма). */
@@ -221,7 +229,8 @@ export const URGENCY = {
 } as const;
 export type UrgencyKey = keyof typeof URGENCY;
 
-/** Все позиции, которые может содержать услуга (для подсказок «что можно добавить») */
+/** Все позиции, которые может содержать услуга (во всех вариантах) */
 export function serviceItems(s: Service): ItemKey[] {
-  return [...(s.base ? [s.base] : []), ...s.core, ...s.options.flatMap((g) => g.items)];
+  const scopes = s.variants ? Object.values(s.variants) : [s];
+  return [...new Set([...scopes.flatMap((x) => [...(x.base ? [x.base] : []), ...x.core]), ...s.options.flatMap((g) => g.items)])];
 }

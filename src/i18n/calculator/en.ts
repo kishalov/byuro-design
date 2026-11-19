@@ -1,4 +1,4 @@
-import type { CalcDict } from "./ru";
+import type { CalcSource } from "./ru";
 
 const en = {
   meta: {
@@ -30,9 +30,11 @@ const en = {
   },
   pick: {
     title: "What do you need?",
-    hint: "You can pick several services. A website is one of two options.",
+    hint: "You can pick several services. Those without a price in our price list will be quoted individually.",
     select: "Select",
     selected: "Selected",
+    variantsTitle: "How we build the website",
+    requestOnly: "Individual quote",
     from: "from {price}",
     perUnitFrom: "from {price} per {unit}",
     details: "About this service",
@@ -40,7 +42,6 @@ const en = {
     excludes: "Not included",
     timeline: "Estimated timeline",
     options: "Add-on options",
-    exclusive: "Selecting this option replaces the other website type",
     empty: "Select at least one service or extra to get an estimate.",
   },
   scope: {
@@ -62,16 +63,15 @@ const en = {
     noServices: "Select services in the first step first.",
     subtotal: "Service subtotal",
     zeroHint: "Set a quantity for at least one item.",
+    partsTitle: "Quoted individually",
+    partsHint: "These items have no price in our price list — we’ll quote them after the brief. Tick what you need:",
+    requestOnlyHint: "We quote this service individually after the brief. Tick what you need so we can prepare a proposal faster.",
   },
   extras: {
     title: "Options and settings",
     workTitle: "Additional work",
     workHint: "Applies to the whole project, not a single service.",
-    onRequestTitle: "Quoted individually",
-    onRequestHint: "These services have no fixed price in our price list: we’ll quote them after the brief. They are not included in the total.",
     onRequestBadge: "Individual quote",
-    add: "Add",
-    added: "Added",
     complexityTitle: "Project complexity",
     urgencyTitle: "Urgency",
     surcharge: "+{pct}",
@@ -120,48 +120,42 @@ const en = {
     brief: "Send a brief to Byuro",
   },
   services: {
-    site_builder: {
-      title: "Website on a site builder",
-      short: "Fast launch: a landing page or small website you can manage without a developer.",
-      description: "Built on a site builder: launches quickly, and you can update texts and images yourself later.",
-      includes: ["Website structure and design", "Build on the site builder", "Adaptation for phones and tablets", "Handover of website access"],
-      excludes: ["Site builder plan and domain", "Texts and photos — copywriting is quoted separately", "Logo and brand identity", "Advertising and promotion"],
+    web: {
+      includes: ["Website structure and design", "Front-end build or site builder assembly", "Adaptation for phones and tablets", "Access handover"],
+      excludes: ["Hosting, domain and site builder plan", "Texts and photos", "Logo and brand identity", "Advertising and promotion"],
     },
-    site_custom: {
-      title: "Custom-developed website",
-      short: "Unique design and custom code — no site builder limits.",
-      description: "A website built from scratch for your task: unique design, any logic, fast loading and full control over the code.",
-      includes: ["Prototype and unique design", "Front-end and development", "Adaptation for all devices", "Load speed optimisation", "Source code handover"],
-      excludes: ["Hosting and domain", "Texts and photos — copywriting is quoted separately", "Logo and brand identity", "Advertising and promotion"],
+    apps: {
+      includes: [],
+      excludes: ["App store developer account fees", "Server infrastructure and paid services"],
     },
-    bot: {
-      title: "Telegram bot",
-      short: "Leads, bookings, sales and support right in Telegram.",
-      description: "A bot with a well-designed flow: collects leads, answers common questions, books clients and accepts payments.",
+    bots: {
       includes: ["Conversation flow", "Core logic and buttons", "Launch and testing", "Bot and access handover"],
       excludes: ["Server and hosting", "Paid third-party services and APIs", "Broadcast message copy"],
     },
-    graphics: {
-      title: "Ad creatives and banners",
-      short: "Static graphics for ads, social media and websites in one style.",
-      description: "Creative sets for launches and tests: a consistent style and adaptations for every platform.",
-      includes: ["Design based on your brief and brand style", "Files ready to publish", "Source files"],
-      excludes: ["Photo shoots and paid stock", "Copy for creatives", "Ad setup and management", "Revisions beyond the agreed scope — per price list"],
+    brand: {
+      includes: [],
+      excludes: ["Trademark registration", "Printing of brand materials"],
     },
-    video: {
-      title: "Video and motion design",
-      short: "Motion graphics, AI video, editing, subtitles and AI voiceover.",
-      description: "Videos for ads and social media. Animation and editing are priced by duration in seconds.",
+    graphic: {
+      includes: ["Design based on your text and materials", "Infographics and diagrams", "Print-ready or presentation files and sources"],
+      excludes: ["Copywriting", "Printing and production", "Paid illustrations and photos"],
+    },
+    motion: {
       includes: ["Storyboard or assembly from a ready script", "Animation and editing", "Export in the formats you need"],
       excludes: ["Script — you can add “Concept / script”", "Filming and actors", "Licensed music and stock", "Professional voice actor"],
     },
-    presentation: {
-      title: "Presentations",
-      short: "Pitch decks, sales and corporate presentations.",
-      description: "Presentations that make people take a company seriously: clear structure, infographics and tidy layout.",
-      includes: ["Slide design based on your text", "Infographics and diagrams", "PDF and source files"],
-      excludes: ["Copywriting", "Paid illustrations and photos", "Video and voiceover"],
+    ads: {
+      includes: ["Design based on your brief and brand style", "Files ready to publish", "Source files"],
+      excludes: ["Photo shoots and paid stock", "Copy for creatives", "Ad setup and management", "Revisions beyond the agreed scope — per price list"],
     },
+    special: {
+      includes: [],
+      excludes: ["Hosting and paid third-party services"],
+    },
+  },
+  variants: {
+    builder: { title: "On a site builder", text: "Fast launch; you can update texts and images yourself later." },
+    custom: { title: "Custom development", text: "Unique design and custom code without site builder limits." },
   },
   items: {
     static: "Static creative",
@@ -216,12 +210,6 @@ const en = {
     research: "Competitor, audience and reference analysis",
     small_edit: "A small fix after delivery",
     big_edit: "A noticeable rework of a block, screen or scene",
-  },
-  onRequest: {
-    logo: { title: "Logo design", text: "A symbol or wordmark with usage variations." },
-    identity: { title: "Brand identity", text: "Colours, fonts, graphics and rules — the basis of a brand book." },
-    copywriting: { title: "Copywriting", text: "Texts for a website, presentation or creatives." },
-    support: { title: "Maintenance and support", text: "Updates, improvements and monitoring after launch." },
   },
   brief: {
     title: "Brief for Byuro",
@@ -305,6 +293,6 @@ const en = {
     paidOptions: "Paid add-on options",
     notesTitle: "Note",
   },
-} satisfies CalcDict;
+} satisfies CalcSource;
 
 export default en;
