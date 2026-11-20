@@ -37,6 +37,14 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
   const [calc, setCalc] = useState<{ sig: string; id: string }>({ sig: "", id: "" });
   const [ready, setReady] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false);
+  // Страница статическая: включена ли отправка, уточняем у сервера по текущим переменным окружения
+  const [briefOn, setBriefOn] = useState(briefEnabled);
+  useEffect(() => {
+    fetch("/api/brief/", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { enabled?: boolean } | null) => typeof d?.enabled === "boolean" && setBriefOn(d.enabled))
+      .catch(() => {});
+  }, []);
   const topRef = useRef<HTMLDivElement>(null);
 
   const money = useMemo(() => moneyFormatter(locale), [locale]);
@@ -205,7 +213,7 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
         selection={selection}
         calcId={calcId}
         projectName={projectName}
-        enabled={briefEnabled}
+        enabled={briefOn}
         privacyHref={privacyHref}
         instagram={instagram}
         money={money}

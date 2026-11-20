@@ -3,25 +3,16 @@ import type { Locale } from "@/i18n/config";
 import type { Quote, Selection } from "../calculator/engine";
 import type { NormalizedContacts } from "./schema";
 import { memoryStore, type BriefStore } from "./dedupe";
+import { telegramConfig, telegramTransport } from "./transports/telegram";
 
 /* Доставка брифов команде.
 
-   СЕЙЧАС ПОЛУЧАТЕЛЕЙ НЕТ: список transports пуст, поэтому /api/brief отвечает 503
-   (not_configured), а на странице кнопка отправки неактивна с пояснением.
-   Успешная отправка не имитируется.
+   Сейчас подключён Telegram: тот же бот и чат, что и у форм сайта
+   (TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID, см. transports/telegram.ts).
+   Если переменные не заданы, получателей нет: /api/brief отвечает 503 (not_configured),
+   а на странице кнопка отправки неактивна с пояснением. Успех не имитируется.
 
-   Как подключить Telegram (или любой другой канал) на следующем этапе:
-   1. Создайте transports/telegram.ts, реализующий BriefTransport:
-        export const telegramTransport: BriefTransport = {
-          name: "telegram",
-          async send(record, textRu) {
-            // fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, …) с textRu,
-            // экранированным под parse_mode; при ошибке — throw
-          },
-        };
-   2. Добавьте его в массив transports ниже (например, только если заданы переменные окружения).
-   Больше ничего менять не нужно: страница сама включит кнопку (isBriefDeliveryConfigured),
-   а структура заявки — BriefRecord. Существующий /api/lead и его бот не затрагиваются. */
+   Другой канал (email, CRM) — ещё один BriefTransport в getTransports(). */
 
 export type BriefRecord = {
   version: 1;
@@ -69,16 +60,19 @@ export interface BriefTransport {
   send(record: BriefRecord, textRu: string): Promise<void>;
 }
 
-const transports: BriefTransport[] = [];
+/** Получатели определяются по переменным окружения в момент запроса */
+function getTransports(): BriefTransport[] {
+  return [...(telegramConfig() ? [telegramTransport] : [])];
+}
 
-export const isBriefDeliveryConfigured = () => transports.length > 0;
+export const isBriefDeliveryConfigured = () => getTransports().length > 0;
 
 /** Отправляет всем получателям. Успех — если доставил хотя бы один. */
 export async function deliverBrief(record: BriefRecord, textRu: string): Promise<{ delivered: string[]; failed: string[] }> {
   const delivered: string[] = [];
   const failed: string[] = [];
   await Promise.all(
-    transports.map(async (tr) => {
+    getTransports().map(async (tr) => {
       try {
         await tr.send(record, textRu);
         delivered.push(tr.name);

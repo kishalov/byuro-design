@@ -74,3 +74,21 @@ describe("повторные обращения", () => {
     assert.equal(s.persistent, false);
   });
 });
+
+describe("Telegram: формат брифа", async () => {
+  const { formatTelegram, splitMessage } = await import("./transports/telegram");
+  it("экранирует HTML и выделяет заголовки", () => {
+    const rec = { briefId: "BRF-261120-ABCDEF" } as Parameters<typeof formatTelegram>[0];
+    const [msg] = formatTelegram(rec, "Бриф для Бюро · BRF-261120-ABCDEF\n— Как с вами связаться —\nИмя: <script>&");
+    assert.match(msg, /^<b>🧮 Бриф для Бюро · BRF-261120-ABCDEF<\/b>/);
+    assert.match(msg, /<b>— Как с вами связаться —<\/b>/);
+    assert.match(msg, /Имя: &lt;script&gt;&amp;/);
+  });
+  it("длинный бриф делится на сообщения не длиннее лимита", () => {
+    const text = Array.from({ length: 300 }, (_, i) => `строка ${i} ${"x".repeat(40)}`).join("\n") + "\n" + "y".repeat(9000);
+    const parts = splitMessage(text, 4000);
+    assert.ok(parts.length > 3);
+    assert.ok(parts.every((p) => p.length <= 4000));
+    assert.equal(parts.join("\n").replace(/\n/g, "").length, text.replace(/\n/g, "").length);
+  });
+});

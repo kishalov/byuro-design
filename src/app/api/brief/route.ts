@@ -15,12 +15,13 @@ import { briefText } from "@/lib/brief/text";
    200 { ok: true, briefId, duplicate?: "same_request" | "same_project" }
    400 { error: "validation", fields } | { error: "selection" | "calc_id" | "idempotency" | "empty" | "bad_json" }
    429 { error: "rate_limited" }
-   503 { error: "not_configured" } — получатель не подключён (текущее состояние, см. src/lib/brief/delivery.ts)
+   503 { error: "not_configured" } — не заданы TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID (см. src/lib/brief/delivery.ts)
    502 { error: "delivery_failed" }
 
    Стоимость и сроки всегда пересчитываются здесь по selection — суммы из браузера не принимаются. */
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const DUPLICATE_WINDOW = 24 * 60 * 60 * 1000;
 const inFlight = new Map<string, Promise<Response>>();
@@ -123,7 +124,7 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
   const dryRun = process.env.NODE_ENV !== "production" && body.dryRun === true;
 
   if (!isBriefDeliveryConfigured() && !dryRun) {
-    console.warn("[brief] получатель брифов не подключён (src/lib/brief/delivery.ts)");
+    console.error("[brief] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы — бриф некуда отправить");
     return NextResponse.json({ error: "not_configured" }, { status: 503 });
   }
 
