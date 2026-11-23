@@ -1,6 +1,7 @@
 "use client";
 import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { site } from "@/content/site";
+import { TelegramLink } from "@/components/ui/TelegramLink";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import { lp } from "@/i18n/paths";
@@ -192,6 +193,14 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
             </div>
             <span>
               {serverError}{" "}
+              {site.contacts.telegram && (
+                <>
+                  <a href={site.contacts.telegram.url} target="_blank" rel="noopener" className="font-semibold underline">
+                    Telegram {site.contacts.telegram.handle}
+                  </a>
+                  {" · "}
+                </>
+              )}
               <a href={site.contacts.instagram.url} target="_blank" rel="noopener" className="font-semibold underline">
                 Instagram {site.contacts.instagram.handle}
               </a>
@@ -219,6 +228,9 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
         </Button>
         <p className="t-small text-stone-ink">{t.note}</p>
       </div>
+      <p className="mt-6 border-t border-dashed border-ink/20 pt-5 text-[15px] text-ink">
+        <TelegramLink label={t.tgOr} />
+      </p>
     </form>
   );
 }

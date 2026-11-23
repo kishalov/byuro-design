@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { site } from "@/content/site";
 import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
@@ -200,6 +201,12 @@ export function BriefDialog({
                       <Icon name={copied ? "check" : "link"} size={18} />
                       {copied ? t.brief.copied : t.brief.copy}
                     </button>
+                    {site.contacts.telegram && (
+                      <a href={site.contacts.telegram.url} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center gap-2 rounded-pill bg-coral px-4 text-[15px] font-semibold text-ink transition-colors hover:bg-ink hover:text-paper">
+                        <Icon name="telegram" size={18} />
+                        Telegram {site.contacts.telegram.handle}
+                      </a>
+                    )}
                     <a href={instagram.url} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center gap-2 rounded-pill border-2 border-ink px-4 text-[15px] font-semibold transition-colors hover:bg-ink hover:text-paper">
                       {t.brief.instagram} {instagram.handle}
                       <Icon name="arrow-up-right" size={16} />

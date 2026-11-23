@@ -411,10 +411,12 @@ const fr = {
     project: { title: "Parlez-nous de votre besoin", lead: "Quelques lignes sur le projet suffisent : nous revenons avec des questions puis envoyons un devis écrit après un appel.", steps: ["Vous envoyez une demande", "Nous échangeons par appel sur la tâche", "Nous envoyons un devis : périmètre, délais, prix"] },
     partner: { title: "Gagnons plus ensemble", lead: "Dites-nous ce que vous faites et ce que vos clients vous demandent. Nous discuterons du format et des conditions.", steps: ["Vous envoyez une demande", "Nous discutons du modèle et des conditions", "Nous formalisons l’accord par écrit"] },
     direct: "Ou écrivez-nous directement",
+    telegram: "Écrire sur Telegram",
     bubble: "Salut ! On fait quoi ?",
     mascotAlt: "La mascotte de Byuro, debout, sourit",
   },
   form: {
+    tgOr: "Pas envie de remplir le formulaire ? Écrivez-nous sur Telegram",
     name: "Nom",
     namePh: "Comment vous appeler",
     contact: "Moyen de contact",

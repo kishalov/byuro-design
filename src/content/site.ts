@@ -6,7 +6,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? null,
   contacts: {
     instagram: { handle: "@byuro_design.studio", url: "https://www.instagram.com/byuro_design.studio/" },
-    telegram: null as { handle: string; url: string } | null,
+    telegram: { handle: "@byuro_design", url: "https://t.me/byuro_design" } as { handle: string; url: string } | null,
     email: null as string | null,
     phone: null as string | null,
   },

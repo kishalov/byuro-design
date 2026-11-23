@@ -411,10 +411,12 @@ const zh = {
     project: { title: "说说您的需求", lead: "简单写几句项目情况——我们会带着问题联系您，通话后发送书面报价。", steps: ["您提交咨询", "通话梳理需求", "发送报价：范围、周期、价格"] },
     partner: { title: "一起赚更多", lead: "介绍一下您的业务，以及客户常提哪些需求。我们来谈合作方式和条件。", steps: ["您提交咨询", "商定模式与条件", "以书面形式确认合作"] },
     direct: "或直接联系我们",
+    telegram: "在 Telegram 上联系我们",
     bubble: "你好！这次做什么？",
     mascotAlt: "Byuro 吉祥物站着微笑",
   },
   form: {
+    tgOr: "不想填写表单？直接在 Telegram 上联系我们",
     name: "姓名",
     namePh: "怎么称呼您",
     contact: "联系方式",

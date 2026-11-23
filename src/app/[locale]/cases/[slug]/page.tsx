@@ -9,6 +9,7 @@ import { Pic } from "@/components/cases/Pic";
 import { Sticker } from "@/components/mm/Kit";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
+import { TelegramLink } from "@/components/ui/TelegramLink";
 import { Icon } from "@/components/ui/Icon";
 import { cases, getCase } from "@/content/cases";
 import { localeCodes, type Locale } from "@/i18n/config";
@@ -309,6 +310,7 @@ export default async function CasePage({ params }: Props) {
               {d.cta.partner}
             </ButtonLink>
           </div>
+          <TelegramLink variant="pill" label={d.contact.telegram} className="relative z-10 mt-3 w-full sm:w-auto" />
           <span aria-hidden="true" className="absolute -right-16 -bottom-16 size-56 rounded-full bg-coral" />
         </div>
       </section>

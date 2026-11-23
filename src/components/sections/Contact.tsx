@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { site } from "@/content/site";
+import { TelegramLink } from "@/components/ui/TelegramLink";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import type { LeadType } from "@/lib/lead";
@@ -84,23 +85,16 @@ export function Contact({ locale, t, form }: { locale: Locale; t: Dict["contact"
                 </li>
               ))}
             </ol>
-            <div className="mt-10 border-t border-ink/20 pt-6">
+            <div className="mt-10 border-t border-ink/20 pt-6 pb-16 lg:pb-0">
               <p className="t-label text-stone-ink">{t.direct}</p>
-              <ul className="mt-4 space-y-3">
+              <TelegramLink variant="card" label={t.telegram} className="mt-4" />
+              <ul className="mt-5 space-y-3">
                 <li>
                   <a href={site.contacts.instagram.url} target="_blank" rel="noopener" className="group inline-flex items-center gap-2 text-lg font-semibold">
                     Instagram {site.contacts.instagram.handle}
                     <Icon name="arrow-up-right" size={20} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </a>
                 </li>
-                {site.contacts.telegram && (
-                  <li>
-                    <a href={site.contacts.telegram.url} target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-lg font-semibold">
-                      Telegram {site.contacts.telegram.handle}
-                      <Icon name="arrow-up-right" size={20} />
-                    </a>
-                  </li>
-                )}
                 {site.contacts.email && (
                   <li>
                     <a href={`mailto:${site.contacts.email}`} className="text-lg font-semibold">

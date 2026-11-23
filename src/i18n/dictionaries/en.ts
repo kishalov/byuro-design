@@ -411,10 +411,12 @@ const en = {
     project: { title: "Tell us about your task", lead: "A couple of lines about the project — we’ll come back with questions and send a written estimate after a call.", steps: ["You send a request", "We have a call and go through the task", "We send an estimate: scope, timeline, price"] },
     partner: { title: "Let’s earn together", lead: "Tell us what you do and what your clients ask for. We’ll discuss the format and terms.", steps: ["You send a request", "We discuss the model and terms", "We put the agreement in writing"] },
     direct: "Or message us directly",
+    telegram: "Message us on Telegram",
     bubble: "Hi! What are we making?",
     mascotAlt: "Byuro’s mascot standing and smiling",
   },
   form: {
+    tgOr: "Don’t want to fill in the form? Message us on Telegram",
     name: "Name",
     namePh: "What should we call you",
     contact: "How to reach you",

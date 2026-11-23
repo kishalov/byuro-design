@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
+import { TelegramLink } from "./ui/TelegramLink";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import { anchors, lp } from "@/i18n/paths";
@@ -110,6 +111,7 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
           <div className="hidden sm:block">
             <LangSwitcher locale={locale} label={nav.language} />
           </div>
+          <TelegramLink variant="icon" className="hidden md:grid" />
           <span className="hidden md:block">
             <ButtonLink href={lp(locale, anchors.project)} className="cta-main !min-h-11 !px-5 text-[15px] whitespace-nowrap">
               {cta.project}
@@ -154,7 +156,8 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
           <div className="mt-10">
             <LangGrid locale={locale} label={nav.language} />
           </div>
-          <div className="mt-auto pt-10">
+          <div className="mt-auto flex flex-col items-start gap-4 pt-10">
+            <TelegramLink variant="card" className="w-full" />
             <a href={site.contacts.instagram.url} className="t-small inline-flex items-center gap-2 font-medium" rel="noopener" target="_blank">
               Instagram {site.contacts.instagram.handle}
               <Icon name="arrow-up-right" size={18} />

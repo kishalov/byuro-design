@@ -412,10 +412,12 @@ const sr = {
     project: { title: "Opišite zadatak", lead: "Par rečenica o projektu — javićemo se sa pitanjima, a posle poziva poslati pismenu procenu.", steps: ["Pošaljete upit", "Razgovaramo i analiziramo zadatak", "Šaljemo procenu: obim, rokovi, cena"] },
     partner: { title: "Zarađujmo zajedno", lead: "Recite nam čime se bavite i šta vam klijenti traže. Razgovaraćemo o formatu i uslovima.", steps: ["Pošaljete upit", "Razgovaramo o modelu i uslovima", "Dogovor stavljamo na papir"] },
     direct: "Ili nam pišite direktno",
+    telegram: "Pišite na Telegramu",
     bubble: "Zdravo! Šta pravimo?",
     mascotAlt: "Maskota studija Byuro stoji i smeši se",
   },
   form: {
+    tgOr: "Ne želite da popunjavate formular? Pišite nam na Telegramu",
     name: "Ime",
     namePh: "Kako da vam se obraćamo",
     contact: "Kontakt",
