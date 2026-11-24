@@ -2,7 +2,7 @@
 import { useEffect, useId, useState } from "react";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
-import { ITEMS, UNIT_RULES, type ItemKey } from "@/lib/calculator/catalog";
+import { ITEMS, UNIT_RULES, unitPrice, type Currency, type ItemKey } from "@/lib/calculator/catalog";
 import { clampQty } from "@/lib/calculator/engine";
 import { cn } from "@/lib/cn";
 
@@ -15,6 +15,7 @@ export function QtyRow({
   t,
   money,
   qty,
+  currency,
   hint,
 }: {
   k: ItemKey;
@@ -23,6 +24,7 @@ export function QtyRow({
   t: CalcDict;
   money: (v: number) => string;
   qty: (v: number) => string;
+  currency: Currency;
   hint?: string;
 }) {
   const id = useId();
@@ -47,7 +49,7 @@ export function QtyRow({
           {label}
         </label>
         <p className="t-small text-stone-ink">
-          {fmt(t.scope.perUnit, { price: money(item.price), unit })}
+          {fmt(t.scope.perUnit, { price: money(unitPrice(k, currency)), unit })}
           {hint && <span className="block">{hint}</span>}
         </p>
       </div>

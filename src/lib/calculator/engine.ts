@@ -14,7 +14,9 @@ import {
   WEB_VARIANTS,
   serviceItems,
   serviceScope,
+  unitPrice,
   type ComplexityKey,
+  type Currency,
   type ExtraItem,
   type ItemKey,
   type ServiceId,
@@ -61,7 +63,7 @@ export type QuoteService = {
 };
 
 export type Quote = {
-  currency: "USD";
+  currency: Currency;
   services: QuoteService[];
   extras: { lines: QuoteLine[]; subtotal: number; before: DayRange; after: DayRange };
   /** есть позиции с индивидуальной оценкой (в сумму не входят) */
@@ -151,9 +153,9 @@ export function parseSelection(input: unknown, strict = true): SelectionResult {
   };
 }
 
-function line(key: ItemKey, qty: number, kind: QuoteLine["kind"]): QuoteLine {
-  const item = ITEMS[key];
-  return { key, qty, unit: item.unit, unitPrice: item.price, amount: round2(item.price * qty), kind };
+function line(key: ItemKey, qty: number, kind: QuoteLine["kind"], cur: Currency): QuoteLine {
+  const price = unitPrice(key, cur);
+  return { key, qty, unit: ITEMS[key].unit, unitPrice: price, amount: round2(price * qty), kind };
 }
 
 function sumDays(lines: QuoteLine[]): DayRange {
@@ -177,17 +179,18 @@ const wholeDays = (r: DayRange): DayRange => {
 const scaleDays = (r: DayRange, f: number): DayRange => (r.max <= 0 ? r : wholeDays({ min: r.min * f, max: r.max * f }));
 
 /** Порядок позиций внутри услуги — как в каталоге */
-function serviceLines(id: ServiceId, sel: Selection): QuoteLine[] {
+function serviceLines(id: ServiceId, sel: Selection, cur: Currency): QuoteLine[] {
   const s = SERVICES[id];
   const scope = serviceScope(s, sel.variant);
   const out: QuoteLine[] = [];
-  if (scope.base) out.push(line(scope.base, 1, "base"));
-  for (const k of scope.core) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "core"));
-  for (const g of s.options) for (const k of g.items) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "option"));
+  if (scope.base) out.push(line(scope.base, 1, "base", cur));
+  for (const k of scope.core) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "core", cur));
+  for (const g of s.options) for (const k of g.items) if (sel.qty[k]) out.push(line(k, sel.qty[k]!, "option", cur));
   return out;
 }
 
-export function computeQuote(sel: Selection): Quote {
+/** currency — валюта расчёта (по версии сайта: calcCurrency(locale)) */
+export function computeQuote(sel: Selection, currency: Currency = "USD"): Quote {
   const urgency = URGENCY[sel.urgency];
   const complexity = COMPLEXITY[sel.complexity];
 
@@ -197,7 +200,7 @@ export function computeQuote(sel: Selection): Quote {
   for (const id of SERVICE_IDS) {
     if (!sel.services.includes(id)) continue;
     const s = SERVICES[id];
-    const lines = serviceLines(id, sel).filter((l) => (charged.has(l.key) ? false : (charged.add(l.key), true)));
+    const lines = serviceLines(id, sel, currency).filter((l) => (charged.has(l.key) ? false : (charged.add(l.key), true)));
     services.push({
       id,
       ...(s.variants ? { variant: sel.variant } : {}),
@@ -209,7 +212,7 @@ export function computeQuote(sel: Selection): Quote {
     });
   }
 
-  const extraLines = EXTRA_ITEMS.filter((k) => sel.qty[k] && !charged.has(k)).map((k) => line(k, sel.qty[k]!, "extra"));
+  const extraLines = EXTRA_ITEMS.filter((k) => sel.qty[k] && !charged.has(k)).map((k) => line(k, sel.qty[k]!, "extra", currency));
   const phase = (p: "before" | "after") => scaleDays(sumDays(extraLines.filter((l) => EXTRA_PHASE[l.key as ExtraItem] === p)), urgency.timeFactor);
   const extras = {
     lines: extraLines,
@@ -232,7 +235,7 @@ export function computeQuote(sel: Selection): Quote {
   };
 
   return {
-    currency: "USD",
+    currency,
     services,
     extras,
     hasOnRequest: services.some((s) => s.requestOnly || s.parts.length > 0),

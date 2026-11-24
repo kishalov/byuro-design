@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCalcDict } from "@/i18n/calculator/get";
+import { calcCurrency } from "@/lib/calculator/format";
 import { computeQuote, parseSelection, selectionSignature } from "@/lib/calculator/engine";
 import { IDEMPOTENCY_RE, isCalcId, newBriefId } from "@/lib/calculator/ids";
 import { rateLimited, str, toLocale, toTimeZone } from "@/lib/calculator/server";
@@ -77,7 +78,7 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
   if (!isCalcId(body.calcId)) return NextResponse.json({ error: "calc_id" }, { status: 400 });
   const parsed = parseSelection(body.selection, true);
   if (!parsed.ok) return NextResponse.json({ error: "selection" }, { status: 400 });
-  const quote = computeQuote(parsed.selection);
+  const quote = computeQuote(parsed.selection, calcCurrency(locale));
   if (quote.isEmpty) return NextResponse.json({ error: "empty" }, { status: 400 });
 
   const store = getBriefStore();

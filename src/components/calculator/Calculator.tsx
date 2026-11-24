@@ -3,9 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
-import { COMPLEXITY, EXTRA_ITEMS, ITEMS, SERVICE_IDS, SERVICES, URGENCY, WEB_VARIANTS, serviceScope, type ComplexityKey, type ItemKey, type ServiceId, type UrgencyKey, type WebVariant } from "@/lib/calculator/catalog";
+import { COMPLEXITY, EXTRA_ITEMS, ITEMS, SERVICE_IDS, unitPrice, type Currency, SERVICES, URGENCY, WEB_VARIANTS, serviceScope, type ComplexityKey, type ItemKey, type ServiceId, type UrgencyKey, type WebVariant } from "@/lib/calculator/catalog";
 import { computeQuote, emptySelection, parseSelection, selectionSignature, setVariant, togglePart, toggleService, type Quote, type QuoteService, type Selection } from "@/lib/calculator/engine";
-import { formatDays, moneyFormatter, pct, qtyFormatter, requestPartNames, serviceTitle } from "@/lib/calculator/format";
+import { calcCurrency, formatDays, moneyFormatter, pct, qtyFormatter, requestPartNames, serviceTitle } from "@/lib/calculator/format";
 import { newCalcId } from "@/lib/calculator/ids";
 import { cn } from "@/lib/cn";
 import { Button } from "../ui/Button";
@@ -58,7 +58,8 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
 
   const money = useMemo(() => moneyFormatter(locale), [locale]);
   const qty = useMemo(() => qtyFormatter(locale), [locale]);
-  const quote = useMemo(() => computeQuote(selection), [selection]);
+  const currency = calcCurrency(locale);
+  const quote = useMemo(() => computeQuote(selection, currency), [selection, currency]);
   const sig = useMemo(() => selectionSignature(selection), [selection]);
 
   // Восстановление после перезагрузки
@@ -147,9 +148,9 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
           </h2>
 
           <div className="mt-6">
-            {step === "services" && <ServicesStep t={t} selection={selection} money={money} locale={locale} onToggle={(id) => setSelection((s) => toggleService(s, id))} />}
+            {step === "services" && <ServicesStep t={t} selection={selection} currency={currency} money={money} locale={locale} onToggle={(id) => setSelection((s) => toggleService(s, id))} />}
             {step === "scope" && <ScopeStep t={t} selection={selection} quote={quote} money={money} qty={qty} locale={locale} setQty={setQty} onVariant={(v) => setSelection((s) => setVariant(s, v))} onPart={(id, n) => setSelection((s) => togglePart(s, id, n))} onBack={() => go("services")} />}
-            {step === "extras" && <ExtrasStep t={t} selection={selection} money={money} qty={qty} setQty={setQty} setComplexity={(c) => setSelection((s) => ({ ...s, complexity: c }))} setUrgency={(u) => setSelection((s) => ({ ...s, urgency: u }))} />}
+            {step === "extras" && <ExtrasStep t={t} selection={selection} currency={currency} money={money} qty={qty} setQty={setQty} setComplexity={(c) => setSelection((s) => ({ ...s, complexity: c }))} setUrgency={(u) => setSelection((s) => ({ ...s, urgency: u }))} />}
             {step === "summary" && (
               <SummaryStep
                 t={t}
@@ -313,18 +314,19 @@ const DownloadIcon = () => (
 
 /* ── Шаг 1: услуги ───────────────────────────────────────── */
 
-/** Цена «от»: для сайта — самая доступная база из двух вариантов; null — только индивидуальная оценка */
-function startingPrice(id: ServiceId): { price: number; perUnit?: ItemKey } | null {
-  const s = SERVICES[id];
-  if (s.requestOnly) return null;
-  const scopes = s.variants ? Object.values(s.variants) : [s];
-  const bases = scopes.flatMap((x) => (x.base ? [ITEMS[x.base].price] : []));
-  if (bases.length) return { price: Math.min(...bases) };
-  const k = [...s.core].sort((a, b) => ITEMS[a].price - ITEMS[b].price)[0];
-  return { price: ITEMS[k].price, perUnit: k };
+/** Стартовый пакет услуги — ровно то, что попадёт в расчёт при её выборе
+    (база + стартовый объём, без коэффициентов); null — только индивидуальная оценка.
+    Цена на карточке и сумма после клика всегда совпадают. */
+function startPackage(id: ServiceId, variant: WebVariant, currency: Currency) {
+  if (SERVICES[id].requestOnly) return null;
+  const sel = { ...emptySelection(), services: [id], variant, qty: { ...serviceScope(SERVICES[id], variant).defaults } };
+  const q = computeQuote(sel, currency);
+  return { quote: q, svc: q.services[0] };
 }
 
-function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; selection: Selection; money: (v: number) => string; locale: Locale; onToggle: (id: ServiceId) => void }) {
+function ServicesStep({ t, selection, currency, money, locale, onToggle }: { t: CalcDict; selection: Selection; currency: Currency; money: (v: number) => string; locale: Locale; onToggle: (id: ServiceId) => void }) {
+  const qty = qtyFormatter(locale);
+  const current = computeQuote(selection, currency);
   return (
     <>
       <p className="t-body-l max-w-[40rem] text-ink/80">{t.pick.hint}</p>
@@ -332,9 +334,10 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
         {SERVICE_IDS.map((id) => {
           const on = selection.services.includes(id);
           const svc = t.services[id];
-          const sp = startingPrice(id);
+          const pkg = startPackage(id, selection.variant, currency);
           const options = SERVICES[id].options.flatMap((g) => g.items);
-          const typical = computeQuote({ ...emptySelection(), services: [id], variant: selection.variant, qty: { ...serviceScope(SERVICES[id], selection.variant).defaults } });
+          const typical = pkg?.quote;
+          const inQuote = on ? current.services.find((x) => x.id === id) : undefined;
           return (
             <li key={id} className={cn("flex flex-col rounded-card border-2 p-5 transition-colors sm:p-6", on ? "border-ink bg-white shadow-[0_14px_30px_-18px_rgb(18_18_18/0.45)]" : "border-ink/15 bg-white/60 hover:border-ink/40")}>
               <div className="flex items-start justify-between gap-3">
@@ -353,9 +356,21 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                   </li>
                 ))}
               </ul>
-              <p className="mt-4 font-display text-[17px] font-bold">
-                {!sp ? t.pick.requestOnly : sp.perUnit ? fmt(t.pick.perUnitFrom, { price: money(sp.price), unit: t.units[ITEMS[sp.perUnit].unit] }) : fmt(t.pick.from, { price: money(sp.price) })}
-              </p>
+              {!pkg ? (
+                <p className="mt-4 font-display text-[17px] font-bold">{t.pick.requestOnly}</p>
+              ) : (
+                <div className="mt-4">
+                  <p className="flex flex-wrap items-baseline gap-x-2 font-display text-[17px] font-bold">
+                    <span className="tabular-nums">{money(inQuote ? inQuote.subtotal : pkg.svc.subtotal)}</span>
+                    <span className="font-sans text-[13px] font-semibold text-stone-ink">{inQuote ? t.pick.inQuote : t.pick.startLabel}</span>
+                  </p>
+                  {!inQuote && (
+                    <p className="mt-1 text-[13px] leading-snug text-stone-ink">
+                      {pkg.svc.lines.map((l) => (l.kind === "base" ? t.items[l.key] : `${t.items[l.key]} × ${qty(l.qty)} ${t.units[l.unit]}`)).join(" + ")}
+                    </p>
+                  )}
+                </div>
+              )}
               <details className="group mt-3">
                 <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[15px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
                   {t.pick.details}
@@ -367,7 +382,7 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                   {SERVICES[id].requestOnly ? (
                     <p className="text-stone-ink">{t.scope.requestOnlyHint}</p>
                   ) : (
-                    typical.timeline && (
+                    typical?.timeline && (
                       <p>
                         <span className="font-semibold">{t.pick.timeline}: </span>
                         {formatDays(typical.timeline, t.days, locale)}
@@ -377,7 +392,7 @@ function ServicesStep({ t, selection, money, locale, onToggle }: { t: CalcDict; 
                   {options.length > 0 && (
                     <div>
                       <p className="font-semibold">{t.pick.options}</p>
-                      <p className="mt-1 text-ink/80">{options.map((k) => `${t.items[k]} (${money(ITEMS[k].price)})`).join(" · ")}</p>
+                      <p className="mt-1 text-ink/80">{options.map((k) => `${t.items[k]} (+${money(unitPrice(k, currency))})`).join(" · ")}</p>
                     </div>
                   )}
                 </div>
@@ -518,7 +533,7 @@ function ScopeStep({
                             <span className="flex h-full flex-col rounded-2xl border-2 border-ink/15 bg-white/60 p-4 transition-colors peer-checked:border-ink peer-checked:bg-white peer-hover:border-ink/40 peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">
                               <span className="flex items-start justify-between gap-2">
                                 <span className="font-semibold">{t.variants[v].title}</span>
-                                <span className={cn("shrink-0 rounded-pill px-2 py-0.5 font-mono text-[12px]", selection.variant === v ? "bg-coral text-ink" : "bg-sand")}>{fmt(t.pick.from, { price: money(ITEMS[s.variants![v].base!].price) })}</span>
+                                <span className={cn("shrink-0 rounded-pill px-2 py-0.5 font-mono text-[12px]", selection.variant === v ? "bg-coral text-ink" : "bg-sand")}>{money(startPackage(id, v, quote.currency)!.svc.subtotal)}</span>
                               </span>
                               <span className="mt-1 text-[14px] text-stone-ink">{t.variants[v].text}</span>
                             </span>
@@ -533,7 +548,7 @@ function ScopeStep({
                         <p className="t-label text-stone-ink">{t.scope.base}</p>
                         <p className="mt-1 text-[15px] font-semibold">{t.items[scope.base]}</p>
                       </div>
-                      <p className="text-[15px] font-semibold tabular-nums">{money(ITEMS[scope.base].price)}</p>
+                      <p className="text-[15px] font-semibold tabular-nums">{money(unitPrice(scope.base, quote.currency))}</p>
                     </div>
                   )}
                   {scope.core.length > 0 && (
@@ -541,7 +556,7 @@ function ScopeStep({
                       <p className="t-label px-1 pb-2 text-stone-ink">{t.scope.core}</p>
                       <div className="space-y-2">
                         {scope.core.map((k) => (
-                          <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
+                          <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} currency={quote.currency} />
                         ))}
                       </div>
                     </>
@@ -561,7 +576,7 @@ function ScopeStep({
                         </summary>
                         <div className="space-y-2 pt-1">
                           {g.items.map((k) => (
-                            <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} />
+                            <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} currency={quote.currency} />
                           ))}
                         </div>
                       </details>
@@ -601,9 +616,11 @@ function ExtrasStep({
   setQty,
   setComplexity,
   setUrgency,
+  currency,
 }: {
   t: CalcDict;
   selection: Selection;
+  currency: Currency;
   money: (v: number) => string;
   qty: (v: number) => string;
   setQty: (k: ItemKey, v: number) => void;
@@ -619,7 +636,7 @@ function ExtrasStep({
         <p className="mt-1 text-[15px] text-stone-ink">{t.extras.workHint}</p>
         <div className="mt-4 space-y-2 rounded-card bg-sand/60 p-3 sm:p-4">
           {EXTRA_ITEMS.map((k) => (
-            <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} hint={t.extraHints[k]} />
+            <QtyRow key={k} k={k} value={selection.qty[k] ?? 0} onChange={(v) => setQty(k, v)} t={t} money={money} qty={qty} currency={currency} hint={t.extraHints[k]} />
           ))}
         </div>
       </section>

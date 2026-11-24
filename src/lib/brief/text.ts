@@ -31,8 +31,8 @@ export type BriefTextInput = {
 
 /** t — словарь языка, на котором пишем текст; numberLocale — язык форматирования чисел */
 export function briefText(t: CalcDict, textLocale: Locale, b: BriefTextInput): string {
-  const money = moneyFormatter(textLocale);
   const q = b.quote;
+  const money = moneyFormatter(textLocale, q.currency);
   const out: string[] = [];
   const add = (label: string, v?: string | null) => v && v.trim() && out.push(`${label}: ${v.trim()}`);
 

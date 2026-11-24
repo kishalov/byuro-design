@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
-import { ITEMS, SERVICES } from "@/lib/calculator/catalog";
+import { ITEMS, SERVICES, unitPrice } from "@/lib/calculator/catalog";
 import type { Quote, QuoteLine } from "@/lib/calculator/engine";
 import { formatDays, moneyFormatter, pct, projectType, qtyFormatter, requestPartNames, serviceTitle } from "@/lib/calculator/format";
 import { fontStack } from "./fonts";
@@ -25,7 +25,7 @@ export type QuoteDocProps = {
 };
 
 export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt, timeZone }: QuoteDocProps) {
-  const money = moneyFormatter(locale);
+  const money = moneyFormatter(locale, quote.currency);
   const qty = qtyFormatter(locale);
   const text = fontStack(locale, "text");
   const display = fontStack(locale, "display");
@@ -268,7 +268,7 @@ export function QuoteDocument({ t, locale, quote, calcId, projectName, createdAt
                   {notChosen.length > 0 && (
                     <View wrap={false} style={{ marginTop: 8, backgroundColor: C.paper, borderRadius: 10, padding: 10 }}>
                       <Text style={s.label}>{t.pdf.paidOptions}</Text>
-                      <Text style={{ marginTop: 3 }}>{notChosen.map((k) => `${t.items[k]} — ${fmt(t.scope.perUnit, { price: money(ITEMS[k].price), unit: t.units[ITEMS[k].unit] })}`).join("  ·  ")}</Text>
+                      <Text style={{ marginTop: 3 }}>{notChosen.map((k) => `${t.items[k]} — ${fmt(t.scope.perUnit, { price: money(unitPrice(k, quote.currency)), unit: t.units[ITEMS[k].unit] })}`).join("  ·  ")}</Text>
                     </View>
                   )}
                 </View>

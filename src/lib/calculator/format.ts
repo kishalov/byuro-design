@@ -1,18 +1,23 @@
 /* Форматирование сумм и сроков калькулятора.
-   Валюта всегда исходная (USD): курсов и «международных» цен нет — сумма не пересчитывается,
-   меняется только формат записи числа под язык посетителя. */
+   Валюта расчёта зависит от версии сайта: русская — в рублях (цены переводятся
+   по фиксированному курсу, см. RUB_PER_USD в catalog.ts), остальные — в долларах.
+   Формат записи числа — под язык посетителя. */
 
 import type { Locale } from "@/i18n/config";
 import { fmt } from "@/i18n/format";
 import { markets } from "@/i18n/market";
 import type { CalcDict } from "@/i18n/calculator/ru";
-import { CURRENCY, ITEMS, type ItemKey } from "./catalog";
+import { ITEMS, type Currency, type ItemKey } from "./catalog";
 import type { DayRange, Quote, QuoteLine, QuoteService } from "./engine";
 
-export function moneyFormatter(locale: Locale) {
+/** Валюта калькулятора для версии сайта */
+export const calcCurrency = (locale: Locale): Currency => (locale === "ru" ? "RUB" : "USD");
+
+/** currency — валюта самих сумм (у готового расчёта — quote.currency) */
+export function moneyFormatter(locale: Locale, currency: Currency = calcCurrency(locale)) {
   const nl = markets[locale]?.numberLocale ?? "en-US";
-  const whole = new Intl.NumberFormat(nl, { style: "currency", currency: CURRENCY, maximumFractionDigits: 0 });
-  const cents = new Intl.NumberFormat(nl, { style: "currency", currency: CURRENCY, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const whole = new Intl.NumberFormat(nl, { style: "currency", currency, maximumFractionDigits: 0 });
+  const cents = new Intl.NumberFormat(nl, { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return (v: number) => (Number.isInteger(Math.round(v * 100) / 100) ? whole : cents).format(v);
 }
 

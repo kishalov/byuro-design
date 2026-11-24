@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCalcDict } from "@/i18n/calculator/get";
 import { LIMITS } from "@/lib/brief/schema";
+import { calcCurrency } from "@/lib/calculator/format";
 import { computeQuote, parseSelection } from "@/lib/calculator/engine";
 import { isCalcId } from "@/lib/calculator/ids";
 import { rateLimited, str, toLocale, toTimeZone } from "@/lib/calculator/server";
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
   if (!isCalcId(body.calcId)) return NextResponse.json({ error: "calc_id" }, { status: 400 });
   const parsed = parseSelection(body.selection, true);
   if (!parsed.ok) return NextResponse.json({ error: "selection" }, { status: 400 });
-  const quote = computeQuote(parsed.selection);
+  const quote = computeQuote(parsed.selection, calcCurrency(locale));
   if (quote.isEmpty) return NextResponse.json({ error: "empty" }, { status: 400 });
   const projectName = (str(body.projectName, LIMITS.projectName) ?? "").slice(0, LIMITS.projectName).trim();
 

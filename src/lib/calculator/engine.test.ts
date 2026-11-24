@@ -182,3 +182,28 @@ describe("ids", () => {
     assert.notEqual(selectionSignature(sel({ services: ["brand"] })), selectionSignature(sel({ services: ["brand"], parts: { brand: [1] } })));
   });
 });
+
+describe("currency", () => {
+  it("RUB: каждая цена — круглая и близка к курсу", async () => {
+    const { unitPrice, RUB_PER_USD } = await import("./catalog");
+    for (const k of ITEM_KEYS) {
+      const rub = unitPrice(k, "RUB");
+      assert.ok(rub % 10 === 0, k);
+      assert.ok(Math.abs(rub - ITEMS[k].price * RUB_PER_USD) / (ITEMS[k].price * RUB_PER_USD) < 0.05, k);
+    }
+  });
+  it("RUB: расчёт в рублях, валюта в смете", () => {
+    const q = computeQuote(toggleService(emptySelection(), "web"), "RUB");
+    assert.equal(q.currency, "RUB");
+    assert.equal(q.total, 25500 + 5 * 2600);
+  });
+  it("стартовый пакет = сумма после выбора услуги", async () => {
+    const { SERVICE_IDS, SERVICES, serviceScope } = await import("./catalog");
+    for (const cur of ["USD", "RUB"] as const)
+      for (const id of SERVICE_IDS) {
+        if (SERVICES[id].requestOnly) continue;
+        const pkg = computeQuote({ ...emptySelection(), services: [id], qty: { ...serviceScope(SERVICES[id], "builder").defaults } }, cur);
+        assert.equal(computeQuote(toggleService(emptySelection(), id), cur).total, pkg.total, `${id} ${cur}`);
+      }
+  });
+});

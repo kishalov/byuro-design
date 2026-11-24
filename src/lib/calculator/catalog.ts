@@ -12,6 +12,26 @@
 
 export const CURRENCY = "USD" as const;
 
+/* Валюта расчёта. Прайс ведётся в долларах (см. ITEMS); для русской версии сайта цены
+   показываются в рублях: каждая цена за единицу переводится по фиксированному курсу
+   и округляется до «круглой» суммы. Курс не обновляется сам — чтобы поменять рублёвые
+   цены, правьте RUB_PER_USD (на 25.11.2026 курс ЦБ ≈ 83 ₽ за $). */
+export type Currency = "USD" | "RUB";
+export const CURRENCIES: readonly Currency[] = ["USD", "RUB"];
+export const RUB_PER_USD = 85;
+
+/** «Круглая» рублёвая цена: до 1 000 ₽ — шаг 10 ₽, до 10 000 ₽ — 100 ₽, дальше — 500 ₽ */
+function niceRub(v: number): number {
+  const step = v < 1000 ? 10 : v < 10_000 ? 100 : 500;
+  return Math.round(v / step) * step;
+}
+
+/** Цена за единицу в нужной валюте */
+export function unitPrice(key: ItemKey, currency: Currency): number {
+  const usd = ITEMS[key].price;
+  return currency === "RUB" ? niceRub(usd * RUB_PER_USD) : usd;
+}
+
 export type Unit = "pcs" | "sec" | "min";
 
 export const ITEM_KEYS = [
