@@ -17,6 +17,8 @@ export type CaseBase = {
   /** Только подтверждённые результаты (доли: 0.38 = +38 %); null — честная заглушка.
       Подписи — в словаре: dict.cases.items[slug].metrics[key] */
   results: { value: number; key: string }[] | null;
+  /** Не показывать блок «Результат» на странице кейса (по просьбе клиента) */
+  hideResult?: boolean;
   cover: CaseCover;
   gallery: CaseMedia[];
   layout: "grid" | "stack" | "slides" | "bento" | "duo" | "reel" | "showcase" | "pairs";
@@ -45,6 +47,49 @@ const full = (n: string, w: number, h: number) => img(`${n}-full`, w, h, [760, 1
 const cover = (n: string, w: number, h: number) => img(`${n}-cover`, w, h, [640, 1200]);
 
 export const cases: CaseBase[] = [
+  {
+    slug: "cape-caviar",
+    category: "landing",
+    industry: "food",
+    tags: ["landing", "webDesign", "ecommerce"],
+    results: null,
+    hideResult: true, // клиент попросил не публиковать результат
+    cover: { kind: "browser", image: cover("caviar", 1921, 2402) },
+    gallery: [{ kind: "image", image: full("caviar", 1921, 6481), frame: "browser" }],
+    layout: "stack",
+  },
+  {
+    slug: "angelaw",
+    category: "landing",
+    industry: "legal",
+    tags: ["landing", "webDesign"],
+    results: null,
+    hideResult: true, // клиент попросил не публиковать результат
+    cover: { kind: "browser", image: cover("angelaw", 1662, 2078) },
+    gallery: [{ kind: "image", image: full("angelaw", 1662, 8000), frame: "browser" }],
+    layout: "stack",
+  },
+  {
+    slug: "nibble",
+    category: "branding",
+    industry: "cafe",
+    tags: ["logo", "identity", "mascot", "packaging"],
+    results: null,
+    hideResult: true, // клиент попросил не публиковать результат
+    // в веере: стикеры, стакан, логотип по центру, пакет, вывеска
+    cover: { kind: "collage", images: [nibble[1], nibble[2], nibble[0], nibble[3], nibble[4]] },
+    gallery: nibble.map((image) => ({ kind: "image", image })),
+    layout: "bento",
+  },
+  {
+    slug: "motion-reel",
+    category: "motion",
+    tags: ["motion", "ads"],
+    results: null,
+    cover: { kind: "reel", videos: reel },
+    gallery: reel.map((v) => ({ kind: "video", ...v })),
+    layout: "reel",
+  },
   {
     slug: "telegram-food-delivery",
     category: "app",
@@ -104,26 +149,6 @@ export const cases: CaseBase[] = [
     layout: "stack",
   },
   {
-    slug: "cape-caviar",
-    category: "landing",
-    industry: "food",
-    tags: ["landing", "webDesign", "ecommerce"],
-    results: null,
-    cover: { kind: "browser", image: cover("caviar", 1921, 2402) },
-    gallery: [{ kind: "image", image: full("caviar", 1921, 6481), frame: "browser" }],
-    layout: "stack",
-  },
-  {
-    slug: "angelaw",
-    category: "landing",
-    industry: "legal",
-    tags: ["landing", "webDesign"],
-    results: null,
-    cover: { kind: "browser", image: cover("angelaw", 1662, 2078) },
-    gallery: [{ kind: "image", image: full("angelaw", 1662, 8000), frame: "browser" }],
-    layout: "stack",
-  },
-  {
     slug: "biomavital",
     category: "branding",
     industry: "eco",
@@ -132,17 +157,6 @@ export const cases: CaseBase[] = [
     cover: { kind: "collage", images: [bio[2], bio[3], bio[4]] },
     gallery: bio.map((image) => ({ kind: "image", image })),
     layout: "slides",
-  },
-  {
-    slug: "nibble",
-    category: "branding",
-    industry: "cafe",
-    tags: ["logo", "identity", "mascot", "packaging"],
-    results: null,
-    // в веере: стикеры, стакан, логотип по центру, пакет, вывеска
-    cover: { kind: "collage", images: [nibble[1], nibble[2], nibble[0], nibble[3], nibble[4]] },
-    gallery: nibble.map((image) => ({ kind: "image", image })),
-    layout: "bento",
   },
   {
     slug: "petal-punk",
@@ -162,15 +176,6 @@ export const cases: CaseBase[] = [
     cover: { kind: "video", src: "/cases/safin-logo.mp4", poster: img("safin-poster", 1280, 720, [1280]) },
     gallery: [{ kind: "video", src: "/cases/safin-logo.mp4", poster: img("safin-poster", 1280, 720, [1280]) }],
     layout: "stack",
-  },
-  {
-    slug: "motion-reel",
-    category: "motion",
-    tags: ["motion", "ads"],
-    results: null,
-    cover: { kind: "reel", videos: reel },
-    gallery: reel.map((v) => ({ kind: "video", ...v })),
-    layout: "reel",
   },
 ];
 

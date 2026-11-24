@@ -154,7 +154,7 @@ export default async function CasePage({ params }: Props) {
               ))}
             </ul>
           </section>
-          {!c.results && (
+          {!c.results && !c.hideResult && (
             <section aria-labelledby="result">
               <h2 id="result" className="t-h2">{extra.resultTitle ?? t.page.result}</h2>
               {extra.resultParas ? (
