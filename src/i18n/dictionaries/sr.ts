@@ -25,6 +25,8 @@ const sr = {
     language: "Jezik sajta",
   },
   cta: {
+    lead: "Ostavite zahtev",
+    close: "Zatvori",
     project: "Razgovarajmo o projektu",
     calc: "Izračunajte cenu",
     partner: "Postanite partner",

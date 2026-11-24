@@ -24,6 +24,8 @@ const ja = {
     language: "表示言語",
   },
   cta: {
+    lead: "お問い合わせ",
+    close: "閉じる",
     project: "プロジェクトを相談する",
     calc: "費用を見積もる",
     partner: "パートナーになる",

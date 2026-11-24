@@ -32,7 +32,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const markAt = c.page.title.indexOf(c.page.mark);
   return (
     <>
-      <LandingHero locale={locale} t={t.landing} hero={t.hero} cta={t.cta} tg={t.contact.telegram} />
+      <LandingHero locale={locale} t={t.landing} hero={t.hero} cta={t.cta} tg={t.contact.telegram} contact={t.contact} form={t.form} />
       <CaseSlider cases={cases} t={t.cases} l={t.landing} locale={locale} />
 
       <section id="calculator" aria-labelledby="calc-title" className="grain border-t border-ink/10 pt-16 pb-36 sm:pt-20 lg:pb-[var(--section)]">

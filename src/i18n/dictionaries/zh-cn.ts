@@ -24,6 +24,8 @@ const zh = {
     language: "网站语言",
   },
   cta: {
+    lead: "提交需求",
+    close: "关闭",
     project: "洽谈项目",
     calc: "估算费用",
     partner: "成为合作伙伴",

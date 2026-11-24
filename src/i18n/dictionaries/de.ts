@@ -24,6 +24,8 @@ const de = {
     language: "Sprache der Website",
   },
   cta: {
+    lead: "Anfrage senden",
+    close: "Schließen",
     project: "Projekt besprechen",
     calc: "Kosten berechnen",
     partner: "Partner werden",

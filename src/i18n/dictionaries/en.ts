@@ -24,6 +24,8 @@ const en = {
     language: "Site language",
   },
   cta: {
+    lead: "Leave a request",
+    close: "Close",
     project: "Discuss a project",
     calc: "Estimate the cost",
     partner: "Become a partner",

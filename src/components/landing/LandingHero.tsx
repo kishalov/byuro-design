@@ -1,15 +1,14 @@
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
-import { anchors, lp } from "@/i18n/paths";
 import { Mascot } from "../mm/Mascot";
 import { Sticker } from "../mm/Kit";
-import { ButtonLink } from "../ui/Button";
+import { LeadDialog } from "../forms/LeadDialog";
 import { TelegramLink } from "../ui/TelegramLink";
 
 /* Первый экран лендинга: кто мы и что делаем — в одном заголовке,
    два действия (рассчитать стоимость / написать в Telegram) и короткие факты.
    Справа — маскот на фирменной точке. */
-export function LandingHero({ locale, t, hero, cta, tg }: { locale: Locale; t: Dict["landing"]; hero: Dict["hero"]; cta: Dict["cta"]; tg: string }) {
+export function LandingHero({ locale, t, hero, cta, tg, contact, form }: { locale: Locale; t: Dict["landing"]; hero: Dict["hero"]; cta: Dict["cta"]; tg: string; contact: Dict["contact"]; form: Dict["form"] }) {
   const at = t.title.indexOf(t.mark);
   const before = at >= 0 ? t.title.slice(0, at) : t.title;
   const mark = at >= 0 ? t.mark : "";
@@ -42,9 +41,7 @@ export function LandingHero({ locale, t, hero, cta, tg }: { locale: Locale; t: D
           </ul>
 
           <div id="hero-ctas" className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <ButtonLink href={lp(locale, anchors.calculator)} className="cta-main">
-              {cta.calc}
-            </ButtonLink>
+            <LeadDialog locale={locale} label={cta.lead} close={cta.close} contact={contact} form={form} />
             <TelegramLink variant="outline" label={tg} />
           </div>
 
