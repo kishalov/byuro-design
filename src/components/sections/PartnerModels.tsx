@@ -162,7 +162,7 @@ export function PartnerModels({ t, calc, partnerHref }: { t: T; calc: PartnerCal
           >
             <div className="p-7 sm:p-10">
               <p className="t-label text-paper/70">{t.modelLabel}</p>
-              <h3 id={`${uid}-title-${i}`} className="t-h2 mt-3 pr-14">
+              <h3 id={`${uid}-title-${i}`} className="t-h2 mt-3 pr-14 !text-[calc(clamp(1.55rem,3vw,2.5rem)*var(--hs,1))] [hyphens:auto]">
                 {m.title}
               </h3>
               <p className="t-body-l mt-4 text-paper/85">{m.text}</p>

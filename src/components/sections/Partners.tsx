@@ -11,10 +11,10 @@ import { Eyebrow } from "../ui/SectionHead";
 /* Партнёрская программа — тёмный «разворот».
    Сценарий: боли партнёров (сердитый маскот в окружении реплик) →
    наш ответ → как это работает → модели (раскрываются, с примерами расчёта) → CTA. */
-export function Partners({ locale, t }: { locale: Locale; t: Dict["partners"] }) {
+export function Partners({ locale, t, inDialog }: { locale: Locale; t: Dict["partners"]; inDialog?: boolean }) {
   const rot = [-2.5, 1.5, -1, 2.5, -2, 1];
   return (
-    <section id="partners" aria-labelledby="partners-title" className="cv on-dark relative overflow-hidden bg-ink text-paper">
+    <section id={inDialog ? undefined : "partners"} aria-labelledby="partners-title" className={`${inDialog ? "" : "cv "}on-dark relative overflow-hidden bg-ink text-paper`}>
       <div aria-hidden="true" className="absolute -top-[18vw] right-[-12vw] size-[40vw] min-h-[260px] min-w-[260px] rounded-full bg-coral max-md:-top-[150px] max-md:right-[-170px]">
         <div className="halftone size-full rounded-full" />
       </div>

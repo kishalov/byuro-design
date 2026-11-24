@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import { cn } from "@/lib/cn";
+import { clearDialogHash, useDialogRequests } from "@/lib/dialogs";
 import type { LeadType } from "@/lib/lead";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
@@ -14,7 +15,7 @@ import { LeadForm } from "./LeadForm";
 export function LeadDialog({
   locale,
   label,
-  close,
+  close: closeLabel,
   contact,
   form,
   className,
@@ -45,13 +46,17 @@ export function LeadDialog({
     };
   }, [open]);
 
-  // открыть попап можно и ссылкой с якорем #lead (например, из рекламы)
-  useEffect(() => {
-    const sync = () => window.location.hash === "#lead" && setOpen(true);
-    sync();
-    window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
-  }, []);
+  // открыть попап можно ссылкой: #lead — проект, #lead-partner — партнёрство (из меню, попапа партнёрки, рекламы)
+  useDialogRequests((name) => {
+    if (name === "lead" || name === "lead-partner") {
+      setType(name === "lead" ? "project" : "partner");
+      setOpen(true);
+    } else setOpen(false);
+  });
+  const close = () => {
+    setOpen(false);
+    clearDialogHash();
+  };
 
   return (
     <>
@@ -61,8 +66,8 @@ export function LeadDialog({
 
       <dialog
         ref={ref}
-        onClose={() => setOpen(false)}
-        onClick={(e) => e.target === e.currentTarget && setOpen(false)}
+        onClose={close}
+        onClick={(e) => e.target === e.currentTarget && close()}
         aria-labelledby={`${id}-title`}
         className="m-0 h-full max-h-none w-full max-w-none bg-paper p-0 text-ink backdrop:bg-ink/60 backdrop:backdrop-blur-[2px] sm:m-auto sm:h-auto sm:max-h-[92vh] sm:w-[min(720px,calc(100vw-32px))] sm:rounded-card"
       >
@@ -76,7 +81,7 @@ export function LeadDialog({
                 </h2>
                 <p className="mt-1.5 text-[15px] text-ink/75">{c.lead}</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} aria-label={close} className="grid size-11 shrink-0 place-items-center rounded-full transition-colors hover:bg-sand">
+              <button type="button" onClick={close} aria-label={closeLabel} className="grid size-11 shrink-0 place-items-center rounded-full transition-colors hover:bg-sand">
                 <Icon name="close" size={24} />
               </button>
             </div>

@@ -21,10 +21,10 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
     // Лендинг из трёх экранов: в меню только кейсы и калькулятор.
     // Прежние разделы (услуги, партнёрам, как работаем, вопросы) отключены вместе с секциями:
     // { href: lp(locale, anchors.services), label: nav.services },
-    // { href: lp(locale, anchors.partners), label: nav.partners },
     // { href: lp(locale, anchors.process), label: nav.process },
     // { href: lp(locale, anchors.faq), label: nav.faq },
     { href: lp(locale, anchors.cases), label: nav.cases },
+    { href: lp(locale, anchors.partners), label: nav.partners }, // открывает попап партнёрской программы
     { href: lp(locale, anchors.calculator), label: nav.calc },
   ];
 

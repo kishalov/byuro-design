@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { isDialogHash, openDialog } from "@/lib/dialogs";
 
 /* Точная прокрутка к якорям (#contact-project, #faq …).
    Нижние секции отрисовываются лениво (content-visibility: auto, класс .cv),
@@ -27,7 +28,7 @@ export function AnchorScroll() {
   // Пришли на страницу уже с якорем (в т.ч. со страницы кейса на главную)
   useEffect(() => {
     const id = decodeURIComponent(window.location.hash.slice(1));
-    if (!id) return;
+    if (!id || isDialogHash(id)) return; // якорь попапа — его открывает сам попап
     const t = window.setTimeout(() => scrollToId(id, false), 60);
     return () => window.clearTimeout(t);
   }, [pathname]);
@@ -41,6 +42,13 @@ export function AnchorScroll() {
       const url = new URL(a.href, window.location.href);
       if (url.origin !== window.location.origin || url.pathname !== window.location.pathname || !url.hash) return;
       const id = decodeURIComponent(url.hash.slice(1));
+      if (isDialogHash(id)) {
+        // попап на этой же странице: открываем без перехода и прокрутки
+        e.preventDefault();
+        if (window.location.hash !== url.hash) history.pushState(history.state, "", url.hash);
+        later(() => openDialog(id));
+        return;
+      }
       if (!document.getElementById(id)) return;
       e.preventDefault(); // перехватываем раньше next/link (слушатель в фазе захвата)
       if (window.location.hash !== url.hash) history.pushState(history.state, "", url.hash);
