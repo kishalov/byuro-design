@@ -9,7 +9,9 @@ export const anchors = {
   partners: "/#partners",
   process: "/#process",
   faq: "/#faq",
-  project: "/#contact-project",
-  partner: "/#contact-partner",
-  calculator: "/calculator/",
+  // Лендинг теперь из трёх экранов: первый экран → кейсы → калькулятор.
+  // Форм заявки на главной нет — все «связаться» ведут к калькулятору (там отправка брифа).
+  project: "/#calculator",
+  partner: "/#calculator",
+  calculator: "/#calculator",
 } as const;

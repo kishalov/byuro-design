@@ -12,7 +12,7 @@ export function TelegramLink({
   label,
   className,
 }: {
-  variant?: "card" | "inline" | "pill" | "icon";
+  variant?: "card" | "inline" | "pill" | "outline" | "icon";
   label?: string;
   className?: string;
 }) {
@@ -53,6 +53,20 @@ export function TelegramLink({
         <Icon name="telegram" size={20} />
         {label && <span className="hidden sm:inline">{label} ·</span>}
         <span>{tg.handle}</span>
+      </a>
+    );
+
+  if (variant === "outline")
+    return (
+      <a
+        {...common}
+        className={cn(
+          "inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-pill border-2 border-ink bg-white/60 px-6 font-semibold text-ink transition-colors hover:bg-ink hover:text-paper",
+          className,
+        )}
+      >
+        <Icon name="telegram" size={20} />
+        {label ?? `Telegram ${tg.handle}`}
       </a>
     );
 

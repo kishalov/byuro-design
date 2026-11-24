@@ -46,6 +46,15 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
       .catch(() => {});
   }, []);
   const topRef = useRef<HTMLDivElement>(null);
+  // на главной калькулятор — третий экран: панель итога показываем, только когда он в зоне видимости
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = topRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: "0px 0px -35% 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const money = useMemo(() => moneyFormatter(locale), [locale]);
   const qty = useMemo(() => qtyFormatter(locale), [locale]);
@@ -187,7 +196,7 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
       </div>
 
       {/* Итог внизу экрана (телефон и планшет) */}
-      {step !== "summary" && (
+      {step !== "summary" && inView && (
         <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
           <div className="flex items-center gap-3 rounded-[22px] bg-ink p-2 pl-4 text-paper shadow-[0_10px_30px_rgb(18_18_18/0.3)]">
             <div className="min-w-0 flex-1" aria-live="polite">

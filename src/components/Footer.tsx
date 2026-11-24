@@ -9,12 +9,12 @@ import { Logo } from "./ui/Logo";
 
 export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["footer"]; nav: Dict["nav"]; cta: Dict["cta"] }) {
   const items = [
-    { href: lp(locale, anchors.services), label: nav.services },
-    { href: lp(locale, anchors.calculator), label: nav.calc },
+    // { href: lp(locale, anchors.services), label: nav.services },
+    // { href: lp(locale, anchors.partners), label: nav.partners },
+    // { href: lp(locale, anchors.process), label: nav.process },
+    // { href: lp(locale, anchors.faq), label: nav.faq },
     { href: lp(locale, anchors.cases), label: nav.cases },
-    { href: lp(locale, anchors.partners), label: nav.partners },
-    { href: lp(locale, anchors.process), label: nav.process },
-    { href: lp(locale, anchors.faq), label: nav.faq },
+    { href: lp(locale, anchors.calculator), label: nav.calc },
   ];
   return (
     <footer className="on-dark bg-ink pb-28 text-paper md:pb-10">
@@ -23,12 +23,10 @@ export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["foote
           <div className="md:col-span-5">
             <p className="t-h3 max-w-[24rem]">{t.tagline}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={lp(locale, anchors.project)} className="inline-flex min-h-12 items-center rounded-pill bg-coral px-5 font-semibold text-ink transition-colors hover:bg-paper">
-                {cta.project}
+              <Link href={lp(locale, anchors.calculator)} className="inline-flex min-h-12 items-center rounded-pill bg-coral px-5 font-semibold text-ink transition-colors hover:bg-paper">
+                {cta.calc}
               </Link>
-              <Link href={lp(locale, anchors.partner)} className="inline-flex min-h-12 items-center rounded-pill border-2 border-paper/50 px-5 font-semibold transition-colors hover:border-paper hover:bg-paper hover:text-ink">
-                {cta.partner}
-              </Link>
+              {/* партнёрская форма отключена: <Link href={lp(locale, anchors.partner)}>{cta.partner}</Link> */}
             </div>
           </div>
           <nav aria-label={nav.footer} className="md:col-span-3 md:col-start-7">

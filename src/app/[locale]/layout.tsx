@@ -73,7 +73,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           {children}
         </main>
         <Footer locale={locale} t={t.footer} nav={t.nav} cta={t.cta} />
-        <MobileCtaBar locale={locale} project={t.cta.project} partner={t.cta.partnerShort} />
+        <MobileCtaBar locale={locale} project={t.cta.calc} partner="Telegram" />
         <RevealObserver />
         <AnchorScroll />
       </body>

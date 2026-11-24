@@ -305,10 +305,8 @@ export default async function CasePage({ params }: Props) {
           <h2 className="t-h1 relative z-10 max-w-[40rem]">{extra.ctaTitle ?? t.page.similarTitle}</h2>
           <p className="t-lead relative z-10 mt-5 max-w-[36rem] text-paper/80">{extra.ctaText ?? t.page.similarText}</p>
           <div className="relative z-10 mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href={lp(locale, anchors.project)}>{d.cta.project}</ButtonLink>
-            <ButtonLink href={lp(locale, anchors.partner)} variant="outline-light">
-              {d.cta.partner}
-            </ButtonLink>
+            <ButtonLink href={lp(locale, anchors.calculator)}>{d.cta.calc}</ButtonLink>
+            {/* партнёрская форма отключена: <ButtonLink href={lp(locale, anchors.partner)} variant="outline-light">{d.cta.partner}</ButtonLink> */}
           </div>
           <TelegramLink variant="pill" label={d.contact.telegram} className="relative z-10 mt-3 w-full sm:w-auto" />
           <span aria-hidden="true" className="absolute -right-16 -bottom-16 size-56 rounded-full bg-coral" />
