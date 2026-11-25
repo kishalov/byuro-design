@@ -4,8 +4,11 @@
 
    — Счётчик загружается ТОЛЬКО после согласия посетителя (баннер внизу страницы).
      Без согласия на сайте нет ни скрипта Метрики, ни её cookie.
-   — Сайт — SPA (переходы Next.js без перезагрузки), поэтому init вызывается с defer: true
-     и просмотры отправляются вручную методом hit при каждой смене адреса (см. YandexMetrika.tsx).
+   — Сайт — SPA (переходы Next.js без перезагрузки): первую страницу засчитывает сам init,
+     а каждую следующую — метод hit при смене адреса (см. YandexMetrika.tsx). Адрес, уже засчитанный
+     последним, повторно не отправляется — так нет двойного учёта.
+     (С defer: true tag.js на проде всё равно отправлял просмотр при init, и вместе с ручным hit
+     первая страница считалась дважды — поэтому defer не используем.)
    — Цель «Успешная отправка заявки»: JavaScript-событие с идентификатором LEAD_GOAL.
      В интерфейсе Метрики: Цели → Добавить цель → «JavaScript-событие» → идентификатор lead_sent.
      В параметрах визита приходит form: "lead" (форма заявки) или "calculator" (заявка из калькулятора). */
@@ -74,8 +77,8 @@ export function initMetrika(): boolean {
   for (var j = 0; j < e.scripts.length; j++) {if (e.scripts[j].src === r) { return; }}
   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+  s.lastUrl = window.location.href.split("#")[0]; // эту страницу засчитает init
   window.ym!(METRIKA_ID, "init", {
-    defer: true, // SPA: просмотры отправляем сами (hit), чтобы не было двойного учёта
     clickmap: true,
     trackLinks: true,
     accurateTrackBounce: true,

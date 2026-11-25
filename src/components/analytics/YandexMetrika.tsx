@@ -26,7 +26,7 @@ export function YandexMetrika({ t, privacyHref }: { t: Dict["consent"]; privacyH
     };
   }, []);
 
-  // Загрузка счётчика после согласия + просмотр текущей страницы и каждой следующей
+  // Загрузка счётчика после согласия (init сам засчитает текущую страницу) + просмотр каждой следующей
   useEffect(() => {
     if (consent !== "granted") return;
     initMetrika();
