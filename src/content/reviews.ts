@@ -14,10 +14,10 @@ export type ReviewMeta = {
 };
 
 export const reviewMeta: Record<string, ReviewMeta> = {
-  c1: { example: false },
-  c2: { example: false },
-  c3: { example: false },
-  p1: { example: false },
-  p2: { example: false },
-  p3: { example: false },
+  c1: { example: false, photo: "/reviews/c1.webp" },
+  c2: { example: false, photo: "/reviews/c2.webp" },
+  c3: { example: false, photo: "/reviews/c3.webp" },
+  p1: { example: false, photo: "/reviews/p1.webp" },
+  p2: { example: false, photo: "/reviews/p2.webp" },
+  p3: { example: false, photo: "/reviews/p3.webp" },
 };
