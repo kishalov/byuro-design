@@ -9,7 +9,7 @@ const en = {
     eyebrow: "Calculator",
     title: "Estimate the cost of your project",
     mark: "cost",
-    lead: "Tick what you need — the price and timeline are calculated instantly. Happy with it? Send a request and your estimate comes with it. You can also download it as a PDF.",
+    lead: "Tap “+” next to a service — the price and timeline are calculated instantly. Where there’s no price, we’ll name it after a quick call.",
     currency: "Prices are in US dollars (USD).",
     disclaimer: "Price and timeline are preliminary: we’ll confirm them once we’ve discussed your task.",
   },

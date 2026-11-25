@@ -48,6 +48,8 @@ const de = {
     nextItem: "Weiter",
     // {n} — число кейсов на сайте (считается автоматически)
     facts: [{ value: "8+", label: "Jahre in Design und Entwicklung" }, { value: "1", label: "Team statt mehrerer Dienstleister" }, { value: "{n}", label: "{n, plural, one {Projekt} other {Projekte}} im Portfolio" }],
+    // шоурил — первый слайд в ленте кейсов
+    reel: { label: "Showreel", title: "Alle Arbeiten in 37 Sekunden", text: "Ein kurzer Überblick über unsere Projekte. Details zu jedem – einfach weiterblättern.", next: "Mehr ansehen", soundOn: "Ton einschalten", soundOff: "Ton ausschalten", meta: "Video · 37 Sek.", caption: "Kurz gesagt, was wir machen" },
   },
   hero: {
     eyebrow: "Flexibles Studio für Design & Entwicklung",

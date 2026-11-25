@@ -117,10 +117,8 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
     <div id="calc-root" ref={topRef} className="scroll-mt-[calc(var(--header-h)+12px)]">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] lg:gap-10 xl:gap-14">
         <div className="min-w-0">
-          <h3 className="t-h3">{t.pick.title}</h3>
-          <p className="t-body-l mt-3 max-w-[40rem] text-ink/80">{t.pick.hint}</p>
-
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-4">
+          <h3 className="sr-only">{t.pick.title}</h3>
+          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             {SERVICE_IDS.map((id) => (
               <ServiceCard
                 key={id}
@@ -289,13 +287,6 @@ function ServiceCard({
         )}
       </div>
       <p className="mt-2 hidden text-[15px] text-ink/80 sm:block">{svc.short}</p>
-      <ul className="mt-3 hidden flex-wrap gap-1.5 sm:flex" aria-label={t.pick.includes}>
-        {svc.deliverables.map((d) => (
-          <li key={d} className="rounded-pill bg-sand px-2.5 py-1 text-[13px] font-medium">
-            {d}
-          </li>
-        ))}
-      </ul>
       {!pkg ? (
         <p className="mt-2 font-display text-[17px] font-bold sm:mt-4">{t.pick.requestOnly}</p>
       ) : (
@@ -319,6 +310,13 @@ function ServiceCard({
           </summary>
           <div className="mt-3 space-y-4 text-[15px]">
             <p className="text-ink/80 sm:hidden">{svc.short}</p>
+            <ul className="flex flex-wrap gap-1.5" aria-label={t.pick.includes}>
+              {svc.deliverables.map((d) => (
+                <li key={d} className="rounded-pill bg-sand px-2.5 py-1 text-[13px] font-medium">
+                  {d}
+                </li>
+              ))}
+            </ul>
             {svc.includes.length > 0 && <ListBlock title={t.pick.includes} items={svc.includes} tone="in" />}
             <ListBlock title={t.pick.excludes} items={svc.excludes} tone="out" />
             {s.requestOnly ? (
@@ -563,7 +561,7 @@ function SideSummary({ t, locale, quote, money, pdf, onBrief }: { t: CalcDict; l
           )}
         </ul>
       )}
-      <div className="mt-4 rounded-2xl bg-paper p-4" aria-live="polite">
+      <div className={cn("mt-4 rounded-2xl bg-paper p-4", quote.isEmpty && "hidden")} aria-live="polite">
         <div className="flex items-end justify-between gap-2">
           <span className="font-semibold">{t.summary.total}</span>
           <span className="font-display text-[28px] leading-none font-black tabular-nums">{money(quote.total)}</span>

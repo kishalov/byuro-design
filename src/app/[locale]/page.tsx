@@ -5,7 +5,6 @@ import { LandingProcess } from "@/components/landing/LandingProcess";
 import { LandingReviews } from "@/components/landing/LandingReviews";
 import { Partners } from "@/components/sections/Partners";
 import { PartnersDialog } from "@/components/sections/PartnersDialog";
-import { Eyebrow } from "@/components/ui/SectionHead";
 import { site } from "@/content/site";
 import { cases } from "@/content/cases";
 import type { Locale } from "@/i18n/config";
@@ -32,7 +31,6 @@ import { Why } from "@/components/sections/Why";
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = (await params).locale as Locale;
   const [t, c] = await Promise.all([getDict(locale), getCalcDict(locale)]);
-  const markAt = c.page.title.indexOf(c.page.mark);
   const railLabels = { prev: t.landing.prevItem, next: t.landing.nextItem };
   return (
     <>
@@ -41,30 +39,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <LandingReviews t={t.reviews} labels={railLabels} />
       <LandingProcess locale={locale} t={t.process} labels={railLabels} />
 
-      <section id="calculator" aria-labelledby="calc-title" className="grain border-t border-ink/10 pt-16 pb-36 sm:pt-20 lg:pb-[var(--section)]">
+      <section id="calculator" aria-labelledby="calc-title" className="grain border-t border-ink/10 pt-16 pb-24 sm:pt-20 lg:pb-28">
         <div className="wrap">
-          <header className="grid gap-x-12 gap-y-4 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-6">
-            <Eyebrow>{c.page.eyebrow}</Eyebrow>
-            <h2 id="calc-title" className="t-h2 mt-4">
-              {markAt >= 0 ? (
-                <>
-                  {c.page.title.slice(0, markAt)}
-                  <span className="marker">{c.page.mark}</span>
-                  {c.page.title.slice(markAt + c.page.mark.length)}
-                </>
-              ) : (
-                c.page.title
-              )}
+          {/* Шапка секции — как у остальных: заголовок с точкой и одна строка пояснения.
+              Оговорка про предварительные цены — в панели расчёта и в заявке. */}
+          <header className="max-w-[44rem]">
+            <h2 id="calc-title" className="t-h2">
+              {c.page.title}
+              <span aria-hidden="true" className="ml-[0.06em] inline-block size-[0.2em] rounded-full bg-coral" />
             </h2>
-            </div>
-            <div className="lg:col-span-6">
-              <p className="t-body-l text-ink/80">{c.page.lead}</p>
-              <p className="t-small mt-3 flex items-start gap-2 text-stone-ink">
-                <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-coral" />
-                {c.page.disclaimer} {c.page.currency}
-              </p>
-            </div>
+            <p className="t-body-l mt-3 text-ink/75">{c.page.lead}</p>
           </header>
           <div className="mt-8 sm:mt-10">
             <Calculator

@@ -39,12 +39,7 @@ export function LandingReviews({ t, labels }: { t: Dict["reviews"]; labels: { pr
         return (
           <li key={it.id} aria-roledescription="slide" aria-label={`${i + 1} / ${items.length}: ${it.name}`} className="w-[86%] shrink-0 snap-start sm:w-[58%] lg:w-[38%] xl:w-[32%]">
             <figure className="flex h-full flex-col rounded-[var(--radius-card)] border-2 border-ink/10 bg-white p-6 sm:p-7">
-              <blockquote className="flex-1">
-                <p className="text-[17px] leading-relaxed text-ink/90">
-                  <Rich text={it.text} hl={it.highlight} />
-                </p>
-              </blockquote>
-              <figcaption className="mt-6 flex items-center gap-3 border-t border-ink/10 pt-5">
+              <figcaption className="flex items-center gap-3 border-b border-ink/10 pb-5">
                 {meta?.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={meta.photo} alt="" width={48} height={48} loading="lazy" decoding="async" className="size-12 shrink-0 rounded-full object-cover" />
@@ -58,6 +53,11 @@ export function LandingReviews({ t, labels }: { t: Dict["reviews"]; labels: { pr
                   {sub && <span className="block text-[14px] leading-snug text-stone-ink">{sub}</span>}
                 </span>
               </figcaption>
+              <blockquote className="mt-5">
+                <p className="text-[17px] leading-relaxed text-ink/90">
+                  <Rich text={it.text} hl={it.highlight} />
+                </p>
+              </blockquote>
             </figure>
           </li>
         );

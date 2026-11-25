@@ -10,11 +10,12 @@ import { Logo } from "./ui/Logo";
 export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["footer"]; nav: Dict["nav"]; cta: Dict["cta"] }) {
   const items = [
     // { href: lp(locale, anchors.services), label: nav.services },
-    { href: lp(locale, anchors.process), label: nav.process },
     // { href: lp(locale, anchors.faq), label: nav.faq },
+    // порядок — как в шапке
     { href: lp(locale, anchors.cases), label: nav.cases },
-    { href: lp(locale, anchors.partners), label: nav.partners }, // открывает попап партнёрской программы
+    { href: lp(locale, anchors.process), label: nav.process },
     { href: lp(locale, anchors.calculator), label: nav.calc },
+    { href: lp(locale, anchors.partners), label: nav.partners }, // открывает попап партнёрской программы
   ];
   return (
     <footer className="on-dark bg-ink pb-28 text-paper md:pb-10">

@@ -49,6 +49,8 @@ const sr = {
     nextItem: "Dalje",
     // {n} — число кейсов на сайте (считается автоматически)
     facts: [{ value: "8+", label: "godina u dizajnu i razvoju" }, { value: "1", label: "tim umesto više izvođača" }, { value: "{n}", label: "{n, plural, one {projekat} few {projekta} other {projekata}} u portfoliju" }],
+    // шоурил — первый слайд в ленте кейсов
+    reel: { label: "Šoril", title: "Svi radovi za 37 sekundi", text: "Kratak pregled naših projekata. Detaljnije o svakom — listajte dalje.", next: "Listaj projekte", soundOn: "Uključi zvuk", soundOff: "Isključi zvuk", meta: "Video · 37 s", caption: "Ukratko o tome šta radimo" },
   },
   hero: {
     eyebrow: "Fleksibilni studio za dizajn i razvoj",

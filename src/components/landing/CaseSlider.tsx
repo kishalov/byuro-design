@@ -8,10 +8,11 @@ import { lp } from "@/i18n/paths";
 import { cn } from "@/lib/cn";
 import { CaseCover } from "../cases/CaseCover";
 import { Icon } from "../ui/Icon";
+import { ShowreelSlide } from "./ShowreelSlide";
 
 const tones = { app: "paper", web: "paper", ads: "coral", landing: "sand", branding: "paper", motion: "ink" } as const;
 
-/* Галерея кейсов одним слайдером: нативная прокрутка со snap (свайп на телефоне,
+/* Галерея кейсов одним слайдером (первым слайдом — шоурил): нативная прокрутка со snap (свайп на телефоне,
    колесо/тачпад и клавиатура на десктопе) + стрелки и счётчик. Без сторонних библиотек. */
 export function CaseSlider({ cases, t, l, locale }: { cases: CaseBase[]; t: Dict["cases"]; l: Dict["landing"]; locale: Locale }) {
   const track = useRef<HTMLUListElement>(null);
@@ -44,6 +45,7 @@ export function CaseSlider({ cases, t, l, locale }: { cases: CaseBase[]; t: Dict
     };
   }, [update]);
 
+  const total = cases.length + 1; // + шоурил
   const go = (dir: 1 | -1) => {
     const el = track.current;
     if (!el) return;
@@ -66,7 +68,7 @@ export function CaseSlider({ cases, t, l, locale }: { cases: CaseBase[]; t: Dict
           </div>
           <div className="flex items-center gap-3">
             <p className="t-mono min-w-[4.5rem] text-right text-stone-ink tabular-nums" aria-live="polite">
-              {String(index + 1).padStart(2, "0")} / {String(cases.length).padStart(2, "0")}
+              {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
             </p>
             <button type="button" onClick={() => go(-1)} disabled={edge.start} aria-label={l.prev} aria-controls="case-track" className="grid size-12 place-items-center rounded-full border-2 border-ink transition-colors hover:bg-ink hover:text-paper disabled:pointer-events-none disabled:opacity-30">
               <Icon name="arrow-left" size={22} />
@@ -85,13 +87,14 @@ export function CaseSlider({ cases, t, l, locale }: { cases: CaseBase[]; t: Dict
         tabIndex={0}
         className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[var(--gutter)] pb-6 [scroll-padding-inline:var(--gutter)] [scrollbar-width:none] focus-visible:outline-offset-4 motion-reduce:scroll-auto sm:gap-6 [&::-webkit-scrollbar]:hidden"
       >
+        <ShowreelSlide t={l.reel} total={total} onNext={() => go(1)} />
         {cases.map((c, i) => {
           const text = t.items[c.slug];
           return (
             <li
               key={c.slug}
               aria-roledescription="slide"
-              aria-label={`${i + 1} / ${cases.length}: ${text.title}`}
+              aria-label={`${i + 2} / ${total}: ${text.title}`}
               className="group/case relative w-[86%] shrink-0 snap-start sm:w-[58%] lg:w-[40%] xl:w-[36%]"
             >
               <CaseCover
@@ -128,7 +131,7 @@ export function CaseSlider({ cases, t, l, locale }: { cases: CaseBase[]; t: Dict
       {/* прогресс */}
       <div className="wrap">
         <div aria-hidden="true" className="h-1 overflow-hidden rounded-full bg-ink/10">
-          <div className="h-full rounded-full bg-coral transition-[width] duration-300" style={{ width: `${((index + 1) / cases.length) * 100}%` }} />
+          <div className="h-full rounded-full bg-coral transition-[width] duration-300" style={{ width: `${((index + 1) / total) * 100}%` }} />
         </div>
       </div>
     </section>
