@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsButton } from "./analytics/CookieSettingsButton";
 import { site } from "@/content/site";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
@@ -75,9 +76,12 @@ export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["foote
         </div>
         <div className="mt-8 flex flex-col gap-3 border-t border-paper/15 pt-6 text-[14px] text-paper/60 sm:flex-row sm:justify-between">
           <p>{fmt(t.rights, { year: 2026 }, locale)}</p>
-          <Link href={lp(locale, "/privacy/")} className="hover:text-paper">
-            {t.privacy}
-          </Link>
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
+            <Link href={lp(locale, "/privacy/")} className="hover:text-paper">
+              {t.privacy}
+            </Link>
+            <CookieSettingsButton label={t.cookies} />
+          </div>
         </div>
       </div>
     </footer>

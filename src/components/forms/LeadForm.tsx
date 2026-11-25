@@ -1,4 +1,5 @@
 "use client";
+import { LEAD_GOAL, reachGoal } from "@/lib/analytics";
 import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { site } from "@/content/site";
 import { TelegramLink } from "@/components/ui/TelegramLink";
@@ -62,6 +63,7 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
       const data = (await res.json().catch(() => ({}))) as { fields?: LeadErrors };
       if (res.ok) {
         setStatus("success");
+        reachGoal(LEAD_GOAL, { form: "lead", type: payload.type }); // цель Метрики «Успешная отправка заявки»
         formRef.current?.reset();
         return;
       }

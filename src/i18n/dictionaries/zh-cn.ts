@@ -492,6 +492,7 @@ const zh = {
     contact: "联系",
     rights: "© {year} Byuro 设计工作室",
     privacy: "隐私政策",
+    cookies: "Cookie 设置",
   },
   privacy: {
     meta: "隐私政策",
@@ -501,10 +502,13 @@ const zh = {
     sections: [
       { h: "我们收到哪些数据", p: "通过网站表单：您的姓名、联系方式，以及您留下的留言。" },
       { h: "用途", p: "仅用于回复您的咨询，并沟通项目或合作事宜。我们不会出于广告目的向第三方提供数据。" },
+      { h: "Cookie 与分析", p: "如果您允许分析，本网站将使用 Yandex Metrica（YANDEX LLC）。该服务会设置 Cookie 并收集访问数据：浏览的页面、来源、设备和浏览器、IP 地址、点击和滚动，包括会话录制（Webvisor）。我们使用这些数据来改进网站。未经您同意，不会加载 Metrica。您可随时通过任意页面底部的“Cookie 设置”更改选择。" },
       { h: "如何撤回同意", p: "通过“联系我们”中的任一方式告诉我们，我们将删除您的数据。" },
       { h: "数据处理者", p: "数据处理者信息将在此列出。" },
     ],
   },
+  // баннер согласия на аналитику (Яндекс Метрика)
+  consent: { text: "我们使用 Cookie 和 Yandex Metrica 来了解如何改进网站。仅在您同意后才会启用分析。", policy: "了解更多", accept: "接受", decline: "拒绝" },
 } satisfies Dict;
 
 export default zh;

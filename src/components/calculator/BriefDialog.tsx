@@ -1,4 +1,5 @@
 "use client";
+import { LEAD_GOAL, reachGoal } from "@/lib/analytics";
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { site } from "@/content/site";
 import type { Locale } from "@/i18n/config";
@@ -143,6 +144,8 @@ export function BriefDialog({
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; briefId?: string; duplicate?: string; fields?: BriefErrors; error?: string };
       if (res.ok && data.ok && data.briefId) {
         setStatus({ kind: "success", briefId: data.briefId, duplicate: Boolean(data.duplicate) });
+        // цель Метрики «Успешная отправка заявки»; повторная отправка того же расчёта не считается
+        if (!data.duplicate) reachGoal(LEAD_GOAL, { form: "calculator", services: quote.services.map((s) => s.id).join(",") });
         return;
       }
       if (data.fields) setErrors(data.fields);

@@ -493,6 +493,7 @@ const sr = {
     contact: "Kontakt",
     rights: "© {year} Byuro. Dizajn studio",
     privacy: "Politika privatnosti",
+    cookies: "Podešavanja kolačića",
   },
   privacy: {
     meta: "Politika privatnosti",
@@ -502,10 +503,13 @@ const sr = {
     sections: [
       { h: "Koje podatke dobijamo", p: "Preko formi na sajtu: ime, kontakt i tekst poruke, ako ste je ostavili." },
       { h: "Zašto", p: "Samo da bismo odgovorili na upit i razgovarali o projektu ili saradnji. Podatke ne prosleđujemo trećim licima radi reklame." },
+      { h: "Kolačići i analitika", p: "Ako dozvolite analitiku, sajt koristi Yandex Metricu (YANDEX LLC). Ona postavlja kolačiće i prikuplja podatke o poseti: pregledane stranice, izvor posete, uređaj i pregledač, IP adresu, klikove i skrolovanje, uključujući snimanje sesija (Webvisor). Ove podatke koristimo da poboljšamo sajt. Bez vaše saglasnosti Metrica se ne učitava. Odluku možete promeniti preko „Podešavanja kolačića“ na dnu svake stranice." },
       { h: "Kako povući saglasnost", p: "Pišite nam na bilo koji način iz odeljka Kontakt i obrisaćemo vaše podatke." },
       { h: "Rukovalac podacima", p: "Podaci rukovaoca biće navedeni ovde." },
     ],
   },
+  // баннер согласия на аналитику (Яндекс Метрика)
+  consent: { text: "Koristimo kolačiće i Yandex Metricu da bismo razumeli kako da poboljšamo sajt. Analitika se uključuje samo uz vašu saglasnost.", policy: "Saznajte više", accept: "Prihvati", decline: "Odbij" },
 } satisfies Dict;
 
 export default sr;

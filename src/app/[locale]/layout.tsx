@@ -5,9 +5,11 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
 import { AnchorScroll } from "@/components/AnchorScroll";
+import { YandexMetrika } from "@/components/analytics/YandexMetrika";
 import { RevealObserver } from "@/components/ui/RevealObserver";
 import { isLocale, localeCodes, localeInfo } from "@/i18n/config";
 import { getDict } from "@/i18n/get";
+import { lp } from "@/i18n/paths";
 import { alternates, brandName, hasDomain, ogImage, organizationJsonLd, siteUrl, social } from "@/lib/seo";
 import "../globals.css";
 
@@ -76,6 +78,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <MobileCtaBar locale={locale} project={t.cta.lead} partner="Telegram" />
         <RevealObserver />
         <AnchorScroll />
+        <YandexMetrika t={t.consent} privacyHref={lp(locale, "/privacy/")} />
       </body>
     </html>
   );

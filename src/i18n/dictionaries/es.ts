@@ -492,6 +492,7 @@ const es = {
     contact: "Contacto",
     rights: "© {year} Byuro. Estudio de diseño",
     privacy: "Política de privacidad",
+    cookies: "Configuración de cookies",
   },
   privacy: {
     meta: "Política de privacidad",
@@ -501,10 +502,13 @@ const es = {
     sections: [
       { h: "Qué datos recibimos", p: "A través de los formularios: tu nombre, tu contacto y tu mensaje, si lo has dejado." },
       { h: "Para qué", p: "Solo para responder a tu solicitud y hablar de un proyecto o una colaboración. No cedemos datos a terceros con fines publicitarios." },
+      { h: "Cookies y analítica", p: "Si aceptas la analítica, el sitio usa Yandex Metrica (YANDEX LLC). Este servicio instala cookies y recoge datos de la visita: páginas vistas, origen, dispositivo y navegador, dirección IP, clics y desplazamiento, incluida la grabación de sesiones (Webvisor). Usamos estos datos para mejorar el sitio. Sin tu consentimiento, Metrica no se carga. Puedes cambiar tu elección en «Configuración de cookies», al pie de cualquier página." },
       { h: "Cómo retirar el consentimiento", p: "Escríbenos por cualquiera de los medios de la sección Contacto y eliminaremos tus datos." },
       { h: "Responsable del tratamiento", p: "Los datos del responsable se indicarán aquí." },
     ],
   },
+  // баннер согласия на аналитику (Яндекс Метрика)
+  consent: { text: "Usamos cookies y Yandex Metrica para entender cómo mejorar el sitio. La analítica solo se activa si das tu consentimiento.", policy: "Más información", accept: "Aceptar", decline: "Rechazar" },
 } satisfies Dict;
 
 export default es;
