@@ -33,9 +33,9 @@ const es = {
   },
   landing: {
     eyebrow: "Estudio de diseño y desarrollo",
-    title: "Webs, apps y branding llave en mano",
-    mark: "llave en mano",
-    lead: "Un solo equipo se encarga de todo, desde la idea hasta el lanzamiento. Mira nuestros trabajos y calcula el coste de tu proyecto aquí mismo.",
+    title: "Diseño y desarrollo en un solo equipo",
+    mark: "un solo equipo",
+    lead: "Webs, chatbots, apps, branding y publicidad. No hace falta buscar por separado diseñador, desarrollador y animador: llevamos tu proyecto de la idea al lanzamiento. Puedes calcular el precio aquí mismo.",
     chips: ["Webs", "Apps", "Chatbots", "Branding", "Creatividades", "Motion"],
     casesTitle: "Nuestros trabajos",
     casesLead: "Webs, apps, branding y publicidad para empresas.",
@@ -44,6 +44,10 @@ const es = {
     slider: "Galería de casos",
     open: "Ver caso",
     toCalc: "Ir a la calculadora",
+    prevItem: "Anterior",
+    nextItem: "Siguiente",
+    // {n} — число кейсов на сайте (считается автоматически)
+    facts: [{ value: "8+", label: "años en diseño y desarrollo" }, { value: "1", label: "equipo en lugar de varios proveedores" }, { value: "{n}", label: "{n, plural, one {proyecto} other {proyectos}} en el portafolio" }],
   },
   hero: {
     eyebrow: "Estudio flexible de diseño y desarrollo",

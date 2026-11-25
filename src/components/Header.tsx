@@ -18,14 +18,14 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const items = [
-    // Лендинг из трёх экранов: в меню только кейсы и калькулятор.
-    // Прежние разделы (услуги, партнёрам, как работаем, вопросы) отключены вместе с секциями:
+    // Меню лендинга: кейсы, как работаем, стоимость, партнёрам.
+    // Отключённые разделы (услуги, вопросы):
     // { href: lp(locale, anchors.services), label: nav.services },
-    // { href: lp(locale, anchors.process), label: nav.process },
     // { href: lp(locale, anchors.faq), label: nav.faq },
     { href: lp(locale, anchors.cases), label: nav.cases },
-    { href: lp(locale, anchors.partners), label: nav.partners }, // открывает попап партнёрской программы
+    { href: lp(locale, anchors.process), label: nav.process },
     { href: lp(locale, anchors.calculator), label: nav.calc },
+    { href: lp(locale, anchors.partners), label: nav.partners }, // открывает попап партнёрской программы
   ];
 
   useEffect(() => {
@@ -115,8 +115,8 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
           </div>
           <TelegramLink variant="icon" className="hidden md:grid" />
           <span className="hidden md:block">
-            <ButtonLink href={lp(locale, anchors.calculator)} className="cta-main !min-h-11 !px-5 text-[15px] whitespace-nowrap">
-              {cta.calc}
+            <ButtonLink href={lp(locale, anchors.lead)} className="cta-main !min-h-11 !px-5 text-[15px] whitespace-nowrap">
+              {cta.lead}
             </ButtonLink>
           </span>
           <button
@@ -148,8 +148,8 @@ export function Header({ locale, nav, cta }: { locale: Locale; nav: Dict["nav"];
             </ul>
           </nav>
           <div className="mt-8 grid gap-3">
-            <ButtonLink href={lp(locale, anchors.calculator)} onClick={() => close(false)} className="w-full justify-between">
-              {cta.calc}
+            <ButtonLink href={lp(locale, anchors.lead)} onClick={() => close(false)} className="w-full justify-between">
+              {cta.lead}
             </ButtonLink>
             {/* <ButtonLink href={lp(locale, anchors.partner)} variant="outline" …>{cta.partner}</ButtonLink> — партнёрская форма отключена */}
           </div>

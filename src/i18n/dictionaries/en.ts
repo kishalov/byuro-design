@@ -33,9 +33,9 @@ const en = {
   },
   landing: {
     eyebrow: "Design & development studio",
-    title: "Websites, apps and branding — done for you",
-    mark: "done for you",
-    lead: "One team handles everything, from idea to launch. Browse our work and estimate your project’s cost right on the site.",
+    title: "Design and development in one team",
+    mark: "in one team",
+    lead: "Websites, chatbots, apps, branding and ads. No need to hire a designer, a developer and an animator separately — we take your project from idea to launch. You can check the price right here on the site.",
     chips: ["Websites", "Apps", "Chatbots", "Branding", "Ad creatives", "Motion"],
     casesTitle: "Our work",
     casesLead: "Websites, apps, branding and ads for business.",
@@ -44,6 +44,10 @@ const en = {
     slider: "Case gallery",
     open: "View case",
     toCalc: "Go to the calculator",
+    prevItem: "Previous",
+    nextItem: "Next",
+    // {n} — число кейсов на сайте (считается автоматически)
+    facts: [{ value: "8+", label: "years in design and development" }, { value: "1", label: "team instead of several contractors" }, { value: "{n}", label: "{n, plural, one {case study} other {case studies}} in the portfolio" }],
   },
   hero: {
     eyebrow: "Flexible design & development studio",

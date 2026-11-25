@@ -10,7 +10,7 @@ import { Logo } from "./ui/Logo";
 export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["footer"]; nav: Dict["nav"]; cta: Dict["cta"] }) {
   const items = [
     // { href: lp(locale, anchors.services), label: nav.services },
-    // { href: lp(locale, anchors.process), label: nav.process },
+    { href: lp(locale, anchors.process), label: nav.process },
     // { href: lp(locale, anchors.faq), label: nav.faq },
     { href: lp(locale, anchors.cases), label: nav.cases },
     { href: lp(locale, anchors.partners), label: nav.partners }, // открывает попап партнёрской программы
@@ -23,8 +23,8 @@ export function Footer({ locale, t, nav, cta }: { locale: Locale; t: Dict["foote
           <div className="md:col-span-5">
             <p className="t-h3 max-w-[24rem]">{t.tagline}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={lp(locale, anchors.calculator)} className="inline-flex min-h-12 items-center rounded-pill bg-coral px-5 font-semibold text-ink transition-colors hover:bg-paper">
-                {cta.calc}
+              <Link href={lp(locale, anchors.lead)} className="inline-flex min-h-12 items-center rounded-pill bg-coral px-5 font-semibold text-ink transition-colors hover:bg-paper">
+                {cta.lead}
               </Link>
               {/* партнёрская форма отключена: <Link href={lp(locale, anchors.partner)}>{cta.partner}</Link> */}
             </div>

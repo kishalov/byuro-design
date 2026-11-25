@@ -33,9 +33,9 @@ const de = {
   },
   landing: {
     eyebrow: "Studio für Design und Entwicklung",
-    title: "Websites, Apps und Branding aus einer Hand",
-    mark: "aus einer Hand",
-    lead: "Ein Team erledigt alles – von der Idee bis zum Launch. Sehen Sie sich unsere Arbeiten an und berechnen Sie die Kosten Ihres Projekts direkt hier.",
+    title: "Design und Entwicklung aus einem Team",
+    mark: "aus einem Team",
+    lead: "Websites, Chatbots, Apps, Branding und Werbung. Sie müssen nicht Designer, Entwickler und Animator einzeln suchen – wir begleiten Ihr Projekt von der Idee bis zum Launch. Den Preis berechnen Sie direkt hier auf der Website.",
     chips: ["Websites", "Apps", "Chatbots", "Branding", "Werbemittel", "Motion"],
     casesTitle: "Unsere Arbeiten",
     casesLead: "Websites, Apps, Branding und Werbung für Unternehmen.",
@@ -44,6 +44,10 @@ const de = {
     slider: "Projektgalerie",
     open: "Projekt ansehen",
     toCalc: "Zum Kalkulator",
+    prevItem: "Zurück",
+    nextItem: "Weiter",
+    // {n} — число кейсов на сайте (считается автоматически)
+    facts: [{ value: "8+", label: "Jahre in Design und Entwicklung" }, { value: "1", label: "Team statt mehrerer Dienstleister" }, { value: "{n}", label: "{n, plural, one {Projekt} other {Projekte}} im Portfolio" }],
   },
   hero: {
     eyebrow: "Flexibles Studio für Design & Entwicklung",

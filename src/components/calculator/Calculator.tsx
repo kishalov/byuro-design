@@ -120,7 +120,7 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
           <h3 className="t-h3">{t.pick.title}</h3>
           <p className="t-body-l mt-3 max-w-[40rem] text-ink/80">{t.pick.hint}</p>
 
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-4">
             {SERVICE_IDS.map((id) => (
               <ServiceCard
                 key={id}
@@ -173,7 +173,7 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
         {/* Смета сбоку (десктоп) */}
         <aside aria-label={t.summary.title} className="hidden lg:block">
           <div className="sticky top-[calc(var(--header-h)+20px)]">
-            <SideSummary t={t} locale={locale} quote={quote} money={money} calcId={calcId} pdf={pdf} onBrief={openBrief} />
+            <SideSummary t={t} locale={locale} quote={quote} money={money} pdf={pdf} onBrief={openBrief} />
           </div>
         </aside>
       </div>
@@ -205,7 +205,6 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
         selection={selection}
         calcId={calcId}
         projectName={projectName}
-        onProjectName={setProjectName}
         pdf={pdf}
         enabled={briefOn}
         privacyHref={privacyHref}
@@ -270,17 +269,27 @@ function ServiceCard({
   const canEdit = on && (!s.requestOnly || s.requestParts.length > 0);
   const editId = `calc-edit-${id}`;
   return (
-    <li className={cn("flex flex-col rounded-card border-2 p-5 transition-colors sm:p-6", on ? "border-ink bg-white shadow-[0_14px_30px_-18px_rgb(18_18_18/0.45)]" : "border-ink/15 bg-white/60 hover:border-ink/40", editing && "sm:col-span-2")}>
+    <li className={cn("flex flex-col rounded-card border-2 p-4 transition-colors sm:p-6", on ? "border-ink bg-white shadow-[0_14px_30px_-18px_rgb(18_18_18/0.45)]" : "border-ink/15 bg-white/60 hover:border-ink/40", editing && "sm:col-span-2")}>
       <div className="flex items-start justify-between gap-3">
-        <h3 className="t-h4">{svc.title}</h3>
+        <h3 className="t-h4 pt-1.5 sm:pt-0">{svc.title}</h3>
+        {/* телефон: компактная карточка — выбор круглой кнопкой справа от названия */}
+        <button
+          type="button"
+          aria-pressed={on}
+          aria-label={`${on ? t.pick.selected : t.pick.select}: ${svc.title}`}
+          onClick={onToggle}
+          className={cn("grid size-11 shrink-0 place-items-center rounded-full border-2 transition-colors sm:hidden", on ? "border-coral bg-coral text-ink" : "border-ink text-ink")}
+        >
+          <Icon name={on ? "check" : "plus"} size={20} />
+        </button>
         {on && (
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-coral" aria-hidden="true">
+          <span className="hidden size-8 shrink-0 place-items-center rounded-full bg-coral sm:grid" aria-hidden="true">
             <Icon name="check" size={18} />
           </span>
         )}
       </div>
-      <p className="mt-2 text-[15px] text-ink/80">{svc.short}</p>
-      <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={t.pick.includes}>
+      <p className="mt-2 hidden text-[15px] text-ink/80 sm:block">{svc.short}</p>
+      <ul className="mt-3 hidden flex-wrap gap-1.5 sm:flex" aria-label={t.pick.includes}>
         {svc.deliverables.map((d) => (
           <li key={d} className="rounded-pill bg-sand px-2.5 py-1 text-[13px] font-medium">
             {d}
@@ -288,9 +297,9 @@ function ServiceCard({
         ))}
       </ul>
       {!pkg ? (
-        <p className="mt-4 font-display text-[17px] font-bold">{t.pick.requestOnly}</p>
+        <p className="mt-2 font-display text-[17px] font-bold sm:mt-4">{t.pick.requestOnly}</p>
       ) : (
-        <div className="mt-4">
+        <div className="mt-2 sm:mt-4">
           <p className="flex flex-wrap items-baseline gap-x-2 font-display text-[17px] font-bold">
             <span className="tabular-nums">{money(inQuote ? inQuote.subtotal : pkg.svc.subtotal)}</span>
             <span className="font-sans text-[13px] font-semibold text-stone-ink">{inQuote ? t.pick.inQuote : t.pick.startLabel}</span>
@@ -303,12 +312,13 @@ function ServiceCard({
       )}
 
       {!on && (
-        <details className="group mt-3">
+        <details className="group mt-2 sm:mt-3">
           <summary className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-[15px] font-semibold underline decoration-ink/30 underline-offset-4 hover:decoration-coral">
             {t.pick.details}
             <Icon name="plus" size={16} className="transition-transform group-open:rotate-45" />
           </summary>
           <div className="mt-3 space-y-4 text-[15px]">
+            <p className="text-ink/80 sm:hidden">{svc.short}</p>
             {svc.includes.length > 0 && <ListBlock title={t.pick.includes} items={svc.includes} tone="in" />}
             <ListBlock title={t.pick.excludes} items={svc.excludes} tone="out" />
             {s.requestOnly ? (
@@ -337,13 +347,13 @@ function ServiceCard({
         </div>
       )}
 
-      <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row">
+      <div className={cn("mt-auto flex-col gap-2 pt-3 sm:flex sm:flex-row sm:pt-5", canEdit ? "flex" : "hidden")}>
         <button
           type="button"
           aria-pressed={on}
           onClick={onToggle}
           className={cn(
-            "inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-pill border-2 px-5 font-semibold transition-colors",
+            "hidden min-h-12 flex-1 items-center justify-center gap-2 rounded-pill border-2 px-5 font-semibold transition-colors sm:inline-flex",
             on ? "border-ink bg-ink text-paper hover:bg-graphite" : "border-ink bg-transparent hover:bg-ink hover:text-paper",
           )}
         >
@@ -358,7 +368,7 @@ function ServiceCard({
           )}
         </button>
         {canEdit && (
-          <button type="button" aria-expanded={editing} aria-controls={editing ? editId : undefined} onClick={onEdit} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-pill border-2 border-ink/20 px-5 font-semibold transition-colors hover:border-ink">
+          <button type="button" aria-expanded={editing} aria-controls={editing ? editId : undefined} onClick={onEdit} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-pill border-2 border-ink/20 px-5 font-semibold transition-colors hover:border-ink sm:min-h-12">
             {editing ? t.pick.customizeDone : s.requestOnly ? t.pick.clarify : t.pick.customize}
           </button>
         )}
@@ -522,7 +532,7 @@ function ScopeEditor({
 
 /* ── Смета сбоку (десктоп) ───────────────────────────────── */
 
-function SideSummary({ t, locale, quote, money, calcId, pdf, onBrief }: { t: CalcDict; locale: Locale; quote: Quote; money: (v: number) => string; calcId: string; pdf: PdfState; onBrief: () => void }) {
+function SideSummary({ t, locale, quote, money, pdf, onBrief }: { t: CalcDict; locale: Locale; quote: Quote; money: (v: number) => string; pdf: PdfState; onBrief: () => void }) {
   return (
     <div className="rounded-card bg-white p-6 shadow-[0_20px_40px_-28px_rgb(18_18_18/0.5)]">
       <div className="flex items-center justify-between gap-3">
@@ -530,7 +540,6 @@ function SideSummary({ t, locale, quote, money, calcId, pdf, onBrief }: { t: Cal
           <span aria-hidden="true" className="size-2.5 rounded-full bg-coral" />
           {t.summary.title}
         </p>
-        {calcId && <span className="font-mono text-[12px] text-stone-ink">{calcId}</span>}
       </div>
       {quote.isEmpty ? (
         <p className="mt-4 text-[15px] text-stone-ink">{t.summary.empty}</p>

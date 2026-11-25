@@ -1,6 +1,8 @@
 import { Calculator } from "@/components/calculator/Calculator";
 import { CaseSlider } from "@/components/landing/CaseSlider";
 import { LandingHero } from "@/components/landing/LandingHero";
+import { LandingProcess } from "@/components/landing/LandingProcess";
+import { LandingReviews } from "@/components/landing/LandingReviews";
 import { Partners } from "@/components/sections/Partners";
 import { PartnersDialog } from "@/components/sections/PartnersDialog";
 import { Eyebrow } from "@/components/ui/SectionHead";
@@ -26,15 +28,18 @@ import { Testimonials } from "@/components/sections/Testimonials";
 import { Why } from "@/components/sections/Why";
 */
 
-/* Лендинг из трёх экранов: кто мы и что делаем → кейсы (слайдер) → калькулятор с отправкой брифа. */
+/* Лендинг: кто мы и что делаем → кейсы → отзывы → как работаем (всё лентами) → калькулятор с отправкой брифа. */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = (await params).locale as Locale;
   const [t, c] = await Promise.all([getDict(locale), getCalcDict(locale)]);
   const markAt = c.page.title.indexOf(c.page.mark);
+  const railLabels = { prev: t.landing.prevItem, next: t.landing.nextItem };
   return (
     <>
-      <LandingHero locale={locale} t={t.landing} hero={t.hero} cta={t.cta} tg={t.contact.telegram} contact={t.contact} form={t.form} />
+      <LandingHero locale={locale} t={t.landing} casesCount={cases.length} cta={t.cta} tg={t.contact.telegram} contact={t.contact} form={t.form} />
       <CaseSlider cases={cases} t={t.cases} l={t.landing} locale={locale} />
+      <LandingReviews t={t.reviews} labels={railLabels} />
+      <LandingProcess locale={locale} t={t.process} labels={railLabels} />
 
       <section id="calculator" aria-labelledby="calc-title" className="grain border-t border-ink/10 pt-16 pb-36 sm:pt-20 lg:pb-[var(--section)]">
         <div className="wrap">

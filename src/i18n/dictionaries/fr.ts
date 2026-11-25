@@ -33,9 +33,9 @@ const fr = {
   },
   landing: {
     eyebrow: "Studio de design et de développement",
-    title: "Sites, applications et branding clés en main",
-    mark: "clés en main",
-    lead: "Une seule équipe s’occupe de tout, de l’idée au lancement. Découvrez nos réalisations et estimez le coût de votre projet directement sur le site.",
+    title: "Design et développement par une seule équipe",
+    mark: "une seule équipe",
+    lead: "Sites, chatbots, applications, identité de marque et publicité. Inutile de chercher séparément un designer, un développeur et un animateur : nous menons votre projet de l’idée au lancement. Le prix se calcule directement sur le site.",
     chips: ["Sites web", "Applications", "Chatbots", "Branding", "Créas pub", "Motion"],
     casesTitle: "Nos réalisations",
     casesLead: "Sites, applications, branding et publicité pour les entreprises.",
@@ -44,6 +44,10 @@ const fr = {
     slider: "Galerie de projets",
     open: "Voir le projet",
     toCalc: "Aller au calculateur",
+    prevItem: "Précédent",
+    nextItem: "Suivant",
+    // {n} — число кейсов на сайте (считается автоматически)
+    facts: [{ value: "8+", label: "ans en design et développement" }, { value: "1", label: "équipe au lieu de plusieurs prestataires" }, { value: "{n}", label: "{n, plural, one {projet} other {projets}} dans le portfolio" }],
   },
   hero: {
     eyebrow: "Studio flexible de design et de développement",

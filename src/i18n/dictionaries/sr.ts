@@ -34,9 +34,9 @@ const sr = {
   },
   landing: {
     eyebrow: "Studio za dizajn i razvoj",
-    title: "Sajtovi, aplikacije i brending po principu ključ u ruke",
-    mark: "ključ u ruke",
-    lead: "Jedan tim radi sve — od ideje do lansiranja. Pogledajte naše radove i izračunajte cenu svog projekta direktno na sajtu.",
+    title: "Dizajn i razvoj u jednom timu",
+    mark: "u jednom timu",
+    lead: "Sajtovi, čet-botovi, aplikacije, brending i reklame. Ne morate posebno da tražite dizajnera, programera i animatora — vodimo projekat od ideje do pokretanja. Cenu možete da izračunate odmah na sajtu.",
     chips: ["Sajtovi", "Aplikacije", "Četbotovi", "Brending", "Reklame", "Moušn"],
     casesTitle: "Naši radovi",
     casesLead: "Sajtovi, aplikacije, brending i reklame za biznis.",
@@ -45,6 +45,10 @@ const sr = {
     slider: "Galerija kejsova",
     open: "Pogledaj kejs",
     toCalc: "Idi na kalkulator",
+    prevItem: "Nazad",
+    nextItem: "Dalje",
+    // {n} — число кейсов на сайте (считается автоматически)
+    facts: [{ value: "8+", label: "godina u dizajnu i razvoju" }, { value: "1", label: "tim umesto više izvođača" }, { value: "{n}", label: "{n, plural, one {projekat} few {projekta} other {projekata}} u portfoliju" }],
   },
   hero: {
     eyebrow: "Fleksibilni studio za dizajn i razvoj",

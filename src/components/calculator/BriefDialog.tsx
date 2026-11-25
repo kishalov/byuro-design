@@ -5,7 +5,7 @@ import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
 import { type Quote, type Selection } from "@/lib/calculator/engine";
-import { formatDays, projectType, requestPartNames } from "@/lib/calculator/format";
+import { formatDays, requestPartNames } from "@/lib/calculator/format";
 import { LIMITS, extractLinks, normalizeTelegram, validateBrief, type BriefErrors, type BriefRequest } from "@/lib/brief/schema";
 import { briefText } from "@/lib/brief/text";
 import { cn } from "@/lib/cn";
@@ -30,7 +30,6 @@ export function BriefDialog({
   selection,
   calcId,
   projectName,
-  onProjectName,
   pdf,
   enabled,
   privacyHref,
@@ -45,7 +44,6 @@ export function BriefDialog({
   selection: Selection;
   calcId: string;
   projectName: string;
-  onProjectName: (v: string) => void;
   pdf: PdfState;
   enabled: boolean;
   privacyHref: string;
@@ -235,7 +233,7 @@ export function BriefDialog({
                 <h3 id={fid("calc")} className="t-label text-stone-ink">
                   {t.brief.attached} · <span className="font-mono normal-case">{calcId}</span>
                 </h3>
-                <p className="mt-2 font-semibold">{projectName || projectType(t, quote)}</p>
+                {projectName && <p className="mt-2 font-semibold">{projectName}</p>}
                 <ul className="mt-2 space-y-1 text-[14px]">
                   {quote.services.map((s) => (
                     <li key={s.id} className="flex justify-between gap-3">
@@ -291,9 +289,6 @@ export function BriefDialog({
               <fieldset className="mt-8">
                 <legend className="t-h4">{t.brief.projectLegend}</legend>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <Field id={fid("projectName")} label={t.summary.projectName} optional={t.brief.optional} error={err("projectName")} className="sm:col-span-2">
-                    <input id={fid("projectName")} name="projectName" value={projectName} onChange={(e) => onProjectName(e.target.value)} maxLength={LIMITS.projectName + 1} placeholder={t.summary.projectNamePh} className={inputCls(!!err("projectName"))} />
-                  </Field>
                   <Field id={fid("company")} label={t.brief.company} optional={t.brief.optional} error={err("company")}>
                     <input id={fid("company")} name="company" autoComplete="organization" value={f.company} onChange={(e) => set("company", e.target.value)} placeholder={t.brief.companyPh} className={inputCls(!!err("company"))} />
                   </Field>

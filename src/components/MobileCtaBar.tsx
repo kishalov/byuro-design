@@ -8,7 +8,7 @@ import { anchors, lp } from "@/i18n/paths";
 import { cn } from "@/lib/cn";
 import { Icon } from "./ui/Icon";
 
-/* Быстрый доступ на телефоне: «Рассчитать стоимость» + Telegram.
+/* Быстрый доступ на телефоне: «Оставить заявку» (попап с формой) + Telegram.
    Появляется, когда кнопки первого экрана ушли из вида, и прячется у калькулятора (там своя панель итога). */
 export function MobileCtaBar({ locale, project, partner }: { locale: Locale; project: string; partner: string }) {
   const [show, setShow] = useState(false);
@@ -47,7 +47,7 @@ export function MobileCtaBar({ locale, project, partner }: { locale: Locale; pro
       aria-hidden={!show}
     >
       <div className="flex gap-2 rounded-pill bg-ink p-1.5 shadow-[0_10px_30px_rgb(18_18_18/0.25)]">
-        <Link href={lp(locale, anchors.project)} tabIndex={show ? 0 : -1} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-pill bg-coral px-4 text-center leading-tight font-semibold text-ink">
+        <Link href={lp(locale, anchors.lead)} tabIndex={show ? 0 : -1} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-pill bg-coral px-4 text-center leading-tight font-semibold text-ink">
           {project}
         </Link>
         {site.contacts.telegram && (
