@@ -30,13 +30,16 @@ const de = {
   },
   pick: {
     title: "Was brauchen Sie?",
-    hint: "Sie können mehrere Leistungen wählen. Jede Karte zeigt den Preis des Startumfangs – genau dieser Betrag kommt in die Kalkulation; den Umfang passen Sie im nächsten Schritt an. Leistungen ohne Listenpreis kalkulieren wir individuell.",
+    hint: "Wählen Sie, was Sie brauchen – die Summe wird sofort berechnet. Jede Karte zeigt den Startumfang – genau dieser Betrag kommt in die Kalkulation. Den Umfang können Sie direkt in der Karte anpassen, müssen es aber nicht. Leistungen ohne Listenpreis kalkulieren wir individuell.",
     select: "Auswählen",
     selected: "Ausgewählt",
     variantsTitle: "Wie wir die Website umsetzen",
     requestOnly: "Individuelles Angebot",
     from: "ab {price}",
     startLabel: "Startumfang",
+    customize: "Umfang anpassen",
+    customizeDone: "Einklappen",
+    clarify: "Bedarf angeben",
     inQuote: "in Ihrer Kalkulation",
     perUnitFrom: "ab {price} pro {unit}",
     details: "Mehr zur Leistung",
@@ -120,6 +123,7 @@ const de = {
     pdfError: "Das PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
     pdfEmpty: "Fügen Sie Leistungen hinzu, um das Angebot herunterzuladen.",
     brief: "Briefing an Byuro senden",
+    lead: "Anfrage senden",
   },
   services: {
     web: {

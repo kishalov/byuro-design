@@ -11,6 +11,7 @@ import { briefText } from "@/lib/brief/text";
 import { cn } from "@/lib/cn";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
+import { PdfLink, type PdfState } from "./Pdf";
 
 type Fields = Pick<BriefRequest, "name" | "phone" | "telegram" | "email" | "company" | "description" | "deadline" | "links" | "comment"> & { consent: boolean };
 const empty: Fields = { name: "", phone: "", telegram: "", email: "", company: "", description: "", deadline: "", links: "", comment: "", consent: false };
@@ -29,6 +30,8 @@ export function BriefDialog({
   selection,
   calcId,
   projectName,
+  onProjectName,
+  pdf,
   enabled,
   privacyHref,
   instagram,
@@ -42,6 +45,8 @@ export function BriefDialog({
   selection: Selection;
   calcId: string;
   projectName: string;
+  onProjectName: (v: string) => void;
+  pdf: PdfState;
   enabled: boolean;
   privacyHref: string;
   instagram: { url: string; handle: string };
@@ -255,6 +260,10 @@ export function BriefDialog({
                   </span>
                   <span className="tabular-nums">{money(quote.total)}</span>
                 </p>
+                <p className="t-small mt-2 text-stone-ink">
+                  {t.page.disclaimer} {t.page.currency}
+                </p>
+                <PdfLink t={t} pdf={pdf} className="mt-1" />
               </section>
 
               <fieldset className="mt-6" aria-describedby={`${fid("contacts")}-hint${err("contacts") ? ` ${fid("contacts")}-err` : ""}`}>
@@ -282,6 +291,9 @@ export function BriefDialog({
               <fieldset className="mt-8">
                 <legend className="t-h4">{t.brief.projectLegend}</legend>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field id={fid("projectName")} label={t.summary.projectName} optional={t.brief.optional} error={err("projectName")} className="sm:col-span-2">
+                    <input id={fid("projectName")} name="projectName" value={projectName} onChange={(e) => onProjectName(e.target.value)} maxLength={LIMITS.projectName + 1} placeholder={t.summary.projectNamePh} className={inputCls(!!err("projectName"))} />
+                  </Field>
                   <Field id={fid("company")} label={t.brief.company} optional={t.brief.optional} error={err("company")}>
                     <input id={fid("company")} name="company" autoComplete="organization" value={f.company} onChange={(e) => set("company", e.target.value)} placeholder={t.brief.companyPh} className={inputCls(!!err("company"))} />
                   </Field>

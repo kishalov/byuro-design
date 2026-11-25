@@ -30,13 +30,16 @@ const sr = {
   },
   pick: {
     title: "Šta vam je potrebno?",
-    hint: "Možete izabrati više usluga. Na kartici je cena početnog obima — tačno toliko se dodaje u proračun, a obim podešavate u sledećem koraku. Usluge bez cene u cenovniku procenićemo individualno.",
+    hint: "Izaberite šta vam treba — iznos se računa odmah. Na kartici je početni obim — tačno toliko se dodaje u proračun. Obim možete podesiti u samoj kartici, ali ne morate. Usluge bez cene u cenovniku procenićemo individualno.",
     select: "Izaberi",
     selected: "Izabrano",
     variantsTitle: "Kako pravimo sajt",
     requestOnly: "Individualna procena",
     from: "od {price}",
     startLabel: "početni obim",
+    customize: "Podesi obim",
+    customizeDone: "Skupi",
+    clarify: "Navedi šta treba",
     inQuote: "u proračunu",
     perUnitFrom: "od {price} po {unit}",
     details: "Više o usluzi",
@@ -120,6 +123,7 @@ const sr = {
     pdfError: "PDF nije mogao da se napravi. Pokušajte ponovo.",
     pdfEmpty: "Dodajte usluge da biste preuzeli ponudu.",
     brief: "Pošalji brif Byuru",
+    lead: "Pošalji upit",
   },
   services: {
     web: {

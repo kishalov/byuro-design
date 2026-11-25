@@ -74,7 +74,7 @@ export function QtyRow({
         <span className="w-9 pl-1 text-[13px] text-stone-ink">{unit}</span>
       </div>
       <p className={cn("col-span-2 text-right text-[15px] font-semibold tabular-nums sm:col-span-1 sm:w-24", !active && "text-stone-ink/60")} aria-live="off">
-        {active ? money(item.price * value) : "—"}
+        {active ? money(Math.round(unitPrice(k, currency) * value * 100) / 100) : "—"}
       </p>
     </div>
   );

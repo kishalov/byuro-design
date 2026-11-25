@@ -30,13 +30,16 @@ const en = {
   },
   pick: {
     title: "What do you need?",
-    hint: "You can pick several services. Each card shows the price of the starter scope — exactly what gets added to your estimate; you can adjust the scope in the next step. Services without a list price are quoted individually.",
+    hint: "Pick what you need and the total updates instantly. Each card shows the starter scope — exactly what gets added. You can fine-tune the scope right in the card, but you don’t have to. Services without a list price are quoted individually.",
     select: "Select",
     selected: "Selected",
     variantsTitle: "How we build the website",
     requestOnly: "Individual quote",
     from: "from {price}",
     startLabel: "starter scope",
+    customize: "Customize scope",
+    customizeDone: "Collapse",
+    clarify: "Specify what you need",
     inQuote: "in your estimate",
     perUnitFrom: "from {price} per {unit}",
     details: "About this service",
@@ -120,6 +123,7 @@ const en = {
     pdfError: "Couldn’t generate the PDF. Please try again.",
     pdfEmpty: "Add services to download the proposal.",
     brief: "Send a brief to Byuro",
+    lead: "Send a request",
   },
   services: {
     web: {

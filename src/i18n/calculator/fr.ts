@@ -30,13 +30,16 @@ const fr = {
   },
   pick: {
     title: "De quoi avez-vous besoin ?",
-    hint: "Vous pouvez choisir plusieurs services. Chaque carte indique le prix du volume de départ — exactement ce qui s’ajoute à votre estimation ; vous ajusterez le volume à l’étape suivante. Les services sans prix dans notre grille sont chiffrés sur devis.",
+    hint: "Choisissez ce dont vous avez besoin : le total se calcule aussitôt. Chaque carte indique le volume de départ — exactement ce qui s’ajoute. Vous pouvez ajuster le volume directement dans la carte, sans obligation. Les services sans prix dans notre grille sont chiffrés sur devis.",
     select: "Choisir",
     selected: "Choisi",
     variantsTitle: "Comment nous réalisons le site",
     requestOnly: "Sur devis",
     from: "à partir de {price}",
     startLabel: "volume de départ",
+    customize: "Ajuster le volume",
+    customizeDone: "Réduire",
+    clarify: "Préciser le besoin",
     inQuote: "dans votre estimation",
     perUnitFrom: "à partir de {price} par {unit}",
     details: "En savoir plus",
@@ -120,6 +123,7 @@ const fr = {
     pdfError: "Impossible de générer le PDF. Veuillez réessayer.",
     pdfEmpty: "Ajoutez des services pour télécharger la proposition.",
     brief: "Envoyer un brief à Byuro",
+    lead: "Envoyer une demande",
   },
   services: {
     web: {

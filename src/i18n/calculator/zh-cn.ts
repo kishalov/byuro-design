@@ -30,13 +30,16 @@ const zhCn = {
   },
   pick: {
     title: "您需要什么？",
-    hint: "可选择多项服务。卡片上显示起步范围的价格——选中后正好计入这一金额，范围可在下一步调整。价目表中没有价格的服务将单独报价。",
+    hint: "选择所需服务，总价立即计算。卡片显示起步范围——选中后正好计入这一金额。可直接在卡片中调整范围，也可以不调整。价目表中没有价格的服务将单独报价。",
     select: "选择",
     selected: "已选择",
     variantsTitle: "网站制作方式",
     requestOnly: "单独报价",
     from: "{price} 起",
     startLabel: "起步范围",
+    customize: "调整范围",
+    customizeDone: "收起",
+    clarify: "说明需求",
     inQuote: "已计入报价",
     perUnitFrom: "每{unit} {price} 起",
     details: "了解服务详情",
@@ -120,6 +123,7 @@ const zhCn = {
     pdfError: "无法生成 PDF，请重试。",
     pdfEmpty: "添加服务后即可下载报价。",
     brief: "向 Byuro 发送简报",
+    lead: "提交申请",
   },
   services: {
     web: {

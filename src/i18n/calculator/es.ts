@@ -30,13 +30,16 @@ const es = {
   },
   pick: {
     title: "¿Qué necesitas?",
-    hint: "Puedes elegir varios servicios. Cada tarjeta muestra el precio del volumen inicial: exactamente lo que se añade al cálculo; el volumen lo ajustas en el siguiente paso. Los servicios sin precio en la tarifa se presupuestan de forma individual.",
+    hint: "Elige lo que necesitas y el total se calcula al momento. Cada tarjeta muestra el volumen inicial: exactamente lo que se añade. Puedes ajustar el volumen en la propia tarjeta, pero no es obligatorio. Los servicios sin precio en la tarifa se presupuestan de forma individual.",
     select: "Elegir",
     selected: "Elegido",
     variantsTitle: "Cómo hacemos la web",
     requestOnly: "Presupuesto individual",
     from: "desde {price}",
     startLabel: "volumen inicial",
+    customize: "Ajustar volumen",
+    customizeDone: "Contraer",
+    clarify: "Precisar lo que necesitas",
     inQuote: "en tu cálculo",
     perUnitFrom: "desde {price} por {unit}",
     details: "Más sobre el servicio",
@@ -120,6 +123,7 @@ const es = {
     pdfError: "No se pudo generar el PDF. Inténtalo de nuevo.",
     pdfEmpty: "Añade servicios para descargar la propuesta.",
     brief: "Enviar brief a Byuro",
+    lead: "Enviar solicitud",
   },
   services: {
     web: {
