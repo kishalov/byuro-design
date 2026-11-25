@@ -502,7 +502,7 @@ const en = {
     sections: [
       { h: "What data we receive", p: "Through the forms on the website: your name, contact details and message, if you left one." },
       { h: "Why", p: "Only to reply to your request and discuss a project or partnership. We don’t share data with third parties for advertising." },
-      { h: "Cookies and analytics", p: "If you allow analytics, the site uses Yandex Metrica (YANDEX LLC). It sets cookies and collects visit data: pages viewed, referral source, device and browser, IP address, clicks and scrolling, including session recording (Webvisor). We use this data to understand how to improve the site. Without your consent, Metrica is not loaded. You can change your choice via “Cookie settings” at the bottom of any page." },
+      { h: "Cookies and analytics", p: "If you allow analytics, the site uses Yandex Metrica (YANDEX LLC). It sets cookies and collects visit data: pages viewed, referral source, device and browser, IP address, clicks and scrolling. Names, contact details and request texts are never sent to Metrica. We use this data to understand how to improve the site. Without your consent, Metrica is not loaded. You can change your choice via “Cookie settings” at the bottom of any page." },
       { h: "How to withdraw consent", p: "Contact us in any way listed in the Contact section and we will delete your data." },
       { h: "Data controller", p: "The data controller’s details will be listed here." },
     ],

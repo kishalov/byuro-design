@@ -1,5 +1,5 @@
 "use client";
-import { LEAD_GOAL, reachGoal } from "@/lib/analytics";
+import { reachLeadGoal, submissionKey } from "@/lib/analytics";
 import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { site } from "@/content/site";
 import { TelegramLink } from "@/components/ui/TelegramLink";
@@ -56,6 +56,7 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
     }
     setStatus("loading");
     setServerError(null);
+    const submitKey = submissionKey(); // для цели Метрики: одна отправка — одно достижение
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 15000);
     try {
@@ -63,7 +64,7 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
       const data = (await res.json().catch(() => ({}))) as { fields?: LeadErrors };
       if (res.ok) {
         setStatus("success");
-        reachGoal(LEAD_GOAL, { form: "lead", type: payload.type }); // цель Метрики «Успешная отправка заявки»
+        reachLeadGoal(`lead:${submitKey}`); // цель Метрики — только после подтверждения сервера
         formRef.current?.reset();
         return;
       }

@@ -502,7 +502,7 @@ const de = {
     sections: [
       { h: "Welche Daten wir erhalten", p: "Über die Formulare: Ihren Namen, Ihre Kontaktangabe und Ihre Nachricht, falls Sie eine hinterlassen." },
       { h: "Wozu", p: "Ausschließlich, um auf Ihre Anfrage zu antworten und ein Projekt oder eine Zusammenarbeit zu besprechen. Wir geben keine Daten zu Werbezwecken an Dritte weiter." },
-      { h: "Cookies und Analyse", p: "Wenn Sie der Analyse zustimmen, nutzt die Website Yandex Metrica (YANDEX LLC). Der Dienst setzt Cookies und erfasst Besuchsdaten: aufgerufene Seiten, Herkunft, Gerät und Browser, IP-Adresse, Klicks und Scrollen, einschließlich Sitzungsaufzeichnung (Webvisor). Wir nutzen diese Daten, um die Website zu verbessern. Ohne Ihre Zustimmung wird Metrica nicht geladen. Ihre Wahl können Sie jederzeit über „Cookie-Einstellungen“ unten auf jeder Seite ändern." },
+      { h: "Cookies und Analyse", p: "Wenn Sie der Analyse zustimmen, nutzt die Website Yandex Metrica (YANDEX LLC). Der Dienst setzt Cookies und erfasst Besuchsdaten: aufgerufene Seiten, Herkunft, Gerät und Browser, IP-Adresse, Klicks und Scrollen. Namen, Kontaktdaten und Anfragetexte werden nicht an Metrica übermittelt. Wir nutzen diese Daten, um die Website zu verbessern. Ohne Ihre Zustimmung wird Metrica nicht geladen. Ihre Wahl können Sie jederzeit über „Cookie-Einstellungen“ unten auf jeder Seite ändern." },
       { h: "Widerruf der Einwilligung", p: "Schreiben Sie uns über einen der Kontaktwege, und wir löschen Ihre Daten." },
       { h: "Verantwortlicher", p: "Die Angaben des Verantwortlichen werden hier ergänzt." },
     ],

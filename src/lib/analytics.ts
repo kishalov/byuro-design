@@ -9,12 +9,16 @@
      последним, повторно не отправляется — так нет двойного учёта.
      (С defer: true tag.js на проде всё равно отправлял просмотр при init, и вместе с ручным hit
      первая страница считалась дважды — поэтому defer не используем.)
-   — Цель «Успешная отправка заявки»: JavaScript-событие с идентификатором LEAD_GOAL.
-     В интерфейсе Метрики: Цели → Добавить цель → «JavaScript-событие» → идентификатор lead_sent.
-     В параметрах визита приходит form: "lead" (форма заявки) или "calculator" (заявка из калькулятора). */
+   — Цель «Lead — Form Submitted» (JavaScript-событие, идентификатор byuro_form_submit_success):
+     ym(114683065, 'reachGoal', 'byuro_form_submit_success') — только после ответа сервера об успешной
+     отправке заявки (форма «Оставить заявку» → /api/lead и заявка из калькулятора → /api/brief, обе уходят
+     в Telegram-бот). Каждая заявка засчитывается не больше одного раза (ключ отправки), повторный рендер
+     React-компонента цель не вызывает: вызов стоит в обработчике отправки, а не в рендере/эффекте.
+   — В Метрику не уходят имена, контакты и тексты заявок: цель без параметров, Вебвизор выключен
+     (он мог бы записать ввод в полях форм). */
 
 export const METRIKA_ID = 114683065;
-export const LEAD_GOAL = "lead_sent";
+export const LEAD_GOAL = "byuro_form_submit_success";
 
 export type Consent = "granted" | "denied";
 const CONSENT_KEY = "byuro:analytics-consent:v1";
@@ -25,7 +29,7 @@ type Ym = ((id: number, method: string, ...args: unknown[]) => void) & { a?: unk
 declare global {
   interface Window {
     ym?: Ym;
-    __byuroMetrika?: { inited: boolean; lastUrl: string };
+    __byuroMetrika?: { inited: boolean; lastUrl: string; goals?: string[] };
   }
 }
 
@@ -82,7 +86,7 @@ export function initMetrika(): boolean {
     clickmap: true,
     trackLinks: true,
     accurateTrackBounce: true,
-    webvisor: true,
+    webvisor: false, // не записываем сессии: в полях форм — личные данные
   });
   return true;
 }
@@ -96,8 +100,17 @@ export function trackHit(url: string, referer?: string) {
   window.ym(METRIKA_ID, "hit", url, { title: document.title, referer: referer ?? (prev || document.referrer) });
 }
 
-/** Достижение цели. Без согласия (счётчик не загружен) — ничего не делает. */
-export function reachGoal(goal: string, params?: Record<string, unknown>) {
-  if (!window.__byuroMetrika?.inited || !window.ym) return;
-  window.ym(METRIKA_ID, "reachGoal", goal, params);
+/** Цель «Успешная отправка заявки». Вызывать только после подтверждения от сервера.
+    key — уникальный ключ этой отправки: одна и та же заявка не засчитывается дважды.
+    Без согласия (счётчик не загружен) — ничего не делает. Параметры не передаются. */
+export function reachLeadGoal(key: string) {
+  const s = window.__byuroMetrika;
+  if (!s?.inited || !window.ym) return;
+  s.goals ??= [];
+  if (s.goals.includes(key)) return;
+  s.goals.push(key);
+  window.ym(METRIKA_ID, "reachGoal", LEAD_GOAL);
 }
+
+/** Уникальный ключ отправки формы */
+export const submissionKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);

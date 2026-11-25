@@ -502,7 +502,7 @@ const es = {
     sections: [
       { h: "Qué datos recibimos", p: "A través de los formularios: tu nombre, tu contacto y tu mensaje, si lo has dejado." },
       { h: "Para qué", p: "Solo para responder a tu solicitud y hablar de un proyecto o una colaboración. No cedemos datos a terceros con fines publicitarios." },
-      { h: "Cookies y analítica", p: "Si aceptas la analítica, el sitio usa Yandex Metrica (YANDEX LLC). Este servicio instala cookies y recoge datos de la visita: páginas vistas, origen, dispositivo y navegador, dirección IP, clics y desplazamiento, incluida la grabación de sesiones (Webvisor). Usamos estos datos para mejorar el sitio. Sin tu consentimiento, Metrica no se carga. Puedes cambiar tu elección en «Configuración de cookies», al pie de cualquier página." },
+      { h: "Cookies y analítica", p: "Si aceptas la analítica, el sitio usa Yandex Metrica (YANDEX LLC). Este servicio instala cookies y recoge datos de la visita: páginas vistas, origen, dispositivo y navegador, dirección IP, clics y desplazamiento. Los nombres, datos de contacto y textos de las solicitudes nunca se envían a Metrica. Usamos estos datos para mejorar el sitio. Sin tu consentimiento, Metrica no se carga. Puedes cambiar tu elección en «Configuración de cookies», al pie de cualquier página." },
       { h: "Cómo retirar el consentimiento", p: "Escríbenos por cualquiera de los medios de la sección Contacto y eliminaremos tus datos." },
       { h: "Responsable del tratamiento", p: "Los datos del responsable se indicarán aquí." },
     ],

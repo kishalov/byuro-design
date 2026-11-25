@@ -502,7 +502,7 @@ const fr = {
     sections: [
       { h: "Les données que nous recevons", p: "Via les formulaires : votre nom, votre moyen de contact et votre message, si vous en avez laissé un." },
       { h: "Dans quel but", p: "Uniquement pour répondre à votre demande et discuter d’un projet ou d’un partenariat. Nous ne transmettons pas vos données à des tiers à des fins publicitaires." },
-      { h: "Cookies et mesure d’audience", p: "Si vous l’acceptez, le site utilise Yandex Metrica (YANDEX LLC). Ce service dépose des cookies et collecte des données de visite : pages vues, provenance, appareil et navigateur, adresse IP, clics et défilement, y compris l’enregistrement des sessions (Webvisor). Ces données nous servent à améliorer le site. Sans votre accord, Metrica n’est pas chargé. Vous pouvez modifier votre choix via « Paramètres des cookies » en bas de chaque page." },
+      { h: "Cookies et mesure d’audience", p: "Si vous l’acceptez, le site utilise Yandex Metrica (YANDEX LLC). Ce service dépose des cookies et collecte des données de visite : pages vues, provenance, appareil et navigateur, adresse IP, clics et défilement. Les noms, coordonnées et textes des demandes ne sont jamais transmis à Metrica. Ces données nous servent à améliorer le site. Sans votre accord, Metrica n’est pas chargé. Vous pouvez modifier votre choix via « Paramètres des cookies » en bas de chaque page." },
       { h: "Retirer votre consentement", p: "Écrivez-nous par l’un des moyens de la rubrique Contact et nous supprimerons vos données." },
       { h: "Responsable du traitement", p: "Les coordonnées du responsable seront indiquées ici." },
     ],
