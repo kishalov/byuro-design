@@ -40,6 +40,7 @@ const sr = {
     chips: ["Sajtovi", "Aplikacije", "Četbotovi", "Brending", "Reklame", "Moušn"],
     casesTitle: "Naši radovi",
     casesLead: "Sajtovi, aplikacije, brending i reklame za biznis.",
+    casesExp: "Više od 8 godina u dizajnu i razvoju.",
     prev: "Prethodni kejs",
     next: "Sledeći kejs",
     slider: "Galerija kejsova",

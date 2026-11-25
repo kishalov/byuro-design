@@ -39,6 +39,7 @@ const en = {
     chips: ["Websites", "Apps", "Chatbots", "Branding", "Ad creatives", "Motion"],
     casesTitle: "Our work",
     casesLead: "Websites, apps, branding and ads for business.",
+    casesExp: "8+ years in design and development.",
     prev: "Previous case",
     next: "Next case",
     slider: "Case gallery",

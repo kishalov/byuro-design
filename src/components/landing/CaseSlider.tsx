@@ -64,7 +64,9 @@ export function CaseSlider({ cases, t, l, locale }: { cases: CaseBase[]; t: Dict
               {l.casesTitle}
               <span aria-hidden="true" className="ml-[0.06em] inline-block size-[0.2em] rounded-full bg-coral" />
             </h2>
-            <p className="t-body-l mt-3 text-ink/75">{l.casesLead}</p>
+            <p className="t-body-l mt-3 text-ink/75">
+              <strong className="font-semibold text-ink">{l.casesExp}</strong> {l.casesLead}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <p className="t-mono min-w-[4.5rem] text-right text-stone-ink tabular-nums" aria-live="polite">

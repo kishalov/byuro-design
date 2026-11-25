@@ -1,6 +1,5 @@
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
-import { fmt } from "@/i18n/format";
 import { Mascot } from "../mm/Mascot";
 import { LeadDialog } from "../forms/LeadDialog";
 import { anchors, lp } from "@/i18n/paths";
@@ -11,7 +10,7 @@ import { TelegramLink } from "../ui/TelegramLink";
    главное действие — оставить заявку, рядом — расчёт стоимости и Telegram и короткие факты.
    Справа — маскот на фирменной точке. Экран намеренно спокойный: без фоновых
    текстур, стикеров и чипсов — один акцент (маркер в заголовке) и понятные кнопки. */
-export function LandingHero({ locale, t, cta, tg, contact, form, casesCount }: { locale: Locale; t: Dict["landing"]; casesCount: number; cta: Dict["cta"]; tg: string; contact: Dict["contact"]; form: Dict["form"] }) {
+export function LandingHero({ locale, t, cta, tg, contact, form }: { locale: Locale; t: Dict["landing"]; cta: Dict["cta"]; tg: string; contact: Dict["contact"]; form: Dict["form"] }) {
   const at = t.title.indexOf(t.mark);
   const before = at >= 0 ? t.title.slice(0, at) : t.title;
   const mark = at >= 0 ? t.mark : "";
@@ -73,17 +72,8 @@ export function LandingHero({ locale, t, cta, tg, contact, form, casesCount }: {
           </div>
           <TelegramLink variant="inline" label={tg} className="mt-4" />
 
-          <dl className="mt-10 grid max-w-[36rem] grid-cols-3 gap-4 border-t border-ink/15 pt-4">
-            {t.facts.map((raw) => ({ value: fmt(raw.value, { n: casesCount }, locale), label: fmt(raw.label, { n: casesCount }, locale) })).map((f) => (
-              <div key={f.label}>
-                <dt className="sr-only">{f.label}</dt>
-                <dd className="font-display text-[clamp(1.15rem,4vw,1.75rem)] leading-none font-black">{f.value}</dd>
-                <dd aria-hidden="true" className="t-small mt-2 text-stone-ink">
-                  {f.label}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          {/* Ряд фактов (8+ лет, 1 команда, N кейсов) убран с первого экрана — рябил;
+              опыт теперь в подзаголовке «Наших работ». Тексты остались в landing.facts. */}
         </div>
 
         <div aria-hidden="true" className="relative mx-auto hidden w-full max-w-[30rem] sm:block lg:col-span-5 lg:max-w-[min(100%,calc(100svh-var(--header-h)-5rem))]">

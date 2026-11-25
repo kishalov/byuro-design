@@ -39,6 +39,7 @@ const fr = {
     chips: ["Sites web", "Applications", "Chatbots", "Branding", "Créas pub", "Motion"],
     casesTitle: "Nos réalisations",
     casesLead: "Sites, applications, branding et publicité pour les entreprises.",
+    casesExp: "Plus de 8 ans en design et développement.",
     prev: "Projet précédent",
     next: "Projet suivant",
     slider: "Galerie de projets",
