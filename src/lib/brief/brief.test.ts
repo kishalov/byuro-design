@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { clientKeys, memoryStore, projectFingerprint } from "./dedupe";
+import { checkPhone } from "../contacts/phone";
 import { extractLinks, normalizeEmail, normalizePhone, normalizeTelegram, validateBrief } from "./schema";
 
 describe("нормализация контактов", () => {
@@ -28,23 +29,29 @@ describe("нормализация контактов", () => {
 
 describe("валидация брифа", () => {
   const ok = { name: "Анна", consent: true };
+  const v = (p: Parameters<typeof validateBrief>[0]) => validateBrief(p, checkPhone);
   it("нужен хотя бы один контакт", () => {
-    assert.equal(validateBrief(ok).contacts, "contactRequired");
-    assert.deepEqual(validateBrief({ ...ok, telegram: "@anna_design" }), {});
-    assert.deepEqual(validateBrief({ ...ok, email: "a@b.co" }), {});
-    assert.deepEqual(validateBrief({ ...ok, phone: "+7 900 000-00-00" }), {});
+    assert.equal(v(ok).contacts, "contactRequired");
+    assert.deepEqual(v({ ...ok, social: { network: "telegram", handle: "anna_design" } }), {});
+    assert.deepEqual(v({ ...ok, email: "a@b.co" }), {});
+    assert.deepEqual(v({ ...ok, phone: "+79001234567", phoneCountry: "RU" }), {});
+    // старое поле telegram от закэшированной страницы
+    assert.deepEqual(v({ ...ok, telegram: "@anna_design" }), {});
   });
   it("некорректный контакт — ошибка именно этого поля", () => {
-    const e = validateBrief({ ...ok, phone: "123", email: "a@b.co" });
-    assert.equal(e.phone, "phoneInvalid");
+    const e = v({ ...ok, phone: "+7900123", phoneCountry: "RU", email: "a@b.co" });
+    assert.equal(e.phone, "phoneTooShort");
     assert.equal(e.contacts, undefined);
+    assert.equal(v({ ...ok, social: { network: "telegram", handle: "ab" } }).social, "handleInvalid");
+    assert.equal(v({ ...ok, social: { network: "nope", handle: "abcdef" } }).social, "handleInvalid");
+    assert.equal(v({ ...ok, email: "a@b" }).email, "emailInvalid");
   });
   it("согласие и имя обязательны, длинные тексты отклоняются", () => {
-    const e = validateBrief({ name: "", email: "a@b.co", consent: false, description: "x".repeat(3001) });
+    const e = v({ name: "", email: "a@b.co", consent: false, description: "x".repeat(3001) });
     assert.equal(e.name, "nameShort");
     assert.equal(e.consent, "consent");
     assert.equal(e.description, "tooLong");
-    assert.deepEqual(validateBrief({ name: "李", email: "a@b.co", consent: true }), {});
+    assert.deepEqual(v({ name: "李", email: "a@b.co", consent: true }), {});
   });
 });
 

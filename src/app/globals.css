@@ -92,6 +92,9 @@ h1, h2, h3, h4 { overflow-wrap: break-word; }
 ::selection { background: var(--color-coral-30); color: var(--color-ink); }
 
 :focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; border-radius: 6px; }
+/* составное поле (страна + номер, сеть + ник): рамка фокуса — у всего поля, а не у вложенного input */
+.field-box input:focus-visible { outline: none; }
+.field-box:has(input:focus-visible) { outline: 3px solid var(--color-ink); outline-offset: 2px; }
 .on-dark :focus-visible { outline-color: var(--color-coral); }
 
 /* ── Типографика ───────────────────────────────────────── */

@@ -7,15 +7,18 @@ import type { CalcDict } from "@/i18n/calculator/ru";
 import { fmt } from "@/i18n/format";
 import { type Quote, type Selection } from "@/lib/calculator/engine";
 import { formatDays, requestPartNames } from "@/lib/calculator/format";
-import { LIMITS, extractLinks, normalizeTelegram, validateBrief, type BriefErrors, type BriefRequest } from "@/lib/brief/schema";
+import { LIMITS, extractLinks, validateBrief, type BriefErrors, type BriefRequest } from "@/lib/brief/schema";
 import { briefText } from "@/lib/brief/text";
 import { cn } from "@/lib/cn";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
+import type { Dict } from "@/i18n/dictionaries/ru";
+import { NETWORKS, PHONE_APP_LABEL, displayHandle, profileUrl } from "@/lib/contacts/social";
+import { ContactFields, contactPayload, emptyContact, loadPhoneLib, type ContactValue, type PhoneLib } from "../forms/ContactFields";
 import { PdfLink, type PdfState } from "./Pdf";
 
-type Fields = Pick<BriefRequest, "name" | "phone" | "telegram" | "email" | "company" | "description" | "deadline" | "links" | "comment"> & { consent: boolean };
-const empty: Fields = { name: "", phone: "", telegram: "", email: "", company: "", description: "", deadline: "", links: "", comment: "", consent: false };
+type Fields = Pick<BriefRequest, "name" | "company" | "description" | "deadline" | "links" | "comment"> & { consent: boolean };
+const empty: Fields = { name: "", company: "", description: "", deadline: "", links: "", comment: "", consent: false };
 type Status = { kind: "idle" } | { kind: "loading" } | { kind: "success"; briefId: string; duplicate: boolean } | { kind: "error"; message: string };
 
 /* Форма брифа. Расчёт (ID, услуги, суммы, сроки) прикладывается автоматически:
@@ -36,6 +39,7 @@ export function BriefDialog({
   privacyHref,
   instagram,
   money,
+  cf,
 }: {
   open: boolean;
   onClose: () => void;
@@ -50,6 +54,7 @@ export function BriefDialog({
   privacyHref: string;
   instagram: { url: string; handle: string };
   money: (v: number) => string;
+  cf: Dict["contactFields"];
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -59,6 +64,13 @@ export function BriefDialog({
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [copied, setCopied] = useState(false);
+  const [contact, setContact] = useState<ContactValue>(() => emptyContact(locale));
+  const lib = useRef<PhoneLib | null>(null);
+  useEffect(() => {
+    loadPhoneLib().then((m) => (lib.current = m));
+  }, []);
+  const check = (e164: string, c?: string) => (lib.current ? lib.current.checkPhone(e164, c) : null);
+  const request = (fields: Fields = f, c: ContactValue = contact) => ({ ...fields, ...contactPayload(c, lib.current), projectName });
   // Один ключ на одну и ту же попытку: повтор сети или двойной клик не создаст вторую заявку
   const idemKey = useRef<string | null>(null);
 
@@ -78,17 +90,24 @@ export function BriefDialog({
   // Любое изменение данных — новая попытка
   useEffect(() => {
     idemKey.current = null;
-  }, [f, calcId]);
+  }, [f, contact, calcId]);
+
+  useEffect(() => {
+    if (touched) setErrors(validateBrief(request(), check));
+    if (status.kind === "error") setStatus({ kind: "idle" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contact]);
 
   const set = <K extends keyof Fields>(k: K, v: Fields[K]) => {
     const next = { ...f, [k]: v };
     setF(next);
-    if (touched) setErrors(validateBrief({ ...next, projectName }));
+    if (touched) setErrors(validateBrief(request(next), check));
     if (status.kind === "error") setStatus({ kind: "idle" });
   };
 
-  const textForCopy = () =>
-    briefText(t, locale, {
+  const textForCopy = () => {
+    const p = contactPayload(contact, lib.current);
+    return briefText(t, locale, {
       calcId,
       createdAt: new Date(),
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -96,15 +115,18 @@ export function BriefDialog({
       quote,
       projectName,
       name: f.name,
-      phone: f.phone,
-      telegram: normalizeTelegram(f.telegram) ?? f.telegram,
-      email: f.email,
+      phone: p.phone ? (lib.current?.formatInternational(p.phone) ?? p.phone) : null,
+      phoneApps: p.phoneApps.length ? p.phoneApps.map((a) => PHONE_APP_LABEL[a]).join(", ") : null,
+      appsLabel: cf.apps,
+      social: p.social ? { label: NETWORKS[p.social.network].label, text: displayHandle(p.social.network, p.social.handle), url: profileUrl(p.social.network, p.social.handle) } : null,
+      email: p.email,
       company: f.company,
       description: f.description,
       deadline: f.deadline,
       links: extractLinks(f.links),
       comment: f.comment,
     });
+  };
 
   async function copy() {
     try {
@@ -119,11 +141,13 @@ export function BriefDialog({
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setTouched(true);
-    const errs = validateBrief({ ...f, projectName });
+    lib.current ??= await loadPhoneLib();
+    const errs = validateBrief(request(), check);
     setErrors(errs);
     if (Object.keys(errs).length) {
       const first = Object.keys(errs)[0];
-      formRef.current?.querySelector<HTMLElement>(`[name="${first === "contacts" ? "phone" : first}"]`)?.focus();
+      const name = first === "contacts" ? "phone" : first === "social" ? "handle" : first;
+      formRef.current?.querySelector<HTMLElement>(`[name="${name}"]`)?.focus();
       return;
     }
     if (!enabled || status.kind === "loading" || quote.isEmpty) return;
@@ -132,6 +156,7 @@ export function BriefDialog({
     try {
       const body: BriefRequest = {
         ...f,
+        ...contactPayload(contact, lib.current),
         idempotencyKey: idemKey.current,
         calcId,
         locale,
@@ -156,7 +181,8 @@ export function BriefDialog({
     }
   }
 
-  const err = (k: keyof BriefErrors) => (errors[k] ? t.brief.errors[errors[k]!] : undefined);
+  const err = (k: Exclude<keyof BriefErrors, "contacts" | "phone" | "social" | "email">) => (errors[k] ? t.brief.errors[errors[k] as keyof CalcDict["brief"]["errors"]] : undefined);
+  const contactErrors = { contacts: errors.contacts, phone: errors.phone, social: errors.social, email: errors.email } as Parameters<typeof ContactFields>[0]["errors"];
   const fid = (k: string) => `${uid}-${k}`;
   const disabledNoteId = fid("disabled");
 
@@ -267,27 +293,15 @@ export function BriefDialog({
                 <PdfLink t={t} pdf={pdf} className="mt-1" />
               </section>
 
-              <fieldset className="mt-6" aria-describedby={`${fid("contacts")}-hint${err("contacts") ? ` ${fid("contacts")}-err` : ""}`}>
-                <legend className="t-h4">{t.brief.contactsLegend}</legend>
-                <p id={`${fid("contacts")}-hint`} className="t-small mt-1 text-stone-ink">
-                  {t.brief.contactsHint}
-                </p>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <Field id={fid("name")} label={t.brief.name} error={err("name")} className="sm:col-span-2">
-                    <input id={fid("name")} name="name" autoComplete="name" value={f.name} onChange={(e) => set("name", e.target.value)} maxLength={LIMITS.name + 1} placeholder={t.brief.namePh} aria-invalid={!!err("name")} aria-describedby={err("name") ? `${fid("name")}-err` : undefined} className={inputCls(!!err("name"))} />
-                  </Field>
-                  <Field id={fid("phone")} label={t.brief.phone} error={err("phone")}>
-                    <input id={fid("phone")} name="phone" type="tel" autoComplete="tel" inputMode="tel" value={f.phone} onChange={(e) => set("phone", e.target.value)} placeholder={t.brief.phonePh} aria-invalid={!!err("phone") || !!err("contacts")} aria-describedby={err("phone") ? `${fid("phone")}-err` : undefined} className={inputCls(!!err("phone") || !!err("contacts"))} />
-                  </Field>
-                  <Field id={fid("telegram")} label={t.brief.telegram} error={err("telegram")}>
-                    <input id={fid("telegram")} name="telegram" autoComplete="off" autoCapitalize="none" spellCheck={false} value={f.telegram} onChange={(e) => set("telegram", e.target.value)} placeholder={t.brief.telegramPh} aria-invalid={!!err("telegram") || !!err("contacts")} aria-describedby={err("telegram") ? `${fid("telegram")}-err` : undefined} className={inputCls(!!err("telegram") || !!err("contacts"))} />
-                  </Field>
-                  <Field id={fid("email")} label={t.brief.email} error={err("email")} className="sm:col-span-2">
-                    <input id={fid("email")} name="email" type="email" autoComplete="email" value={f.email} onChange={(e) => set("email", e.target.value)} placeholder={t.brief.emailPh} aria-invalid={!!err("email") || !!err("contacts")} aria-describedby={err("email") ? `${fid("email")}-err` : undefined} className={inputCls(!!err("email") || !!err("contacts"))} />
-                  </Field>
+              <div className="mt-6">
+                <Field id={fid("name")} label={t.brief.name} error={err("name")}>
+                  <input id={fid("name")} name="name" autoComplete="name" value={f.name} onChange={(e) => set("name", e.target.value)} maxLength={LIMITS.name + 1} placeholder={t.brief.namePh} aria-invalid={!!err("name")} aria-describedby={err("name") ? `${fid("name")}-err` : undefined} className={inputCls(!!err("name"))} />
+                </Field>
+                <div className="mt-5">
+                  <ContactFields locale={locale} t={cf} value={contact} onChange={setContact} errors={contactErrors} idPrefix={fid("c")} withEmail emailLabel={t.brief.email} emailPh={t.brief.emailPh} />
+                  {errors.telegram && <ErrorText id={`${fid("telegram")}-err`}>{t.brief.errors.telegramInvalid}</ErrorText>}
                 </div>
-                {err("contacts") && <ErrorText id={`${fid("contacts")}-err`}>{err("contacts")}</ErrorText>}
-              </fieldset>
+              </div>
 
               <fieldset className="mt-8">
                 <legend className="t-h4">{t.brief.projectLegend}</legend>

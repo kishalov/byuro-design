@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
    (src/i18n/calculator), в браузер уходит только текущий язык. */
 export default async function CalculatorPage({ params }: Props) {
   const locale = (await params).locale as Locale;
-  const t = await getCalcDict(locale);
+  const [t, d] = await Promise.all([getCalcDict(locale), getDict(locale)]);
   const markAt = t.page.title.indexOf(t.page.mark);
   return (
     <div className="grain pb-36 lg:pb-[var(--section)]">
@@ -51,7 +51,7 @@ export default async function CalculatorPage({ params }: Props) {
           </p>
         </header>
         <div className="mt-10 sm:mt-14">
-          <Calculator locale={locale} t={t} briefEnabled={isBriefDeliveryConfigured()} privacyHref={lp(locale, "/privacy/")} instagram={{ url: site.contacts.instagram.url, handle: site.contacts.instagram.handle }} />
+          <Calculator locale={locale} t={t} cf={d.contactFields} briefEnabled={isBriefDeliveryConfigured()} privacyHref={lp(locale, "/privacy/")} instagram={{ url: site.contacts.instagram.url, handle: site.contacts.instagram.handle }} />
         </div>
       </div>
     </div>

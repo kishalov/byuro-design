@@ -3,6 +3,7 @@
    калькулятора (brief.errors) на языке посетителя. */
 
 import type { Selection } from "../calculator/engine";
+import { validateContacts, type ContactErrorCode, type PhoneChecker } from "../contacts/validate";
 
 /** Что браузер присылает на /api/brief. Сумм здесь нет: сервер считает их сам по selection. */
 export type BriefRequest = {
@@ -14,7 +15,13 @@ export type BriefRequest = {
   selection: Selection;
   projectName?: string;
   name: string;
+  /** E.164 (+79001234567) */
   phone?: string;
+  phoneCountry?: string;
+  phoneApps?: string[];
+  /** мессенджер/соцсеть и ник без «@» */
+  social?: { network: string; handle: string } | null;
+  /** старое поле — принимается от закэшированных версий страницы */
   telegram?: string;
   email?: string;
   company?: string;
@@ -40,8 +47,8 @@ export const LIMITS = {
   comment: 3000,
 } as const;
 
-export type BriefField = "name" | "contacts" | "phone" | "telegram" | "email" | "company" | "description" | "deadline" | "links" | "comment" | "projectName" | "consent";
-export type BriefErrorCode = "nameShort" | "nameLong" | "contactRequired" | "phoneInvalid" | "telegramInvalid" | "emailInvalid" | "tooLong" | "consent";
+export type BriefField = "name" | "contacts" | "phone" | "social" | "telegram" | "email" | "company" | "description" | "deadline" | "links" | "comment" | "projectName" | "consent";
+export type BriefErrorCode = "nameShort" | "nameLong" | ContactErrorCode | "telegramInvalid" | "tooLong" | "consent";
 export type BriefErrors = Partial<Record<BriefField, BriefErrorCode>>;
 
 /* ── Нормализация ─────────────────────────────────────────
@@ -86,24 +93,28 @@ export function extractLinks(raw: string | undefined): string[] {
 
 export type NormalizedContacts = { phone: string | null; telegram: string | null; email: string | null };
 
-export function normalizeContacts(p: Pick<BriefRequest, "phone" | "telegram" | "email">): NormalizedContacts {
-  return { phone: normalizePhone(p.phone), telegram: normalizeTelegram(p.telegram), email: normalizeEmail(p.email) };
+export function normalizeContacts(p: Pick<BriefRequest, "phone" | "telegram" | "email" | "social">): NormalizedContacts {
+  const tg = p.social?.network === "telegram" ? p.social.handle : p.telegram;
+  return { phone: normalizePhone(p.phone), telegram: normalizeTelegram(tg), email: normalizeEmail(p.email) };
 }
 
 const len = (v: string | undefined) => [...(v ?? "")].length;
 
-export function validateBrief(p: Partial<BriefRequest>): BriefErrors {
+/** checkPhone — проверка номера по правилам страны (libphonenumber); в браузере грузится отдельно */
+export function validateBrief(p: Partial<BriefRequest>, checkPhone: PhoneChecker): BriefErrors {
   const e: BriefErrors = {};
   const name = (p.name ?? "").trim();
   const n = len(name);
   if (n === 0 || (n === 1 && !/[぀-ヿ㐀-鿿]/.test(name))) e.name = "nameShort";
   else if (n > LIMITS.name) e.name = "nameLong";
 
-  const has = { phone: !!p.phone?.trim(), telegram: !!p.telegram?.trim(), email: !!p.email?.trim() };
-  if (!has.phone && !has.telegram && !has.email) e.contacts = "contactRequired";
-  if (has.phone && (len(p.phone) > LIMITS.phone || !normalizePhone(p.phone))) e.phone = "phoneInvalid";
-  if (has.telegram && (len(p.telegram) > LIMITS.telegram || !normalizeTelegram(p.telegram))) e.telegram = "telegramInvalid";
-  if (has.email && !normalizeEmail(p.email)) e.email = "emailInvalid";
+  const legacyTg = !!p.telegram?.trim() && !p.social?.handle;
+  Object.assign(e, validateContacts({ phone: p.phone, phoneCountry: p.phoneCountry, phoneApps: p.phoneApps, social: p.social, email: p.email }, checkPhone, { email: true }));
+  if (legacyTg) {
+    delete e.contacts;
+    if (len(p.telegram) > LIMITS.telegram || !normalizeTelegram(p.telegram)) e.telegram = "telegramInvalid";
+  }
+  if (p.phone && len(p.phone) > LIMITS.phone) e.phone = "phoneInvalid";
 
   for (const k of ["company", "description", "deadline", "links", "comment", "projectName"] as const) {
     if (len(p[k]) > LIMITS[k]) e[k] = "tooLong";

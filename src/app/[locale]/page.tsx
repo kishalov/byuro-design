@@ -34,7 +34,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const railLabels = { prev: t.landing.prevItem, next: t.landing.nextItem };
   return (
     <>
-      <LandingHero locale={locale} t={t.landing} cta={t.cta} tg={t.contact.telegram} contact={t.contact} form={t.form} />
+      <LandingHero locale={locale} t={t.landing} cta={t.cta} tg={t.contact.telegram} contact={t.contact} form={{ ...t.form, contactFields: t.contactFields }} />
       <CaseSlider cases={cases} t={t.cases} l={t.landing} locale={locale} />
       <LandingReviews t={t.reviews} labels={railLabels} />
       <LandingProcess locale={locale} t={t.process} labels={railLabels} />
@@ -54,6 +54,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <Calculator
               locale={locale}
               t={c}
+              cf={t.contactFields}
               briefEnabled={isBriefDeliveryConfigured()}
               privacyHref={lp(locale, "/privacy/")}
               instagram={{ url: site.contacts.instagram.url, handle: site.contacts.instagram.handle }}
@@ -77,7 +78,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <About t={t.about} ring={t.hero.ring} />
       <Testimonials t={t.reviews} />
       <Faq locale={locale} t={t.faq} />
-      <Contact locale={locale} t={t.contact} form={t.form} />
+      <Contact locale={locale} t={t.contact} form={{ ...t.form, contactFields: t.contactFields }} />
       */}
     </>
   );

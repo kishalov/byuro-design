@@ -1,6 +1,6 @@
 "use client";
 import { reachLeadGoal, submissionKey } from "@/lib/analytics";
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { site } from "@/content/site";
 import { TelegramLink } from "@/components/ui/TelegramLink";
 import type { Locale } from "@/i18n/config";
@@ -11,17 +11,26 @@ import { validateLead, type LeadErrors, type LeadPayload, type LeadType } from "
 import { Mascot } from "../mm/Mascot";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
+import { ContactFields, contactPayload, emptyContact, loadPhoneLib, type ContactValue, type PhoneLib } from "./ContactFields";
 
 type Status = "idle" | "loading" | "success" | "error" | "preview";
+/** Словарь формы + блок контактов (телефон с кодом страны, мессенджер) */
+export type FormDict = Dict["form"] & { contactFields: Dict["contactFields"] };
 const isPreview = process.env.NEXT_PUBLIC_PREVIEW === "1";
 
-export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; t: Dict["form"] }) {
+export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; t: FormDict }) {
   const uid = useId().replace(/:/g, "");
   const formRef = useRef<HTMLFormElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<LeadErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
+  const [contact, setContact] = useState<ContactValue>(() => emptyContact(locale));
+  const lib = useRef<PhoneLib | null>(null);
+  useEffect(() => {
+    loadPhoneLib().then((m) => (lib.current = m));
+  }, []);
+  const check = (e164: string, c?: string) => (lib.current ? lib.current.checkPhone(e164, c) : null);
 
   const read = (): LeadPayload => {
     const fd = new FormData(formRef.current!);
@@ -29,7 +38,7 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
       type,
       locale,
       name: String(fd.get("name") ?? ""),
-      contact: String(fd.get("contact") ?? ""),
+      ...contactPayload(contact, lib.current),
       message: String(fd.get("message") ?? ""),
       services: type === "project" ? fd.getAll("services").map(String) : undefined,
       role: type === "partner" ? String(fd.get("role") ?? "") : undefined,
@@ -38,16 +47,24 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
       website: String(fd.get("website") ?? ""),
     };
   };
-  const revalidate = () => touched && setErrors(validateLead(read()));
+  const revalidate = () => touched && formRef.current && setErrors(validateLead(read(), check));
+  // контакты — управляемые поля: перепроверяем при каждом изменении после первой попытки отправки
+  useEffect(() => {
+    if (touched && formRef.current) setErrors(validateLead(read(), check));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contact]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setTouched(true);
+    lib.current ??= await loadPhoneLib();
     const payload = read();
-    const errs = validateLead(payload);
+    const errs = validateLead(payload, check);
     setErrors(errs);
     if (Object.keys(errs).length) {
-      formRef.current?.querySelector<HTMLElement>(`[name="${Object.keys(errs)[0]}"]`)?.focus();
+      const first = Object.keys(errs)[0];
+      const name = first === "contacts" ? (contact.handle && !contact.digits ? "handle" : "phone") : first === "social" ? "handle" : first;
+      formRef.current?.querySelector<HTMLElement>(`[name="${name}"]`)?.focus();
       return;
     }
     if (isPreview) {
@@ -66,6 +83,9 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
         setStatus("success");
         reachLeadGoal(`lead:${submitKey}`); // цель Метрики — только после подтверждения сервера
         formRef.current?.reset();
+        setTouched(false);
+        setErrors({});
+        setContact((c) => ({ ...emptyContact(locale), country: c.country, network: c.network, countryTouched: c.countryTouched }));
         return;
       }
       if (res.status === 400 && data.fields) setErrors(data.fields);
@@ -96,7 +116,8 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
     );
   }
 
-  const err = (k: keyof LeadErrors) => (errors[k] ? t.errors[errors[k]!] : undefined);
+  const err = (k: "name" | "contact" | "message" | "consent" | "role") => (errors[k] ? t.errors[errors[k]!] : undefined);
+  const contactErrors = { contacts: errors.contacts, phone: errors.phone, social: errors.social };
   const fid = (k: string) => `${uid}-${k}`;
 
   return (
@@ -114,13 +135,13 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
         </label>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field id={fid("name")} label={t.name} error={err("name")}>
-          <input id={fid("name")} name="name" autoComplete="name" placeholder={t.namePh} aria-invalid={!!err("name")} aria-describedby={err("name") ? `${fid("name")}-err` : undefined} className={inputCls(!!err("name"))} />
-        </Field>
-        <Field id={fid("contact")} label={t.contact} hint={t.contactHint} error={err("contact")}>
-          <input id={fid("contact")} name="contact" autoComplete="tel" placeholder={t.contactPh} aria-invalid={!!err("contact")} aria-describedby={`${fid("contact")}-hint${err("contact") ? ` ${fid("contact")}-err` : ""}`} className={inputCls(!!err("contact"))} />
-        </Field>
+      <Field id={fid("name")} label={t.name} error={err("name")}>
+        <input id={fid("name")} name="name" autoComplete="name" placeholder={t.namePh} aria-invalid={!!err("name")} aria-describedby={err("name") ? `${fid("name")}-err` : undefined} className={inputCls(!!err("name"))} />
+      </Field>
+
+      <div className="mt-6">
+        <ContactFields locale={locale} t={t.contactFields} value={contact} onChange={setContact} errors={contactErrors} idPrefix={fid("c")} />
+        {err("contact") && <ErrorText id={`${fid("contact")}-err`}>{err("contact")}</ErrorText>}
       </div>
 
       {type === "project" ? (

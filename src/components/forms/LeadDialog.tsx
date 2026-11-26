@@ -8,7 +8,7 @@ import type { LeadType } from "@/lib/lead";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
 import { TabList } from "../ui/Tabs";
-import { LeadForm } from "./LeadForm";
+import { LeadForm, type FormDict } from "./LeadForm";
 
 /* Кнопка «Оставить заявку» + попап с прежней формой заявки (проект / партнёрство).
    Отправка — та же: /api/lead → Telegram (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID). */
@@ -24,7 +24,7 @@ export function LeadDialog({
   label: string;
   close: string;
   contact: Dict["contact"];
-  form: Dict["form"];
+  form: FormDict;
   className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);

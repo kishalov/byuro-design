@@ -5,7 +5,7 @@ import { TelegramLink } from "@/components/ui/TelegramLink";
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import type { LeadType } from "@/lib/lead";
-import { LeadForm } from "../forms/LeadForm";
+import { LeadForm, type FormDict } from "../forms/LeadForm";
 import { Mascot } from "../mm/Mascot";
 import { Orb, Sticker } from "../mm/Kit";
 import { Icon } from "../ui/Icon";
@@ -17,7 +17,7 @@ const hashToType: Record<string, LeadType> = { "#contact-project": "project", "#
 /* Два независимых сценария заявки. Ссылки /<lang>/#contact-project и
    #contact-partner сразу открывают нужную форму. Маскот выглядывает
    из-за карточки и оживает, когда пользователь заполняет форму. */
-export function Contact({ locale, t, form }: { locale: Locale; t: Dict["contact"]; form: Dict["form"] }) {
+export function Contact({ locale, t, form }: { locale: Locale; t: Dict["contact"]; form: FormDict }) {
   const [type, setType] = useState<LeadType>("project");
 
   useEffect(() => {

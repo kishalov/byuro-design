@@ -8,6 +8,10 @@ import { clientKeys, projectFingerprint } from "@/lib/brief/dedupe";
 import { deliverBrief, getBriefStore, isBriefDeliveryConfigured, type BriefRecord } from "@/lib/brief/delivery";
 import { LIMITS, extractLinks, normalizeContacts, validateBrief, type BriefRequest } from "@/lib/brief/schema";
 import { briefText } from "@/lib/brief/text";
+import { getDict } from "@/i18n/get";
+import { appsLine, phoneLine, socialLine } from "@/lib/contacts/format";
+import { checkPhone } from "@/lib/contacts/phone";
+import { cleanContacts } from "@/lib/contacts/validate";
 
 /* Приём брифа из калькулятора.
 
@@ -60,6 +64,9 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
   const input: Partial<BriefRequest> = {
     name: str(body.name, LIMITS.name),
     phone: str(body.phone, LIMITS.phone),
+    phoneCountry: str(body.phoneCountry, 2),
+    phoneApps: Array.isArray(body.phoneApps) ? body.phoneApps.filter((x): x is string => typeof x === "string").slice(0, 10) : undefined,
+    social: body.social && typeof body.social === "object" ? { network: str((body.social as Record<string, unknown>).network, 20) ?? "", handle: str((body.social as Record<string, unknown>).handle, 120) ?? "" } : null,
     telegram: str(body.telegram, LIMITS.telegram),
     email: str(body.email, LIMITS.email),
     company: str(body.company, LIMITS.company),
@@ -70,7 +77,7 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
     projectName: str(body.projectName, LIMITS.projectName),
     consent: body.consent === true,
   };
-  const fields = validateBrief(input);
+  const fields = validateBrief(input, checkPhone);
   if (Object.keys(fields).length) return NextResponse.json({ error: "validation", fields }, { status: 400 });
 
   const locale = toLocale(body.locale);
@@ -86,6 +93,7 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
   if (same) return NextResponse.json({ ok: true, briefId: same.briefId, duplicate: "same_request" });
 
   const normalized = normalizeContacts(input);
+  const cc = cleanContacts({ phone: input.phone, phoneCountry: input.phoneCountry, phoneApps: input.phoneApps, social: input.social });
   const keys = await clientKeys(normalized);
   const signature = selectionSignature(parsed.selection);
   const clean = (v?: string) => (v && v.trim() ? v.trim() : null);
@@ -102,8 +110,11 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
     locale,
     client: {
       name: input.name!.trim(),
-      phone: clean(input.phone),
-      telegram: clean(input.telegram),
+      phone: cc.phone,
+      phoneCountry: cc.phoneCountry,
+      phoneApps: cc.phoneApps,
+      social: cc.social,
+      telegram: cc.social?.network === "telegram" ? cc.social.handle : clean(input.telegram),
       email: clean(input.email),
       normalized,
       keys,
@@ -148,7 +159,10 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
     quote,
     projectName: record.project.projectName ?? undefined,
     name: record.client.name,
-    phone: normalized.phone && normalized.phone !== record.client.phone ? `${record.client.phone} (${normalized.phone})` : record.client.phone,
+    phone: cc.phone ? phoneLine(cc.phone, cc.phoneCountry) : null,
+    phoneApps: cc.phoneApps.length ? appsLine(cc.phoneApps) : null,
+    appsLabel: (await getDict("ru")).contactFields.apps,
+    social: cc.social ? socialLine(cc.social.network, cc.social.handle) : null,
     telegram: normalized.telegram ?? record.client.telegram,
     email: record.client.email,
     company: record.project.company ?? undefined,

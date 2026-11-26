@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { appLink, appsLine, phoneLine, socialLine } from "@/lib/contacts/format";
+import { checkPhone } from "@/lib/contacts/phone";
+import { cleanContacts } from "@/lib/contacts/validate";
 import { validateLead, type LeadPayload } from "@/lib/lead";
 
 /* Приём заявок. Отправляет их в Telegram-чат команды.
@@ -32,24 +35,45 @@ export async function POST(req: Request) {
   if (body.website) return NextResponse.json({ ok: true });
 
   if (body.type !== "project" && body.type !== "partner") return NextResponse.json({ error: "validation" }, { status: 400 });
-  const fields = validateLead(body);
+  const fields = validateLead(body, checkPhone);
   if (Object.keys(fields).length) return NextResponse.json({ error: "validation", fields }, { status: 400 });
+
+  // Режим разработки: вернуть готовый текст без отправки (на продакшене недоступен)
+  const dryRun = process.env.NODE_ENV !== "production" && (body as { dryRun?: boolean }).dryRun === true;
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chat = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chat) {
+  if ((!token || !chat) && !dryRun) {
     console.error("[lead] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы");
     return NextResponse.json({ error: "not_configured" }, { status: 503 });
   }
 
   const s = (v?: string) => esc(String(v ?? "").trim().slice(0, 2000));
+  const a = (href: string, text: string) => `<a href="${esc(href).replace(/"/g, "&quot;")}">${esc(text)}</a>`;
+
+  // Контакты: номер в международном формате со страной и ссылками «написать», ник со ссылкой на профиль
+  const c = cleanContacts({ phone: body.phone, phoneCountry: body.phoneCountry, phoneApps: body.phoneApps, social: body.social });
+  const contactLines: string[] = [];
+  if (c.phone) {
+    const links = c.phoneApps.map((app) => {
+      const href = appLink(app, c.phone!);
+      return href ? a(href, appsLine([app])) : esc(appsLine([app]));
+    });
+    contactLines.push(`<b>Телефон:</b> ${esc(phoneLine(c.phone, c.phoneCountry))}${links.length ? `\n<b>Можно написать в:</b> ${links.join(", ")}` : ""}`);
+  }
+  if (c.social) {
+    const sl = socialLine(c.social.network, c.social.handle);
+    contactLines.push(`<b>${esc(sl.label)}:</b> ${sl.url ? a(sl.url, sl.text) : esc(sl.text)}`);
+  }
+  if (!contactLines.length && body.contact) contactLines.push(`<b>Контакт:</b> ${s(body.contact)}`);
+
   const lines =
     body.type === "project"
       ? [
           "<b>🟠 Новая заявка на проект</b>",
           `<b>Язык сайта:</b> ${s(body.locale)}`,
           `<b>Имя:</b> ${s(body.name)}`,
-          `<b>Контакт:</b> ${s(body.contact)}`,
+          ...contactLines,
           body.services?.length ? `<b>Нужно:</b> ${s(body.services.join(", "))}` : "",
           body.message ? `<b>Задача:</b>\n${s(body.message)}` : "",
         ]
@@ -57,17 +81,19 @@ export async function POST(req: Request) {
           "<b>🤝 Заявка на партнёрство</b>",
           `<b>Язык сайта:</b> ${s(body.locale)}`,
           `<b>Имя:</b> ${s(body.name)}`,
-          `<b>Контакт:</b> ${s(body.contact)}`,
+          ...contactLines,
           `<b>Кто:</b> ${s(body.role)}`,
           body.model ? `<b>Модель:</b> ${s(body.model)}` : "",
           body.message ? `<b>Комментарий:</b>\n${s(body.message)}` : "",
         ];
 
+  if (dryRun) return NextResponse.json({ ok: true, dryRun: true, text: lines.filter(Boolean).join("\n") });
+
   try {
     const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chat, text: lines.filter(Boolean).join("\n"), parse_mode: "HTML" }),
+      body: JSON.stringify({ chat_id: chat, text: lines.filter(Boolean).join("\n"), parse_mode: "HTML", link_preview_options: { is_disabled: true } }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!r.ok) throw new Error(`telegram ${r.status}`);

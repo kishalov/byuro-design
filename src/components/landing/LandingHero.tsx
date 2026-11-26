@@ -1,5 +1,6 @@
 import type { Locale } from "@/i18n/config";
 import type { Dict } from "@/i18n/dictionaries/ru";
+import type { FormDict } from "../forms/LeadForm";
 import { Mascot } from "../mm/Mascot";
 import { LeadDialog } from "../forms/LeadDialog";
 import { anchors, lp } from "@/i18n/paths";
@@ -10,7 +11,7 @@ import { TelegramLink } from "../ui/TelegramLink";
    главное действие — оставить заявку, рядом — расчёт стоимости и Telegram и короткие факты.
    Справа — маскот на фирменной точке. Экран намеренно спокойный: без фоновых
    текстур, стикеров и чипсов — один акцент (маркер в заголовке) и понятные кнопки. */
-export function LandingHero({ locale, t, cta, tg, contact, form }: { locale: Locale; t: Dict["landing"]; cta: Dict["cta"]; tg: string; contact: Dict["contact"]; form: Dict["form"] }) {
+export function LandingHero({ locale, t, cta, tg, contact, form }: { locale: Locale; t: Dict["landing"]; cta: Dict["cta"]; tg: string; contact: Dict["contact"]; form: FormDict }) {
   const at = t.title.indexOf(t.mark);
   const before = at >= 0 ? t.title.slice(0, at) : t.title;
   const mark = at >= 0 ? t.mark : "";

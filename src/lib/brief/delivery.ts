@@ -24,7 +24,10 @@ export type BriefRecord = {
   locale: Locale;
   client: {
     name: string;
-    phone: string | null; // как ввёл клиент
+    phone: string | null; // E.164
+    phoneCountry: string | null;
+    phoneApps: string[];
+    social: { network: string; handle: string } | null;
     telegram: string | null;
     email: string | null;
     normalized: NormalizedContacts;

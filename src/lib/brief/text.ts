@@ -18,6 +18,11 @@ export type BriefTextInput = {
   projectName?: string;
   name?: string;
   phone?: string | null;
+  /** «WhatsApp, Telegram» — где можно написать по номеру */
+  phoneApps?: string | null;
+  appsLabel?: string;
+  /** мессенджер/соцсеть: «Instagram», «@name», ссылка на профиль */
+  social?: { label: string; text: string; url: string | null } | null;
   telegram?: string | null;
   email?: string | null;
   company?: string;
@@ -51,7 +56,9 @@ export function briefText(t: CalcDict, textLocale: Locale, b: BriefTextInput): s
   out.push(`— ${t.brief.contactsLegend} —`);
   add(t.brief.name, b.name);
   add(t.brief.phone, b.phone);
-  add(t.brief.telegram, b.telegram ? `@${b.telegram.replace(/^@/, "")}` : null);
+  if (b.phone && b.phoneApps) add(b.appsLabel ?? "WhatsApp/Telegram", b.phoneApps);
+  if (b.social) add(b.social.label, `${b.social.text}${b.social.url ? ` — ${b.social.url}` : ""}`);
+  else add(t.brief.telegram, b.telegram ? `@${b.telegram.replace(/^@/, "")}` : null);
   add(t.brief.email, b.email);
   out.push("");
 

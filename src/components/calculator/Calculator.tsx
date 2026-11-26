@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import type { CalcDict } from "@/i18n/calculator/ru";
+import type { Dict } from "@/i18n/dictionaries/ru";
 import { EXTRA_ITEMS, SERVICE_IDS, SERVICES, WEB_VARIANTS, serviceScope, unitPrice, type Currency, type ItemKey, type ServiceId, type WebVariant } from "@/lib/calculator/catalog";
 import { computeQuote, emptySelection, parseSelection, selectionSignature, setVariant, togglePart, toggleService, type Quote, type Selection } from "@/lib/calculator/engine";
 import { calcCurrency, formatDays, moneyFormatter, qtyFormatter, requestPartNames } from "@/lib/calculator/format";
@@ -20,6 +21,8 @@ type Saved = { selection: Selection; projectName: string; calc: { sig: string; i
 export type CalculatorProps = {
   locale: Locale;
   t: CalcDict;
+  /** блок контактов в заявке (телефон с кодом страны, мессенджер) */
+  cf: Dict["contactFields"];
   briefEnabled: boolean;
   privacyHref: string;
   instagram: { url: string; handle: string };
@@ -33,7 +36,7 @@ export type CalculatorProps = {
    их обсуждаем после брифа, чтобы цена на сайте не росла от наценок.
    Расчёт мгновенный в браузере; PDF и бриф сервер пересчитывает сам.
    Выбор хранится в sessionStorage вкладки и переживает перезагрузку. */
-export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: CalculatorProps) {
+export function Calculator({ locale, t, cf, briefEnabled, privacyHref, instagram }: CalculatorProps) {
   const [selection, setSelection] = useState<Selection>(emptySelection);
   const [projectName, setProjectName] = useState("");
   const [calc, setCalc] = useState<{ sig: string; id: string }>({ sig: "", id: "" });
@@ -208,6 +211,7 @@ export function Calculator({ locale, t, briefEnabled, privacyHref, instagram }: 
         privacyHref={privacyHref}
         instagram={instagram}
         money={money}
+        cf={cf}
       />
     </div>
   );
