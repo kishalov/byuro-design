@@ -14,6 +14,7 @@ import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
 import type { Dict } from "@/i18n/dictionaries/ru";
 import { NETWORKS, PHONE_APP_LABEL, displayHandle, profileUrl } from "@/lib/contacts/social";
+import { useFormGuard } from "../forms/useFormGuard";
 import { ContactFields, contactPayload, emptyContact, loadPhoneLib, type ContactValue, type PhoneLib } from "../forms/ContactFields";
 import { PdfLink, type PdfState } from "./Pdf";
 
@@ -65,6 +66,7 @@ export function BriefDialog({
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState<ContactValue>(() => emptyContact(locale));
+  const { box: guardBox, boxClass: guardBoxClass, formProps: guardFormProps, meta: guardMeta, reset: guardReset } = useFormGuard("brief", locale);
   const lib = useRef<PhoneLib | null>(null);
   useEffect(() => {
     loadPhoneLib().then((m) => (lib.current = m));
@@ -165,12 +167,19 @@ export function BriefDialog({
         projectName,
         website: String(new FormData(formRef.current!).get("website") ?? ""),
       };
-      const res = await fetch("/api/brief/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(20_000) });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; briefId?: string; duplicate?: string; fields?: BriefErrors; error?: string };
+      const meta = await guardMeta(); // время заполнения, Turnstile, UTM
+      const res = await fetch("/api/brief/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, meta }), signal: AbortSignal.timeout(25_000) });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; accepted?: boolean; briefId?: string; duplicate?: string; fields?: BriefErrors; error?: string };
       if (res.ok && data.ok && data.briefId) {
         setStatus({ kind: "success", briefId: data.briefId, duplicate: Boolean(data.duplicate) });
-        // цель Метрики — только после подтверждения сервера; повторная отправка той же заявки не считается
-        if (!data.duplicate) reachLeadGoal(`brief:${data.briefId}`);
+        guardReset();
+        // цель Метрики — только если сервер проверил и принял заявку (не спам и не повтор)
+        if (data.accepted && !data.duplicate) reachLeadGoal(`brief:${data.briefId}`);
+        return;
+      }
+      if (res.status === 403) {
+        guardReset();
+        setStatus({ kind: "error", message: cf.errors.antispam });
         return;
       }
       if (data.fields) setErrors(data.fields);
@@ -220,7 +229,7 @@ export function BriefDialog({
               </Button>
             </div>
           ) : (
-            <form ref={formRef} noValidate onSubmit={onSubmit}>
+            <form ref={formRef} noValidate onSubmit={onSubmit} {...guardFormProps}>
               {!enabled && (
                 <div id={disabledNoteId} className="mb-6 rounded-2xl border-2 border-dashed border-stone-ink p-4">
                   <p className="flex items-start gap-2 font-semibold">
@@ -354,6 +363,9 @@ export function BriefDialog({
                   </p>
                 )}
               </div>
+
+              {/* Cloudflare Turnstile: пусто и не занимает места, пока не нужно подтверждение */}
+              <div ref={guardBox} className={guardBoxClass} />
 
               <div className="sticky bottom-0 -mx-5 mt-8 flex flex-col gap-3 border-t border-ink/10 bg-paper px-5 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:-mx-8 sm:flex-row sm:items-center sm:px-8 sm:pb-6">
                 <Button type="submit" variant="coral" disabled={!enabled || status.kind === "loading"} aria-describedby={!enabled ? disabledNoteId : undefined} icon={status.kind === "loading" ? null : "arrow-right"} className="w-full sm:w-auto">

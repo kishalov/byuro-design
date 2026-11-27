@@ -3,11 +3,16 @@ import { getCalcDict } from "@/i18n/calculator/get";
 import { calcCurrency } from "@/lib/calculator/format";
 import { computeQuote, parseSelection, selectionSignature } from "@/lib/calculator/engine";
 import { IDEMPOTENCY_RE, isCalcId, newBriefId } from "@/lib/calculator/ids";
-import { rateLimited, str, toLocale, toTimeZone } from "@/lib/calculator/server";
+import { str, toLocale, toTimeZone } from "@/lib/calculator/server";
 import { clientKeys, projectFingerprint } from "@/lib/brief/dedupe";
 import { deliverBrief, getBriefStore, isBriefDeliveryConfigured, type BriefRecord } from "@/lib/brief/delivery";
 import { LIMITS, extractLinks, normalizeContacts, validateBrief, type BriefRequest } from "@/lib/brief/schema";
 import { briefText } from "@/lib/brief/text";
+import { checkSubmission, diagnosticsLines, logDecision, markDelivered } from "@/lib/antispam/guard";
+import { getKv } from "@/lib/antispam/kv";
+import { turnstileSiteKey } from "@/lib/antispam/turnstile";
+
+const getKvRef = (key: string) => getKv().get(key).catch(() => null);
 import { getDict } from "@/i18n/get";
 import { appsLine, phoneLine, socialLine } from "@/lib/contacts/format";
 import { checkPhone } from "@/lib/contacts/phone";
@@ -32,8 +37,6 @@ const DUPLICATE_WINDOW = 24 * 60 * 60 * 1000;
 const inFlight = new Map<string, Promise<Response>>();
 
 export async function POST(req: Request) {
-  if (rateLimited(req, "brief", 5)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
-
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -42,8 +45,12 @@ export async function POST(req: Request) {
   }
   if (!body || typeof body !== "object") return NextResponse.json({ error: "bad_json" }, { status: 400 });
 
-  // Бот заполнил скрытое поле — отвечаем «ок», но ничего не делаем (как /api/lead)
-  if (body.website) return NextResponse.json({ ok: true });
+  // Бот заполнил скрытое поле — отвечаем «ок», но ничего не делаем (как /api/lead); решение — в журнал
+  if (typeof body.website === "string" && body.website.trim()) {
+    const d = await checkSubmission(req, { route: "brief", body, contacts: [], content: "honeypot" });
+    await logDecision(d, "brief");
+    return NextResponse.json({ ok: true, accepted: false });
+  }
 
   const idem = typeof body.idempotencyKey === "string" && IDEMPOTENCY_RE.test(body.idempotencyKey) ? body.idempotencyKey : null;
   if (!idem) return NextResponse.json({ error: "idempotency" }, { status: 400 });
@@ -51,7 +58,7 @@ export async function POST(req: Request) {
   // Двойное нажатие, пока первый запрос ещё обрабатывается: отдаём тот же результат
   const running = inFlight.get(idem);
   if (running) return (await running).clone();
-  const p = handle(body, idem);
+  const p = handle(req, body, idem);
   inFlight.set(idem, p);
   try {
     return (await p).clone();
@@ -60,7 +67,7 @@ export async function POST(req: Request) {
   }
 }
 
-async function handle(body: Record<string, unknown>, idem: string): Promise<Response> {
+async function handle(req: Request, body: Record<string, unknown>, idem: string): Promise<Response> {
   const input: Partial<BriefRequest> = {
     name: str(body.name, LIMITS.name),
     phone: str(body.phone, LIMITS.phone),
@@ -90,7 +97,7 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
 
   const store = getBriefStore();
   const same = await store.findByIdempotencyKey(idem);
-  if (same) return NextResponse.json({ ok: true, briefId: same.briefId, duplicate: "same_request" });
+  if (same) return NextResponse.json({ ok: true, accepted: true, briefId: same.briefId, duplicate: "same_request" });
 
   const normalized = normalizeContacts(input);
   const cc = cleanContacts({ phone: input.phone, phoneCountry: input.phoneCountry, phoneApps: input.phoneApps, social: input.social });
@@ -98,6 +105,23 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
   const signature = selectionSignature(parsed.selection);
   const clean = (v?: string) => (v && v.trim() ? v.trim() : null);
   const fingerprint = await projectFingerprint(keys, signature, input);
+
+  // Антиспам: частота, Turnstile, эвристики, повторы
+  const guard = await checkSubmission(req, {
+    route: "brief",
+    body,
+    name: input.name,
+    text: [input.description, input.comment, input.links].filter(Boolean).join("\n"),
+    contacts: [cc.phone && `phone:${cc.phone}`, cc.social && `social:${cc.social.network}:${cc.social.handle.toLowerCase()}`, normalized.email && `email:${normalized.email}`].filter(Boolean) as string[],
+    content: fingerprint,
+  });
+  if (guard.verdict !== "accepted") {
+    await logDecision(guard, "brief");
+    if (guard.verdict === "blocked") return NextResponse.json({ error: guard.error }, { status: guard.status });
+    if (guard.verdict === "dropped") return NextResponse.json({ ok: true, accepted: false });
+    // та же заявка уже была — для формы это успех, но цель Метрики второй раз не засчитывается
+    return NextResponse.json({ ok: true, accepted: true, briefId: (await getKvRef(guard.dupKey)) ?? "—", duplicate: "same_project" });
+  }
 
   const now = new Date();
   const record: BriefRecord = {
@@ -141,7 +165,7 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
   }
 
   const dup = await store.findByFingerprint(fingerprint, DUPLICATE_WINDOW);
-  if (dup && !dryRun) return NextResponse.json({ ok: true, briefId: dup.briefId, duplicate: "same_project" });
+  if (dup && !dryRun) return NextResponse.json({ ok: true, accepted: true, briefId: dup.briefId, duplicate: "same_project" });
 
   if (store.persistent) {
     const prev = await store.findByClientKeys(keys, 5);
@@ -170,19 +194,24 @@ async function handle(body: Record<string, unknown>, idem: string): Promise<Resp
     deadline: record.project.deadline ?? undefined,
     links: record.project.links,
     comment: record.project.comment ?? undefined,
-    flags: [`🌐 ${locale}`, ...flags],
+    flags: [`🌐 ${locale}`, ...flags, ...diagnosticsLines(guard)],
   });
 
-  if (dryRun) return NextResponse.json({ ok: true, dryRun: true, record, textRu });
+  if (dryRun) return NextResponse.json({ ok: true, accepted: true, dryRun: true, record, textRu });
 
   const { delivered } = await deliverBrief(record, textRu);
-  if (!delivered.length) return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
+  if (!delivered.length) {
+    await logDecision(guard, "brief", { delivery: "failed" });
+    return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
+  }
 
   await store.save({ briefId: record.briefId, createdAt: record.createdAt, idempotencyKey: idem, fingerprint, clientKeys: keys });
-  return NextResponse.json({ ok: true, briefId: record.briefId });
+  await markDelivered(guard, record.briefId);
+  await logDecision(guard, "brief", { ref: record.briefId, delivery: "ok" });
+  return NextResponse.json({ ok: true, accepted: true, briefId: record.briefId });
 }
 
 /** Включена ли отправка — для клиента, если страница закэширована дольше, чем меняется конфигурация */
 export function GET() {
-  return NextResponse.json({ enabled: isBriefDeliveryConfigured() });
+  return NextResponse.json({ enabled: isBriefDeliveryConfigured(), turnstileSiteKey: turnstileSiteKey() }, { headers: { "Cache-Control": "no-store" } });
 }

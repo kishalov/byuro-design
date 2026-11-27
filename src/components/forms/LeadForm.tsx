@@ -11,6 +11,7 @@ import { validateLead, type LeadErrors, type LeadPayload, type LeadType } from "
 import { Mascot } from "../mm/Mascot";
 import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
+import { useFormGuard } from "./useFormGuard";
 import { ContactFields, contactPayload, emptyContact, loadPhoneLib, type ContactValue, type PhoneLib } from "./ContactFields";
 
 type Status = "idle" | "loading" | "success" | "error" | "preview";
@@ -26,6 +27,7 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
   const [serverError, setServerError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const [contact, setContact] = useState<ContactValue>(() => emptyContact(locale));
+  const { box: guardBox, boxClass: guardBoxClass, formProps: guardFormProps, meta: guardMeta, reset: guardReset } = useFormGuard("lead", locale);
   const lib = useRef<PhoneLib | null>(null);
   useEffect(() => {
     loadPhoneLib().then((m) => (lib.current = m));
@@ -77,11 +79,14 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 15000);
     try {
-      const res = await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), signal: ctrl.signal });
-      const data = (await res.json().catch(() => ({}))) as { fields?: LeadErrors };
+      const meta = await guardMeta(); // время заполнения, Turnstile, UTM
+      const res = await fetch("/api/lead/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, meta }), signal: ctrl.signal });
+      const data = (await res.json().catch(() => ({}))) as { fields?: LeadErrors; accepted?: boolean; duplicate?: boolean; error?: string };
       if (res.ok) {
         setStatus("success");
-        reachLeadGoal(`lead:${submitKey}`); // цель Метрики — только после подтверждения сервера
+        guardReset();
+        // цель Метрики — только если сервер проверил и принял заявку (не спам и не повтор)
+        if (data.accepted && !data.duplicate) reachLeadGoal(`lead:${submitKey}`);
         formRef.current?.reset();
         setTouched(false);
         setErrors({});
@@ -89,7 +94,8 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
         return;
       }
       if (res.status === 400 && data.fields) setErrors(data.fields);
-      setServerError(res.status === 429 ? t.errors.rate : res.status === 400 ? t.errors.check : t.errors.generic);
+      if (res.status === 403) guardReset();
+      setServerError(res.status === 429 ? t.errors.rate : res.status === 403 ? t.contactFields.errors.antispam : res.status === 400 ? t.errors.check : t.errors.generic);
       setStatus("error");
     } catch {
       setServerError(t.errors.network);
@@ -121,7 +127,7 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
   const fid = (k: string) => `${uid}-${k}`;
 
   return (
-    <form ref={formRef} noValidate onSubmit={onSubmit} onChange={revalidate} aria-describedby={isPreview ? fid("preview") : undefined}>
+    <form ref={formRef} noValidate onSubmit={onSubmit} onChange={revalidate} aria-describedby={isPreview ? fid("preview") : undefined} {...guardFormProps}>
       {isPreview && (
         <p id={fid("preview")} className="t-small mb-6 flex gap-2 rounded-2xl border-2 border-dashed border-stone-ink p-4 text-stone-ink">
           <Icon name="alert" size={18} className="mt-0.5 shrink-0" />
@@ -238,6 +244,9 @@ export function LeadForm({ type, locale, t }: { type: LeadType; locale: Locale; 
           </div>
         )}
       </div>
+
+      {/* Cloudflare Turnstile: пусто и не занимает места, пока не нужно подтверждение */}
+      <div ref={guardBox} className={guardBoxClass} />
 
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
         <Button type="submit" disabled={status === "loading"} icon={status === "loading" ? null : "arrow-right"} className="w-full sm:w-auto">

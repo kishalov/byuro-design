@@ -462,6 +462,7 @@ const en = {
       phoneInvalid: "Please check the number. Example: {example}",
       handleInvalid: "{network} username: {rule}",
       emailInvalid: "Please check the email, e.g. name@company.com",
+      antispam: "We couldn’t send this: our spam protection flagged the submission. Please reload the page and try again, or message us on Telegram.",
     },
     rules: {
       lu: "Latin letters, digits and “_”, {min}–{max} characters",
@@ -536,6 +537,7 @@ const en = {
     intro: "This policy describes what data the Byuro studio website collects and how it is used.",
     sections: [
       { h: "What data we receive", p: "Through the forms on the website: your name, contact details and message, if you left one." },
+      { h: "Spam protection for forms", p: "To filter out bots, when you submit a form the site checks how long it took to fill in, how often requests arrive and the device type, and may use Cloudflare Turnstile (Cloudflare, Inc.) — usually invisibly and without advertising cookies. Along with your request we keep technical data: time, source tags (UTM), device type and browser, country and the check result. Your IP address is stored only as an irreversible pseudonym and for no longer than 30 days." },
       { h: "Why", p: "Only to reply to your request and discuss a project or partnership. We don’t share data with third parties for advertising." },
       { h: "Cookies and analytics", p: "If you allow analytics, the site uses Yandex Metrica (YANDEX LLC). It sets cookies and collects visit data: pages viewed, referral source, device and browser, IP address, clicks and scrolling. Names, contact details and request texts are never sent to Metrica. We use this data to understand how to improve the site. Without your consent, Metrica is not loaded. You can change your choice via “Cookie settings” at the bottom of any page." },
       { h: "How to withdraw consent", p: "Contact us in any way listed in the Contact section and we will delete your data." },

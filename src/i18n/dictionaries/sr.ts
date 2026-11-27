@@ -463,6 +463,7 @@ const sr = {
       phoneInvalid: "Proverite broj. Primer: {example}",
       handleInvalid: "Korisničko ime na {network}: {rule}",
       emailInvalid: "Proverite email, npr. ime@firma.rs",
+      antispam: "Slanje nije uspelo: zaštita od spama je slanje ocenila kao sumnjivo. Osvežite stranicu i pokušajte ponovo ili nam pišite na Telegram.",
     },
     rules: {
       lu: "latinična slova, cifre i „_“, od {min} do {max} znakova",
@@ -537,6 +538,7 @@ const sr = {
     intro: "Ova politika opisuje koje podatke sajt studija Byuro prikuplja i kako se koriste.",
     sections: [
       { h: "Koje podatke dobijamo", p: "Preko formi na sajtu: ime, kontakt i tekst poruke, ako ste je ostavili." },
+      { h: "Zaštita formi od spama", p: "Da bismo odstranili botove, pri slanju forme sajt proverava vreme popunjavanja, učestalost upita i tip uređaja, a može da koristi i Cloudflare Turnstile (Cloudflare, Inc.) — obično neprimetno i bez reklamnih kolačića. Uz upit čuvamo tehničke podatke: vreme, oznake izvora (UTM), tip uređaja i pregledač, zemlju i rezultat provere. IP adresa se čuva samo kao nepovratan pseudonim i najduže 30 dana." },
       { h: "Zašto", p: "Samo da bismo odgovorili na upit i razgovarali o projektu ili saradnji. Podatke ne prosleđujemo trećim licima radi reklame." },
       { h: "Kolačići i analitika", p: "Ako dozvolite analitiku, sajt koristi Yandex Metricu (YANDEX LLC). Ona postavlja kolačiće i prikuplja podatke o poseti: pregledane stranice, izvor posete, uređaj i pregledač, IP adresu, klikove i skrolovanje. Imena, kontakti i tekstovi upita se ne šalju u Metricu. Ove podatke koristimo da poboljšamo sajt. Bez vaše saglasnosti Metrica se ne učitava. Odluku možete promeniti preko „Podešavanja kolačića“ na dnu svake stranice." },
       { h: "Kako povući saglasnost", p: "Pišite nam na bilo koji način iz odeljka Kontakt i obrisaćemo vaše podatke." },

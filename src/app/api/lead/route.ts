@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { checkSubmission, diagnosticsLines, logDecision, markDelivered } from "@/lib/antispam/guard";
+import { turnstileSiteKey } from "@/lib/antispam/turnstile";
 import { appLink, appsLine, phoneLine, socialLine } from "@/lib/contacts/format";
 import { checkPhone } from "@/lib/contacts/phone";
 import { cleanContacts } from "@/lib/contacts/validate";
@@ -11,19 +13,14 @@ import { validateLead, type LeadPayload } from "@/lib/lead";
 
 export const runtime = "nodejs";
 
-const hits = new Map<string, number[]>(); // простая защита от спама (на инстанс)
-const LIMIT = 5;
-const WINDOW = 60_000;
+/* Антиспам — src/lib/antispam/guard.ts (honeypot, частота, Turnstile, эвристики, повторы).
+   Ответ формы: { ok: true, accepted: true } — заявка принята и отправлена (только тогда форма
+   засчитывает цель Метрики); { ok: true, accepted: false } — «тихо» отклонена как спам;
+   { ok: true, accepted: true, duplicate: true } — такая же заявка уже была, повторно не шлём. */
 
 const esc = (s: string) => s.replace(/[&<>]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[ch]!);
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW);
-  if (recent.length >= LIMIT) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
-  hits.set(ip, [...recent, now]);
-
   let body: Partial<LeadPayload>;
   try {
     body = await req.json();
@@ -31,8 +28,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
 
-  // Бот заполнил скрытое поле — делаем вид, что всё хорошо, но ничего не шлём
-  if (body.website) return NextResponse.json({ ok: true });
+  if (!body || typeof body !== "object") return NextResponse.json({ error: "bad_json" }, { status: 400 });
+  const raw = body as Record<string, unknown>;
+
+  // Бот заполнил скрытое поле — делаем вид, что всё хорошо, но ничего не шлём (решение пишется в журнал)
+  if (typeof raw.website === "string" && raw.website.trim()) {
+    const d = await checkSubmission(req, { route: "lead", body: raw, contacts: [], content: "honeypot" });
+    await logDecision(d, "lead");
+    return NextResponse.json({ ok: true, accepted: false });
+  }
 
   if (body.type !== "project" && body.type !== "partner") return NextResponse.json({ error: "validation" }, { status: 400 });
   const fields = validateLead(body, checkPhone);
@@ -53,6 +57,22 @@ export async function POST(req: Request) {
 
   // Контакты: номер в международном формате со страной и ссылками «написать», ник со ссылкой на профиль
   const c = cleanContacts({ phone: body.phone, phoneCountry: body.phoneCountry, phoneApps: body.phoneApps, social: body.social });
+
+  // Антиспам: частота, Turnstile, эвристики, повторы
+  const contactIds = [c.phone && `phone:${c.phone}`, c.social && `social:${c.social.network}:${c.social.handle.toLowerCase()}`, !c.phone && !c.social && body.contact && `legacy:${String(body.contact).toLowerCase().trim()}`].filter(Boolean) as string[];
+  const guard = await checkSubmission(req, {
+    route: "lead",
+    body: raw,
+    name: body.name,
+    text: body.message,
+    contacts: contactIds,
+    content: JSON.stringify([body.type, contactIds, (body.message ?? "").trim().toLowerCase(), body.services ?? [], body.role ?? ""]),
+  });
+  if (guard.verdict !== "accepted") {
+    await logDecision(guard, "lead");
+    if (guard.verdict === "blocked") return NextResponse.json({ error: guard.error }, { status: guard.status });
+    return NextResponse.json({ ok: true, accepted: guard.verdict === "duplicate", duplicate: guard.verdict === "duplicate" || undefined });
+  }
   const contactLines: string[] = [];
   if (c.phone) {
     const links = c.phoneApps.map((app) => {
@@ -86,21 +106,31 @@ export async function POST(req: Request) {
           body.model ? `<b>Модель:</b> ${s(body.model)}` : "",
           body.message ? `<b>Комментарий:</b>\n${s(body.message)}` : "",
         ];
+  // заявка, пустая строка, блок диагностики (проверка, источник, устройство)
+  const text = `${lines.filter(Boolean).join("\n")}\n\n${diagnosticsLines(guard).map(esc).join("\n")}`;
 
-  if (dryRun) return NextResponse.json({ ok: true, dryRun: true, text: lines.filter(Boolean).join("\n") });
+  if (dryRun) return NextResponse.json({ ok: true, dryRun: true, accepted: true, text });
 
   try {
     const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chat, text: lines.filter(Boolean).join("\n"), parse_mode: "HTML", link_preview_options: { is_disabled: true } }),
+      body: JSON.stringify({ chat_id: chat, text, parse_mode: "HTML", link_preview_options: { is_disabled: true } }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!r.ok) throw new Error(`telegram ${r.status}`);
   } catch (e) {
     console.error("[lead] delivery failed", e);
+    await logDecision(guard, "lead", { delivery: "failed" });
     return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true });
+  await markDelivered(guard, guard.logId);
+  await logDecision(guard, "lead", { delivery: "ok" });
+  return NextResponse.json({ ok: true, accepted: true });
+}
+
+/** Настройки для формы: ключ Turnstile (без пересборки сайта при его смене) */
+export function GET() {
+  return NextResponse.json({ turnstileSiteKey: turnstileSiteKey() }, { headers: { "Cache-Control": "no-store" } });
 }

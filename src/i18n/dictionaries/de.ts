@@ -462,6 +462,7 @@ const de = {
       phoneInvalid: "Bitte prüfen Sie die Nummer. Beispiel: {example}",
       handleInvalid: "Benutzername bei {network}: {rule}",
       emailInvalid: "Bitte prüfen Sie die E-Mail, z. B. name@firma.de",
+      antispam: "Senden fehlgeschlagen: Unser Spamschutz hat die Anfrage als verdächtig eingestuft. Laden Sie die Seite neu und versuchen Sie es erneut oder schreiben Sie uns auf Telegram.",
     },
     rules: {
       lu: "lateinische Buchstaben, Ziffern und „_“, {min}–{max} Zeichen",
@@ -536,6 +537,7 @@ const de = {
     intro: "Diese Erklärung beschreibt, welche Daten die Website des Studios Byuro erhebt und wie sie verwendet werden.",
     sections: [
       { h: "Welche Daten wir erhalten", p: "Über die Formulare: Ihren Namen, Ihre Kontaktangabe und Ihre Nachricht, falls Sie eine hinterlassen." },
+      { h: "Spamschutz der Formulare", p: "Um Bots herauszufiltern, prüft die Website beim Absenden die Ausfülldauer, die Häufigkeit der Anfragen und den Gerätetyp und kann Cloudflare Turnstile (Cloudflare, Inc.) einsetzen — meist unsichtbar und ohne Werbe-Cookies. Mit der Anfrage speichern wir technische Daten: Zeitpunkt, Quellmarken (UTM), Gerätetyp und Browser, Land und das Prüfergebnis. Die IP-Adresse wird nur als nicht umkehrbares Pseudonym und höchstens 30 Tage gespeichert." },
       { h: "Wozu", p: "Ausschließlich, um auf Ihre Anfrage zu antworten und ein Projekt oder eine Zusammenarbeit zu besprechen. Wir geben keine Daten zu Werbezwecken an Dritte weiter." },
       { h: "Cookies und Analyse", p: "Wenn Sie der Analyse zustimmen, nutzt die Website Yandex Metrica (YANDEX LLC). Der Dienst setzt Cookies und erfasst Besuchsdaten: aufgerufene Seiten, Herkunft, Gerät und Browser, IP-Adresse, Klicks und Scrollen. Namen, Kontaktdaten und Anfragetexte werden nicht an Metrica übermittelt. Wir nutzen diese Daten, um die Website zu verbessern. Ohne Ihre Zustimmung wird Metrica nicht geladen. Ihre Wahl können Sie jederzeit über „Cookie-Einstellungen“ unten auf jeder Seite ändern." },
       { h: "Widerruf der Einwilligung", p: "Schreiben Sie uns über einen der Kontaktwege, und wir löschen Ihre Daten." },

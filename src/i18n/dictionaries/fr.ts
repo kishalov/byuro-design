@@ -462,6 +462,7 @@ const fr = {
       phoneInvalid: "Vérifiez le numéro. Exemple : {example}",
       handleInvalid: "Identifiant {network} : {rule}",
       emailInvalid: "Vérifiez l’e-mail, par ex. nom@societe.fr",
+      antispam: "Envoi impossible : notre protection anti-spam a jugé l’envoi suspect. Rechargez la page et réessayez, ou écrivez-nous sur Telegram.",
     },
     rules: {
       lu: "lettres latines, chiffres et « _ », de {min} à {max} caractères",
@@ -536,6 +537,7 @@ const fr = {
     intro: "Cette politique décrit les données collectées par le site du studio Byuro et leur utilisation.",
     sections: [
       { h: "Les données que nous recevons", p: "Via les formulaires : votre nom, votre moyen de contact et votre message, si vous en avez laissé un." },
+      { h: "Protection anti-spam des formulaires", p: "Pour filtrer les robots, lors de l’envoi d’un formulaire le site vérifie la durée de saisie, la fréquence des demandes et le type d’appareil, et peut utiliser Cloudflare Turnstile (Cloudflare, Inc.) — en général de façon invisible et sans cookies publicitaires. Avec votre demande, nous conservons des données techniques : heure, balises de provenance (UTM), type d’appareil et navigateur, pays et résultat de la vérification. L’adresse IP n’est conservée que sous forme de pseudonyme irréversible et pendant 30 jours au plus." },
       { h: "Dans quel but", p: "Uniquement pour répondre à votre demande et discuter d’un projet ou d’un partenariat. Nous ne transmettons pas vos données à des tiers à des fins publicitaires." },
       { h: "Cookies et mesure d’audience", p: "Si vous l’acceptez, le site utilise Yandex Metrica (YANDEX LLC). Ce service dépose des cookies et collecte des données de visite : pages vues, provenance, appareil et navigateur, adresse IP, clics et défilement. Les noms, coordonnées et textes des demandes ne sont jamais transmis à Metrica. Ces données nous servent à améliorer le site. Sans votre accord, Metrica n’est pas chargé. Vous pouvez modifier votre choix via « Paramètres des cookies » en bas de chaque page." },
       { h: "Retirer votre consentement", p: "Écrivez-nous par l’un des moyens de la rubrique Contact et nous supprimerons vos données." },

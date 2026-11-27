@@ -462,6 +462,7 @@ const es = {
       phoneInvalid: "Revisa el número. Ejemplo: {example}",
       handleInvalid: "Usuario de {network}: {rule}",
       emailInvalid: "Revisa el email, p. ej. nombre@empresa.com",
+      antispam: "No se pudo enviar: nuestra protección antispam marcó el envío como sospechoso. Recarga la página e inténtalo de nuevo o escríbenos por Telegram.",
     },
     rules: {
       lu: "letras latinas, números y «_», de {min} a {max} caracteres",
@@ -536,6 +537,7 @@ const es = {
     intro: "Esta política describe qué datos recoge la web del estudio Byuro y cómo se utilizan.",
     sections: [
       { h: "Qué datos recibimos", p: "A través de los formularios: tu nombre, tu contacto y tu mensaje, si lo has dejado." },
+      { h: "Protección antispam de los formularios", p: "Para filtrar bots, al enviar un formulario el sitio comprueba el tiempo de rellenado, la frecuencia de las solicitudes y el tipo de dispositivo, y puede usar Cloudflare Turnstile (Cloudflare, Inc.), normalmente de forma invisible y sin cookies publicitarias. Junto con la solicitud guardamos datos técnicos: hora, etiquetas de origen (UTM), tipo de dispositivo y navegador, país y resultado de la comprobación. La dirección IP solo se guarda como seudónimo irreversible y durante un máximo de 30 días." },
       { h: "Para qué", p: "Solo para responder a tu solicitud y hablar de un proyecto o una colaboración. No cedemos datos a terceros con fines publicitarios." },
       { h: "Cookies y analítica", p: "Si aceptas la analítica, el sitio usa Yandex Metrica (YANDEX LLC). Este servicio instala cookies y recoge datos de la visita: páginas vistas, origen, dispositivo y navegador, dirección IP, clics y desplazamiento. Los nombres, datos de contacto y textos de las solicitudes nunca se envían a Metrica. Usamos estos datos para mejorar el sitio. Sin tu consentimiento, Metrica no se carga. Puedes cambiar tu elección en «Configuración de cookies», al pie de cualquier página." },
       { h: "Cómo retirar el consentimiento", p: "Escríbenos por cualquiera de los medios de la sección Contacto y eliminaremos tus datos." },

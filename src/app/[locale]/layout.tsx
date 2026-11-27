@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
 import { AnchorScroll } from "@/components/AnchorScroll";
 import { YandexMetrika } from "@/components/analytics/YandexMetrika";
+import { AttributionCapture } from "@/components/analytics/AttributionCapture";
 import { RevealObserver } from "@/components/ui/RevealObserver";
 import { isLocale, localeCodes, localeInfo } from "@/i18n/config";
 import { getDict } from "@/i18n/get";
@@ -78,6 +79,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <MobileCtaBar locale={locale} project={t.cta.lead} partner="Telegram" />
         <RevealObserver />
         <AnchorScroll />
+        <AttributionCapture />
         <YandexMetrika t={t.consent} privacyHref={lp(locale, "/privacy/")} />
       </body>
     </html>
