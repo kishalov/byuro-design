@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { LOCALE_COOKIE, locales, type Locale } from "@/i18n/config";
+import { withLandingAdParams } from "@/lib/attribution";
 import { cn } from "@/lib/cn";
 
 /* Переключатель языка. Сохраняет выбор (cookie для сервера + localStorage
@@ -70,7 +71,10 @@ export function LangSwitcher({ locale, label }: { locale: Locale; label: string 
               hrefLang={l.hreflang}
               lang={l.htmlLang}
               aria-current={l.code === locale ? "true" : undefined}
-              onClick={() => remember(l.code)}
+              onClick={(e) => {
+                remember(l.code);
+                e.currentTarget.href = withLandingAdParams(switchHref(pathname, l.code)); // рекламные метки не теряются
+              }}
               className={cn(
                 "flex min-h-11 items-center justify-between rounded-xl px-3 text-[15px] font-medium hover:bg-sand",
                 l.code === locale && "bg-ink text-paper hover:bg-ink",
@@ -99,7 +103,10 @@ export function LangGrid({ locale, label }: { locale: Locale; label: string }) {
               hrefLang={l.hreflang}
               lang={l.htmlLang}
               aria-current={l.code === locale ? "true" : undefined}
-              onClick={() => remember(l.code)}
+              onClick={(e) => {
+                remember(l.code);
+                e.currentTarget.href = withLandingAdParams(switchHref(pathname, l.code)); // рекламные метки не теряются
+              }}
               className={cn(
                 "flex min-h-11 items-center justify-center rounded-pill border-2 px-2 text-[14px] font-semibold",
                 l.code === locale ? "border-ink bg-ink text-paper" : "border-ink/15",

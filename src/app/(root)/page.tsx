@@ -4,11 +4,12 @@ import { defaultLocale, locales } from "@/i18n/config";
 /* x-default: страница выбора языка.
    На сервере сюда почти никто не попадает — proxy.ts сразу перенаправляет
    по сохранённому выбору или Accept-Language. В статическом превью то же
-   самое делает встроенный скрипт по navigator.languages. Без JS — список языков. */
+   самое делает встроенный скрипт по navigator.languages. Без JS — список языков.
+   Параметры адреса (?utm_…, yclid) при этом сохраняются — как и в proxy.ts. */
 const detect = `(function(){try{var L=${JSON.stringify(locales.map((l) => l.code))};var s=null;try{s=localStorage.getItem('byuro-locale')}catch(e){}
 var m=document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]+)/);if(!s&&m)s=m[1];
 function pick(p){for(var i=0;i<p.length;i++){var t=(p[i]||'').toLowerCase();if(t.indexOf('zh')===0){if(!/^zh-(tw|hk|mo|hant)/.test(t))return 'zh-cn';continue}if(t.indexOf('sr')===0)return 'sr';var b=t.split('-')[0];if(L.indexOf(b)>-1)return b}return '${defaultLocale}'}
-var c=(s&&L.indexOf(s)>-1)?s:pick(navigator.languages||[navigator.language]);location.replace('/'+c+'/'+location.hash)}catch(e){}})()`;
+var c=(s&&L.indexOf(s)>-1)?s:pick(navigator.languages||[navigator.language]);location.replace('/'+c+'/'+location.search+location.hash)}catch(e){}})()`;
 
 export default function LanguageChooser() {
   return (
