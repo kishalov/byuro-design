@@ -194,7 +194,7 @@ async function handle(req: Request, body: Record<string, unknown>, idem: string)
     deadline: record.project.deadline ?? undefined,
     links: record.project.links,
     comment: record.project.comment ?? undefined,
-    flags: [`🌐 ${locale}`, ...flags, ...diagnosticsLines(guard)],
+    flags: [...flags, ...diagnosticsLines(guard, { locale })], // номер заявки — уже в заголовке
   });
 
   if (dryRun) return NextResponse.json({ ok: true, accepted: true, dryRun: true, record, textRu });

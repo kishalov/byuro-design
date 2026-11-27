@@ -21,6 +21,11 @@ export function newBriefId(now = new Date()): string {
   const d = now.toISOString().slice(2, 10).replace(/-/g, "");
   return `BRF-${d}-${randomChunk(6)}`;
 }
+/** ID заявки из формы «Оставить заявку»: LD-ГГММДД-XXXXXX. Создаётся только на сервере. */
+export function newLeadId(now = new Date()): string {
+  const d = now.toISOString().slice(2, 10).replace(/-/g, "");
+  return `LD-${d}-${randomChunk(6)}`;
+}
 export const BRIEF_ID_RE = /^BRF-\d{6}-[0-9A-HJKMNP-TV-Z]{6}$/;
 
 /** Ключ идемпотентности одной попытки отправки (UUID v4 из браузера) */

@@ -7,7 +7,7 @@
    — для Метрики: полный адрес входа с рекламными параметрами — только в памяти вкладки
      (см. initMetrika: если согласие дали уже после переходов по сайту, первым засчитывается адрес входа). */
 
-export type Attribution = { utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_term?: string; clickIds?: string[]; referrer?: string; landing?: string };
+export type Attribution = { utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_term?: string; clickIds?: string[]; referrer?: string; landing?: string; internalRef?: boolean };
 
 const UTM = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
 const CLICK_IDS = ["yclid", "gclid", "fbclid", "ttclid", "msclkid", "vkclid"];
@@ -45,8 +45,9 @@ export function captureAttribution() {
   if (refHost && !own(refHost)) a.referrer = refHost;
   a.landing = window.location.pathname;
 
-  // перешли сюда с нашей же страницы (смена языка) без меток — продолжаем сводку этой вкладки
-  if (!landingAd && refHost && own(refHost)) {
+  // перешли сюда с нашей же страницы (смена языка — обычная перезагрузка, метки могли быть
+  // перенесены в адрес) — продолжаем сводку первого входа этой вкладки
+  if (refHost && own(refHost)) {
     try {
       const saved = JSON.parse(sessionStorage.getItem(STORE) ?? "null") as Attribution | null;
       if (saved && typeof saved === "object") {
@@ -57,6 +58,9 @@ export function captureAttribution() {
       /* ignore */
     }
   }
+  // пришли с нашей же страницы, а сводки первого входа нет (её стёрли или вкладку открыли иначе) —
+  // источник неизвестен; это не «прямой заход»
+  if (!landingAd && refHost && own(refHost)) a.internalRef = true;
   first = a;
   try {
     sessionStorage.setItem(STORE, JSON.stringify(a));

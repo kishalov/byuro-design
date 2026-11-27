@@ -13,10 +13,12 @@ import "server-only";
 
 import { getKv } from "./kv";
 import { pseudonym, requestInfo, type RequestInfo } from "./request";
+import { classifySource } from "./source";
+import { isLocale, localeInfo } from "@/i18n/config";
 import { turnstileEnabled, turnstileStrict, verifyTurnstile, type TurnstileResult } from "./turnstile";
 
 export type Route = "lead" | "brief";
-export type Attribution = { utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_term?: string; clickIds?: string[]; referrer?: string; landing?: string };
+export type Attribution = { utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_term?: string; clickIds?: string[]; referrer?: string; landing?: string; internalRef?: boolean };
 export type ClientMeta = { elapsedMs: number | null; interacted: boolean; turnstile: string | null; turnstileError: string | null; attribution: Attribution };
 
 export type Verdict = "accepted" | "duplicate" | "dropped" | "blocked";
@@ -59,6 +61,7 @@ export function readClientMeta(body: Record<string, unknown>): ClientMeta {
       clickIds: Array.isArray(a.clickIds) ? a.clickIds.filter((x): x is string => typeof x === "string" && /^[a-z_]{2,12}$/.test(x)).slice(0, 5) : undefined,
       referrer: s(a.referrer, 100),
       landing: s(a.landing, 200),
+      internalRef: a.internalRef === true || undefined,
     },
   };
 }
@@ -160,6 +163,7 @@ export async function logDecision(d: Decision, route: Route, extra: { ref?: stri
     lang: d.info.lang,
     ip: d.info.ipHash,
     utm: d.meta.attribution,
+    source: classifySource(d.meta.attribution).kind,
     ...extra,
   };
   console.log(`[antispam] ${JSON.stringify(entry)}`);
@@ -182,20 +186,48 @@ export async function recentLog(n = 200): Promise<{ persistent: boolean; entries
 }
 
 const DEVICE_RU = { mobile: "Телефон", tablet: "Планшет", desktop: "Компьютер", bot: "Бот/скрипт", unknown: "Неизвестно" } as const;
-export const deviceLine = (d: Decision) => `📱 ${[DEVICE_RU[d.info.device.type], d.info.device.os, d.info.device.browser, d.info.country].filter(Boolean).join(" · ")}`;
+/** Устройство; страна — по IP-адресу (Vercel), приблизительно; по телефону страна не определяется */
+export const deviceLine = (d: Decision) =>
+  `📱 ${[DEVICE_RU[d.info.device.type], d.info.device.os, d.info.device.browser, d.info.country && `страна по IP: ${d.info.country}`].filter(Boolean).join(" · ")}`;
+
 export function sourceLine(d: Decision): string {
   const a = d.meta.attribution;
-  const utm = [a.utm_source, a.utm_medium, a.utm_campaign].filter(Boolean).join(" / ");
-  const parts = [utm && `utm: ${utm}`, a.utm_content && `content: ${a.utm_content}`, a.utm_term && `term: ${a.utm_term}`, a.clickIds?.length && a.clickIds.join(", "), a.referrer && `откуда: ${a.referrer}`, a.landing && `вход: ${a.landing}`].filter(Boolean);
-  return parts.length ? `📈 ${parts.join(" · ")}` : "📈 Источник: прямой заход";
+  const src = classifySource(a);
+  return `📊 Источник: ${src.kind}${src.detail.length ? ` (${src.detail.join(", ")})` : ""}${a.landing ? ` · вход: ${a.landing}` : ""}`;
 }
-const TS_RU: Record<string, string> = { ok: "Turnstile ✓", failed: "Turnstile ✗", missing: "без Turnstile", unavailable: "Turnstile недоступен", off: "Turnstile не подключён" };
 
-/** Строки для сообщения команде о принятой заявке */
-export function diagnosticsLines(d: Decision): string[] {
+const TS_RU: Record<string, string> = { ok: "Turnstile ✓", failed: "Turnstile ✗", missing: "без Turnstile", unavailable: "Turnstile недоступен", off: "Turnstile не подключён" };
+const REASON_RU = (r: string) =>
+  r.startsWith("turnstile_missing") ? "проверка Turnstile не загрузилась"
+  : r === "no_interaction" ? "нет данных о заполнении формы"
+  : r.startsWith("too_fast") ? "очень быстрое заполнение"
+  : r === "bot_user_agent" ? "браузер похож на бота"
+  : r === "link_in_name" ? "ссылка в имени"
+  : r === "many_links" ? "много ссылок в тексте"
+  : r;
+
+/** Итог серверной антиспам-проверки для принятой заявки */
+export function antispamLine(d: Decision): string {
   const fill = d.meta.elapsedMs === null ? null : `заполнено за ${Math.round(d.meta.elapsedMs / 1000)} с`;
-  const warn = d.reasons.length ? ` · ⚠️ ${d.reasons.join(", ")}` : "";
-  return [`🛡 ${[TS_RU[d.turnstile.status], fill].filter(Boolean).join(" · ")}${warn}`, sourceLine(d), deviceLine(d)];
+  const notes = d.reasons.length ? ` · ⚠️ замечания: ${d.reasons.map(REASON_RU).join(", ")}` : "";
+  return `🛡 Антиспам: ✅ пройдена · ${[TS_RU[d.turnstile.status], fill].filter(Boolean).join(" · ")}${notes}`;
+}
+
+/** Блок «откуда и как прошла проверка» для сообщения команде о принятой заявке.
+    id — номер заявки (для брифа он уже в заголовке — не передаётся). Только текст, без HTML. */
+export function diagnosticsLines(d: Decision, o: { id?: string; locale?: string } = {}): string[] {
+  const a = d.meta.attribution;
+  const lang = o.locale && isLocale(o.locale) ? `${o.locale.toUpperCase()} (${localeInfo(o.locale).label})` : null;
+  return [
+    sourceLine(d),
+    a.utm_campaign ? `🎯 Кампания: ${a.utm_campaign}` : "",
+    a.utm_content ? `📝 Объявление: ${a.utm_content}` : "",
+    a.utm_term ? `🔑 Ключевая фраза: ${a.utm_term}` : "",
+    lang ? `🌐 Язык страницы: ${lang}` : "",
+    o.id ? `🆔 Заявка: ${o.id}` : "",
+    antispamLine(d),
+    deviceLine(d),
+  ].filter(Boolean);
 }
 
 export const antispamConfigured = () => ({ turnstile: turnstileEnabled(), storage: getKv().persistent });

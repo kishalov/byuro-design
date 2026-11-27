@@ -85,3 +85,37 @@ test("устройство и псевдоним IP", async () => {
   assert.notEqual(a, await pseudonym("1.2.3.5"));
   assert.doesNotMatch(a, /1\.2\.3/);
 });
+
+import { classifySource } from "./source";
+
+test("источник заявки: только достоверные признаки", () => {
+  assert.equal(classifySource({ clickIds: ["yclid"], utm_source: "yandex", utm_campaign: "x" }).kind, "Yandex Ads");
+  assert.equal(classifySource({ utm_source: "yandex", utm_medium: "cpc" }).kind, "Yandex Ads");
+  assert.equal(classifySource({ clickIds: ["gclid"] }).kind, "Google Ads");
+  assert.equal(classifySource({ utm_source: "google", utm_medium: "cpc" }).kind, "Google Ads");
+  assert.equal(classifySource({ utm_source: "vk", utm_medium: "cpc" }).kind, "Social Ads");
+  assert.equal(classifySource({ utm_source: "telegram" }).kind, "Social");
+  assert.equal(classifySource({ utm_source: "partner_blog", utm_medium: "article" }).kind, "UTM");
+  assert.equal(classifySource({ utm_source: "digest", utm_medium: "email" }).kind, "Email");
+  assert.equal(classifySource({ referrer: "www.google.com" }).kind, "Google");
+  assert.equal(classifySource({ referrer: "yandex.ru" }).kind, "Yandex");
+  assert.equal(classifySource({ referrer: "t.me" }).kind, "Social");
+  assert.equal(classifySource({ referrer: "l.facebook.com" }).kind, "Social");
+  assert.equal(classifySource({ referrer: "example.org" }).kind, "Referral");
+  assert.equal(classifySource({ landing: "/ru/" }).kind, "Direct");
+  assert.equal(classifySource({ landing: "/ru/", internalRef: true }).kind, "Unknown");
+});
+
+test("блок уведомления: источник, кампания, объявление, язык, номер, антиспам; без страны по телефону", async () => {
+  const d = await run(req(), { meta: { elapsedMs: 42_000, interacted: true, attribution: { utm_source: "yandex", utm_medium: "cpc", utm_campaign: "brand_ru", utm_content: "16234567890", clickIds: ["yclid"], landing: "/ru/" } } });
+  const lines = diagnosticsLines(d, { id: "LD-261128-ABC123", locale: "ru" });
+  assert.match(lines[0], /^📊 Источник: Yandex Ads \(yclid, utm: yandex \/ cpc\) · вход: \/ru\/$/);
+  assert.ok(lines.includes("🎯 Кампания: brand_ru"));
+  assert.ok(lines.includes("📝 Объявление: 16234567890"));
+  assert.ok(lines.includes("🌐 Язык страницы: RU (Русский)"));
+  assert.ok(lines.includes("🆔 Заявка: LD-261128-ABC123"));
+  assert.ok(lines.some((l) => l.startsWith("🛡 Антиспам: ✅ пройдена")));
+  // нет меток — нет строк кампании/объявления; неизвестный язык не выводится
+  const bare = diagnosticsLines(await run(req(), human), { locale: "xx" });
+  assert.ok(!bare.some((l) => /Кампания|Объявление|Язык страницы|Заявка:/.test(l)));
+});

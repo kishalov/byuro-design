@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { newLeadId } from "@/lib/calculator/ids";
 import { checkSubmission, diagnosticsLines, logDecision, markDelivered } from "@/lib/antispam/guard";
 import { turnstileSiteKey } from "@/lib/antispam/turnstile";
 import { appLink, appsLine, phoneLine, socialLine } from "@/lib/contacts/format";
@@ -91,7 +92,6 @@ export async function POST(req: Request) {
     body.type === "project"
       ? [
           "<b>🟠 Новая заявка на проект</b>",
-          `<b>Язык сайта:</b> ${s(body.locale)}`,
           `<b>Имя:</b> ${s(body.name)}`,
           ...contactLines,
           body.services?.length ? `<b>Нужно:</b> ${s(body.services.join(", "))}` : "",
@@ -99,15 +99,15 @@ export async function POST(req: Request) {
         ]
       : [
           "<b>🤝 Заявка на партнёрство</b>",
-          `<b>Язык сайта:</b> ${s(body.locale)}`,
           `<b>Имя:</b> ${s(body.name)}`,
           ...contactLines,
           `<b>Кто:</b> ${s(body.role)}`,
           body.model ? `<b>Модель:</b> ${s(body.model)}` : "",
           body.message ? `<b>Комментарий:</b>\n${s(body.message)}` : "",
         ];
-  // заявка, пустая строка, блок диагностики (проверка, источник, устройство)
-  const text = `${lines.filter(Boolean).join("\n")}\n\n${diagnosticsLines(guard).map(esc).join("\n")}`;
+  // заявка, пустая строка, блок: источник, кампания, объявление, язык страницы, номер, антиспам, устройство
+  const leadId = newLeadId();
+  const text = `${lines.filter(Boolean).join("\n")}\n\n${diagnosticsLines(guard, { id: leadId, locale: typeof body.locale === "string" ? body.locale : undefined }).map(esc).join("\n")}`;
 
   if (dryRun) return NextResponse.json({ ok: true, dryRun: true, accepted: true, text });
 
@@ -125,9 +125,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
   }
 
-  await markDelivered(guard, guard.logId);
-  await logDecision(guard, "lead", { delivery: "ok" });
-  return NextResponse.json({ ok: true, accepted: true });
+  await markDelivered(guard, leadId);
+  await logDecision(guard, "lead", { ref: leadId, delivery: "ok" });
+  return NextResponse.json({ ok: true, accepted: true, leadId });
 }
 
 /** Настройки для формы: ключ Turnstile (без пересборки сайта при его смене) */
