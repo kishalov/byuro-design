@@ -8,9 +8,10 @@
      а каждую следующую — метод hit при смене адреса (см. YandexMetrika.tsx). Адрес, уже засчитанный
      последним, повторно не отправляется — так нет двойного учёта.
      (С defer: true tag.js на проде всё равно отправлял просмотр при init, и вместе с ручным hit
-     первая страница считалась дважды — поэтому в обычном случае defer не используем.)
+     первая страница считалась дважды — поэтому defer не используем; проверено ещё раз 28.11.2026.)
    — Рекламные метки: если согласие дали после SPA-переходов, а вход был по ссылке с ?utm/yclid,
-     первым просмотром уходит адрес входа (defer + hit), чтобы источник визита не потерялся.
+     перед init исходные метки возвращаются в строку запроса текущей страницы — первый (и единственный)
+     просмотр, который отправит init, несёт метки, и источник визита не теряется.
    — Цель «Lead — Form Submitted» (JavaScript-событие, идентификатор byuro_form_submit_success):
      ym(114683065, 'reachGoal', 'byuro_form_submit_success') — только после ответа сервера об успешной
      отправке заявки (форма «Оставить заявку» → /api/lead и заявка из калькулятора → /api/brief, обе уходят
@@ -85,25 +86,26 @@ export function initMetrika(): boolean {
   for (var j = 0; j < e.scripts.length; j++) {if (e.scripts[j].src === r) { return; }}
   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-  const current = window.location.href.split("#")[0];
-  // Согласие дали уже после переходов по сайту, а вход был по рекламной ссылке: адрес с ?utm/yclid
-  // из строки браузера уже пропал. Тогда первым просмотром отправляем адрес входа с исходным реферером —
-  // иначе Метрика не увидит меток и не свяжет визит с рекламой. Текущая страница уйдёт следом (trackHit).
+  // Согласие дали уже после переходов по сайту, а вход был по рекламной ссылке: ?utm/yclid из строки
+  // браузера уже пропали, и первый просмотр визита (его init отправляет сам, defer tag.js игнорирует)
+  // ушёл бы без меток — источник визита потерялся бы. Поэтому перед init возвращаем исходные рекламные
+  // параметры в адрес ТЕКУЩЕЙ страницы (только строка запроса, без перезагрузки и смены маршрута).
   const land = getLandingAd();
-  const replay = land !== null && land.href !== current;
+  if (land) {
+    const url = new URL(window.location.href);
+    const ad = new URLSearchParams(land.query);
+    if (![...ad.keys()].some((k) => url.searchParams.has(k))) {
+      for (const [k, v] of ad) url.searchParams.append(k, v);
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    }
+  }
+  s.lastUrl = window.location.href.split("#")[0]; // эту страницу засчитает init
   window.ym!(METRIKA_ID, "init", {
     clickmap: true,
     trackLinks: true,
     accurateTrackBounce: true,
     webvisor: false, // не записываем сессии: в полях форм — личные данные
-    ...(replay ? { defer: true } : {}), // только в этом случае: первый просмотр отправляем сами
   });
-  if (replay) {
-    window.ym!(METRIKA_ID, "hit", land.href, { referer: land.referrer || undefined });
-    s.lastUrl = land.href;
-  } else {
-    s.lastUrl = current; // эту страницу засчитает init
-  }
   return true;
 }
 
